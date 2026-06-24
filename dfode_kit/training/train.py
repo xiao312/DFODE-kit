@@ -5,6 +5,7 @@ import cantera as ct
 import torch
 
 from dfode_kit.models.mlp import build_mlp
+from dfode_kit.models.latent_baseline import build_autoencoder_latent_gru
 from dfode_kit.models.registry import create_model, register_model
 from dfode_kit.training.config import TrainingConfig, default_training_config, with_overrides
 from dfode_kit.training.formation import formation_calculate
@@ -50,6 +51,7 @@ def _prepare_training_tensors(labeled_data: np.ndarray, n_species: int, device):
 
 def _register_defaults() -> None:
     register_model("mlp", build_mlp)
+    register_model("ae_latent_gru", build_autoencoder_latent_gru)
     register_trainer("supervised_physics", build_supervised_physics_trainer)
 
 
