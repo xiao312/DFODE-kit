@@ -11,6 +11,14 @@ _COMMAND_SPECS = {
         'module': 'dfode_kit.cli.commands.h52npy',
         'help': 'Convert HDF5 scalar fields to NumPy array.',
     },
+    'generate-0d-sequences': {
+        'module': 'dfode_kit.cli.commands.generate_0d_sequences',
+        'help': 'Generate 0D constant-pressure reactor trajectory datasets.',
+    },
+    'generate-0d-suite': {
+        'module': 'dfode_kit.cli.commands.generate_0d_suite',
+        'help': 'Generate train/validation 0D reactor sequence suites.',
+    },
     'init': {
         'module': 'dfode_kit.cli.commands.init',
         'help': 'Initialize canonical cases from explicit presets.',
@@ -18,6 +26,14 @@ _COMMAND_SPECS = {
     'config': {
         'module': 'dfode_kit.cli.commands.config',
         'help': 'Manage persistent runtime configuration.',
+    },
+    'diagnose-0d-reactivity': {
+        'module': 'dfode_kit.cli.commands.diagnose_0d_reactivity',
+        'help': 'Diagnose reactive-state coverage in 0D sequence datasets.',
+    },
+    'evaluate-latent-sequence': {
+        'module': 'dfode_kit.cli.commands.evaluate_latent_sequence',
+        'help': 'Evaluate a latent sequence model checkpoint.',
     },
     'label': {
         'module': 'dfode_kit.cli.commands.label',
@@ -34,6 +50,22 @@ _COMMAND_SPECS = {
     'train': {
         'module': 'dfode_kit.cli.commands.train',
         'help': 'Train the model.',
+    },
+    'train-conserved-sequence': {
+        'module': 'dfode_kit.cli.commands.train_conserved_sequence',
+        'help': 'Train a hard atom-conserving sequence baseline.',
+    },
+    'train-stoich-sequence': {
+        'module': 'dfode_kit.cli.commands.train_stoich_sequence',
+        'help': 'Train a stoichiometric reaction-flux sequence baseline.',
+    },
+    'train-unified-conserved-sequence': {
+        'module': 'dfode_kit.cli.commands.train_unified_conserved_sequence',
+        'help': 'Train a shared-latent hard-conserved sequence model.',
+    },
+    'train-latent-sequence': {
+        'module': 'dfode_kit.cli.commands.train_latent_sequence',
+        'help': 'Train a minimal AE + GRU latent rollout baseline.',
     },
 }
 
