@@ -19,6 +19,14 @@ _COMMAND_SPECS = {
         'module': 'dfode_kit.cli.commands.generate_0d_suite',
         'help': 'Generate train/validation 0D reactor sequence suites.',
     },
+    'generate-interval-pairs': {
+        'module': 'dfode_kit.cli.commands.generate_interval_pairs',
+        'help': 'Convert 0D sequence trajectories into variable-dt interval pairs.',
+    },
+    'generate-interval-thermo-features': {
+        'module': 'dfode_kit.cli.commands.generate_interval_thermo_features',
+        'help': 'Precompute chemical-potential affinity features for interval pairs.',
+    },
     'init': {
         'module': 'dfode_kit.cli.commands.init',
         'help': 'Initialize canonical cases from explicit presets.',
@@ -34,6 +42,14 @@ _COMMAND_SPECS = {
     'evaluate-latent-sequence': {
         'module': 'dfode_kit.cli.commands.evaluate_latent_sequence',
         'help': 'Evaluate a latent sequence model checkpoint.',
+    },
+    'evaluate-stoich-interval': {
+        'module': 'dfode_kit.cli.commands.evaluate_stoich_interval',
+        'help': 'Evaluate a variable-dt stoichiometric interval model.',
+    },
+    'benchmark-stoich-interval-runtime': {
+        'module': 'dfode_kit.cli.commands.benchmark_stoich_interval_runtime',
+        'help': 'Benchmark variable-dt interval checkpoint inference runtime.',
     },
     'label': {
         'module': 'dfode_kit.cli.commands.label',
@@ -58,6 +74,10 @@ _COMMAND_SPECS = {
     'train-stoich-sequence': {
         'module': 'dfode_kit.cli.commands.train_stoich_sequence',
         'help': 'Train a stoichiometric reaction-flux sequence baseline.',
+    },
+    'train-stoich-interval': {
+        'module': 'dfode_kit.cli.commands.train_stoich_interval',
+        'help': 'Train a variable-dt stoichiometric interval baseline.',
     },
     'train-unified-conserved-sequence': {
         'module': 'dfode_kit.cli.commands.train_unified_conserved_sequence',

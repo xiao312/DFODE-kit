@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solver-Inspired Latent Substepping for Chemistry Surrogates</title>
+  <style>
+    :root {
+      --bg: #f7f3ea;
+      --ink: #1f2523;
+      --muted: #66706b;
+      --card: #fffdf8;
+      --line: #d8cdbb;
+      --accent: #b34b2f;
+      --accent-2: #245c67;
+      --code-bg: #17201d;
+      --code-ink: #edf4ee;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(179, 75, 47, 0.16), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(36, 92, 103, 0.14), transparent 34rem),
+        linear-gradient(135deg, #f9f5ed, var(--bg));
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.58;
+    }
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+    header {
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.82);
+      border-radius: 28px;
+      padding: 40px;
+      box-shadow: 0 24px 80px rgba(31, 37, 35, 0.08);
+    }
+    h1, h2, h3 {
+      line-height: 1.15;
+      margin: 0;
+    }
+    h1 {
+      max-width: 880px;
+      font-size: clamp(2.2rem, 5vw, 4.6rem);
+      letter-spacing: -0.045em;
+    }
+    h2 {
+      margin-top: 42px;
+      font-size: clamp(1.65rem, 3vw, 2.55rem);
+      letter-spacing: -0.03em;
+    }
+    h3 {
+      margin-top: 28px;
+      font-size: 1.22rem;
+      color: var(--accent-2);
+    }
+    p {
+      margin: 14px 0 0;
+    }
+    .eyebrow {
+      margin: 0 0 16px;
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .lede {
+      max-width: 820px;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 1.2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.82);
+      border-radius: 22px;
+      padding: 24px;
+    }
+    .card strong {
+      color: var(--accent);
+    }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    code {
+      background: rgba(36, 92, 103, 0.09);
+      border-radius: 5px;
+      padding: 0.1em 0.32em;
+      font-size: 0.9em;
+    }
+    pre {
+      overflow-x: auto;
+      margin: 18px 0 0;
+      padding: 20px;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 18px;
+      font-size: 0.92rem;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      margin-top: 18px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+    }
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: rgba(179, 75, 47, 0.08);
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    ul {
+      padding-left: 1.2rem;
+    }
+    li {
+      margin-top: 8px;
+    }
+    a {
+      color: var(--accent-2);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+    .callout {
+      margin-top: 24px;
+      border-left: 6px solid var(--accent);
+      background: rgba(179, 75, 47, 0.08);
+      border-radius: 18px;
+      padding: 20px 22px;
+    }
+    .section {
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+      padding-top: 20px;
+    }
+    .footer {
+      margin-top: 46px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    @media (max-width: 760px) {
+      main {
+        width: min(100% - 22px, 1080px);
+        padding-top: 22px;
+      }
+      header {
+        padding: 26px;
+        border-radius: 22px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      th, td {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">DFODE-kit research note · variable-dt chemistry surrogates</p>
+      <h1>Solver-Inspired Latent Substepping for Combustion Chemistry Models</h1>
+      <p class="lede">
+        The central problem is not only conservation. Hard stoichiometric layers can already preserve atom and mass
+        balance. The hard part is learning the integrated chemical flow over variable CFD time intervals without
+        blindly trusting the initial-state reaction direction.
+      </p>
+    </header>
+
+    <section>
+      <h2>1. Why one-shot prediction is difficult</h2>
+      <p>
+        A stiff implicit ODE solver does not take a large CFD chemistry interval as one blind jump. It internally
+        subdivides time, repeatedly recomputes rates, Jacobians, thermodynamics, and error estimates, then adapts
+        step size/order.
+      </p>
+      <pre><code>CFD asks:      x(t) -> x(t + dt_CFD)
+CVODE does:    x(t) -> small step -> recompute -> small step -> ... -> x(t + dt_CFD)
+Current model: x(t), dt_CFD -> x(t + dt_CFD)</code></pre>
+      <p>
+        The affinity-gated experiment exposed this: start-state chemical potential affinity is a good local direction
+        prior, but for long intervals complex mechanisms can cross equilibrium surfaces or switch dominant pathways.
+      </p>
+      <div class="callout">
+        <strong>Working hypothesis:</strong> the next model should behave like a cheap learned integrator, not only
+        like a one-shot regressor.
+      </div>
+    </section>
+
+    <section>
+      <h2>2. Model architectures that support internal learned steps</h2>
+
+      <div class="grid">
+        <div class="card">
+          <h3>A. Shared-weight residual latent time-stepper</h3>
+          <p>
+            Best first implementation. A residual block is used as a reusable latent time-advance operator.
+          </p>
+          <pre><code>z0 = Encoder(x_t)
+for k in 1..K:
+    z = z + StepNet(z, log(dt/K))
+x_next = DecoderOrStoichUpdate(z)</code></pre>
+          <p><strong>Why:</strong> cheap, easy to train, supports <code>K=1,2,4,8</code>, and directly supports semigroup tests.</p>
+        </div>
+
+        <div class="card">
+          <h3>B. Learned Runge-Kutta style stepper</h3>
+          <p>
+            A staged model predicts intermediate latent slopes/states before combining them.
+          </p>
+          <pre><code>k1 = f(z)
+k2 = f(z + a21*k1)
+z_next = z + b1*k1 + b2*k2</code></pre>
+          <p><strong>Why:</strong> more solver-like; intermediate stages can represent changing reaction direction.</p>
+        </div>
+
+        <div class="card">
+          <h3>C. Latent Neural ODE</h3>
+          <p>
+            Learn <code>dz/dt = f_theta(z,t)</code> and integrate in latent space.
+          </p>
+          <p><strong>Why useful:</strong> arbitrary time gaps are natural.</p>
+          <p><strong>Why not first:</strong> adaptive ODE solves during inference may reintroduce solver overhead.</p>
+        </div>
+
+        <div class="card">
+          <h3>D. Deep equilibrium / implicit layer</h3>
+          <p>
+            Solve a learned fixed point <code>z* = F_theta(z*, input)</code>, conceptually similar to an implicit update.
+          </p>
+          <p><strong>Why useful:</strong> implicit-style stability.</p>
+          <p><strong>Why not first:</strong> fixed-point/root-finding iterations can be expensive for CFD.</p>
+        </div>
+      </div>
+
+      <h3>Diffusion and flow matching</h3>
+      <p>
+        These are not the best first route. The chemistry map is mostly deterministic:
+      </p>
+      <pre><code>x_t, dt -> x_{t+dt}</code></pre>
+      <p>
+        Diffusion-style inference typically requires repeated denoising steps. That conflicts with CFD speed unless
+        later used as a low-step consistency/uncertainty model.
+      </p>
+    </section>
+
+    <section>
+      <h2>3. What to borrow from implicit ODE solvers</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Solver idea</th>
+            <th>Learned analogue</th>
+            <th>Why it matters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Adaptive substepping</td>
+            <td><code>K = StepController(x_t, dt)</code> or a rule by <code>dt</code> bin</td>
+            <td>Avoids forcing one model jump to cover all chemistry timescales.</td>
+          </tr>
+          <tr>
+            <td>Predictor-corrector</td>
+            <td><code>z_pred = Predictor(...)</code>, then <code>z_corr = Corrector(...)</code></td>
+            <td>Uses future/intermediate information rather than only start-state rates or affinity.</td>
+          </tr>
+          <tr>
+            <td>Error estimation</td>
+            <td>Compare <code>Phi_dt(x)</code> against <code>Phi_dt/2(Phi_dt/2(x))</code></td>
+            <td>Gives a learned local consistency/confidence signal.</td>
+          </tr>
+          <tr>
+            <td>Implicit stability</td>
+            <td>Bounded residual updates, contraction near equilibrium, learned corrector iterations</td>
+            <td>Prevents large unstable jumps in stiff or near-equilibrium regions.</td>
+          </tr>
+          <tr>
+            <td>Physical invariants</td>
+            <td>Apply <code>delta_Y = (W*S) @ xi</code> at every internal substep</td>
+            <td>Preserves atom and mass conservation throughout the learned integration path.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. Semigroup consistency is the key training signal</h2>
+      <p>
+        For autonomous time evolution, the flow map should satisfy:
+      </p>
+      <pre><code>Phi_{dt1 + dt2}(x) ~= Phi_{dt2}(Phi_{dt1}(x))</code></pre>
+      <p>
+        The current interval model performs reasonably for one-shot evaluation on true data-manifold states, but fails
+        free two-step composition. That means it learned interpolation on valid starts, not a stable flow.
+      </p>
+      <p>
+        A practical consistency loss:
+      </p>
+      <pre><code>one = model(x, dt)
+half = model(x, dt / 2)
+two = model(half, dt / 2)
+
+L_semigroup = error(one, two)</code></pre>
+      <p>
+        This is both physically meaningful and directly connected to adaptive step-size logic.
+      </p>
+    </section>
+
+    <section>
+      <h2>5. Recommended next implementation</h2>
+      <p>
+        Implement a <code>LatentSubstepStoichIntervalModel</code>. Keep the current hard stoichiometric update and
+        signed-power scaling, but replace one-shot latent decoding with a shared internal latent stepper.
+      </p>
+      <pre><code>Input:
+    x_t = [T, P, Y]
+    dt
+
+z = Encoder(normalized(x_t))
+Y = Y_t  # float64 physical species
+
+for k in 1..K:
+    h = dt / K
+    z = z + GatedStepNet(z, normalized(log(h)))
+    raw_xi_k = FluxHead(z, normalized(log(h)))
+    xi_k = signed_power_inverse(raw_xi_k, alpha=0.1, scale_by_alpha=True)
+    Y = Y + xi_k @ (W*S).T
+
+TP_next = TPHead(z)
+x_next = [TP_next, Y]</code></pre>
+
+      <h3>Initial ablations</h3>
+      <ul>
+        <li><code>K=1</code>: should match or approximate current baseline.</li>
+        <li><code>K=2</code>: first learned substep test.</li>
+        <li><code>K=4</code>: likely best speed/accuracy tradeoff.</li>
+        <li><code>K=8</code>: stress test for long intervals.</li>
+        <li>Rule-based adaptive <code>K</code> by <code>dt</code> bin.</li>
+      </ul>
+
+      <h3>Training loss</h3>
+      <pre><code>L = endpoint_loss
+  + 0.1 * delta_Y_loss
+  + lambda_semigroup * one_vs_two_half_consistency</code></pre>
+
+      <h3>Evaluation</h3>
+      <ul>
+        <li>Per-<code>dt</code>-bin species MAE, RMSE, R2, and SSPI.</li>
+        <li>Negative mass-fraction rate.</li>
+        <li>Mass and element residuals.</li>
+        <li>One-step vs two-half-step consistency.</li>
+        <li>Free two-step explosion rate.</li>
+        <li>Runtime per sample versus current one-shot baseline.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Role of chemical potential after this result</h2>
+      <p>
+        Chemical potential should not be discarded. The affinity experiment showed that hard start-state direction is
+        too rigid for complex long-<code>dt</code> intervals, but chemical potential is still valuable as:
+      </p>
+      <ul>
+        <li>an input feature for local thermodynamic state,</li>
+        <li>an equilibrium/proximity signal,</li>
+        <li>a stability gate near equilibrium,</li>
+        <li>a bias for forward/reverse competition,</li>
+        <li>a diagnostic for whether predicted substeps follow thermodynamic descent.</li>
+      </ul>
+      <p>
+        Better formulation:
+      </p>
+      <pre><code>network predicts interval/substep dynamics
+affinity biases or regularizes dynamics
+affinity does not hard-lock the whole interval direction from x_t</code></pre>
+    </section>
+
+    <section>
+      <h2>7. References and pointers</h2>
+      <ul>
+        <li>Neural ODEs: Chen, Rubanova, Bettencourt, Duvenaud, 2018.</li>
+        <li>Residual networks as time discretizations / Neural ODE connections.</li>
+        <li>Runge-Kutta methods and neural/RK hybrid architectures.</li>
+        <li>Latent ODEs for irregularly sampled time series.</li>
+        <li>Deep Equilibrium Models as implicit fixed-point layers.</li>
+        <li>SUNDIALS/CVODE mathematical documentation: variable-step/order Adams and BDF methods, nonlinear solves, and error control.</li>
+        <li>Semigroup property of autonomous evolution flows.</li>
+      </ul>
+    </section>
+
+    <p class="footer">
+      Created for DFODE-kit. This note captures the modeling direction after the variable-dt stoichiometric baseline
+      and affinity-gated interval experiment.
+    </p>
+  </main>
+</body>
+</html>
