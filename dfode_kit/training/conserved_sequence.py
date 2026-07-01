@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import torch
+import h5py
 
 from dfode_kit.models.latent_baseline import ConservedLatentDeltaModel, signed_power_transform
 from dfode_kit.physics.atom_conservation import completion_matrix_for_mass_fractions
@@ -62,6 +63,16 @@ def _flatten_pairs(raw_sequences: np.ndarray, times: np.ndarray):
     )
 
 
+def read_sequence_phase_name(source_path: str) -> str | None:
+    with h5py.File(source_path, "r") as h5:
+        phase = h5.attrs.get("phase_name")
+    if phase is None:
+        return None
+    if isinstance(phase, bytes):
+        return phase.decode()
+    return str(phase)
+
+
 def train_conserved_sequence_model(
     source_path: str,
     output_path: str,
@@ -74,6 +85,7 @@ def train_conserved_sequence_model(
 
     cfg = config or ConservedSequenceTrainingConfig()
     raw_sequences, times, species_names = load_sequence_arrays(source_path, dtype=np.float64)
+    phase_name = read_sequence_phase_name(source_path)
     current, target, log_dt = _flatten_pairs(raw_sequences, times)
 
     state_mean = current.mean(axis=0)
@@ -87,7 +99,7 @@ def train_conserved_sequence_model(
     target_norm = ((target - state_mean) / state_std).astype(np.float32)
     log_dt_norm = (log_dt - log_dt_mean) / log_dt_std
 
-    gas = ct.Solution(mech_path)
+    gas = ct.Solution(mech_path, phase_name) if phase_name is not None else ct.Solution(mech_path)
     completion = completion_matrix_for_mass_fractions(gas)
     key_species_indices = np.asarray(completion.key_species_indices, dtype=np.int64)
     target_key_delta = target[:, 2 + key_species_indices] - current[:, 2 + key_species_indices]
@@ -219,6 +231,7 @@ def train_conserved_sequence_model(
             "log_dt_std": log_dt_std.tolist(),
             "species_names": species_names,
             "mechanism": mech_path,
+            "phase_name": phase_name,
             "completion_matrix": completion.matrix.tolist(),
             "completion_basis": "mass_fraction_element_matrix",
             "key_species_indices": list(completion.key_species_indices),

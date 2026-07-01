@@ -4,7 +4,7 @@ import re
 
 import torch
 
-from dfode_kit.models.latent_baseline import LatentTimeEventHead, signed_power_inverse
+from dfode_kit.models.latent_baseline import HardConservationLayer, LatentTimeEventHead, signed_power_inverse
 
 
 def safe_module_key(value: str) -> str:
@@ -38,6 +38,7 @@ class SharedLatentDynamicsConservedModel(torch.nn.Module):
         self.delta_key_heads = torch.nn.ModuleDict()
         self.temperature_pressure_heads = torch.nn.ModuleDict()
         self.time_event_heads = torch.nn.ModuleDict()
+        self.hard_conservation_layers = torch.nn.ModuleDict()
 
         self.shared_dynamics = torch.nn.Sequential(
             torch.nn.Linear(latent_dim, hidden_dim),
@@ -56,7 +57,7 @@ class SharedLatentDynamicsConservedModel(torch.nn.Module):
             n_species, n_key = completion.shape
             if input_dim != 2 + n_species:
                 raise ValueError(f"input_dim for {name} is inconsistent with completion matrix")
-            self.register_buffer(f"completion_matrix__{key}", completion)
+            self.hard_conservation_layers[key] = HardConservationLayer(completion)
             self.encoders[key] = torch.nn.Sequential(
                 torch.nn.Linear(input_dim + 1, hidden_dim),
                 torch.nn.GELU(),
@@ -76,9 +77,6 @@ class SharedLatentDynamicsConservedModel(torch.nn.Module):
             )
             self.time_event_heads[key] = LatentTimeEventHead(latent_dim=latent_dim, hidden_dim=hidden_dim)
 
-    def completion_matrix(self, mechanism_name: str):
-        return getattr(self, f"completion_matrix__{self.safe_keys[mechanism_name]}")
-
     def forward(self, mechanism_name: str, x_current, log_dt, current_species=None):
         key = self.safe_keys[mechanism_name]
         z = self.encoders[key](torch.cat([x_current, log_dt], dim=-1))
@@ -89,12 +87,10 @@ class SharedLatentDynamicsConservedModel(torch.nn.Module):
             alpha=self.transform_alpha,
             scale_by_alpha=self.transform_scale_by_alpha,
         )
-        delta_y = delta_key.to(torch.float64) @ self.completion_matrix(mechanism_name).T
         if current_species is None:
             current_species = x_current[..., 2:]
-        current_species = current_species.to(torch.float64)
+        next_y, delta_y = self.hard_conservation_layers[key](delta_key, current_species)
         next_tp = self.temperature_pressure_heads[key](z_next).to(torch.float64)
-        next_y = current_species + delta_y
         time_event = self.time_event_heads[key](z_next)
         return {
             "next_state": torch.cat([next_tp, next_y], dim=-1),

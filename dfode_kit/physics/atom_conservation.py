@@ -13,6 +13,15 @@ class CompletionMatrix:
     element_rank: int
 
 
+@dataclass(frozen=True)
+class ReactionStoichiometry:
+    net: np.ndarray
+    reactants: np.ndarray
+    products: np.ndarray
+    mass_fraction_matrix: np.ndarray
+    reversible: np.ndarray
+
+
 def atom_molecule_matrix(gas) -> np.ndarray:
     """Return element-by-species atom counts."""
 
@@ -113,6 +122,40 @@ def stoichiometric_mass_fraction_matrix(gas) -> np.ndarray:
     stoich = np.asarray(gas.product_stoich_coeffs - gas.reactant_stoich_coeffs, dtype=np.float64)
     molecular_weights = np.asarray(gas.molecular_weights, dtype=np.float64)
     return molecular_weights[:, None] * stoich
+
+
+def reaction_stoichiometry(gas) -> ReactionStoichiometry:
+    """Return species-by-reaction stoichiometric matrices and reversibility."""
+
+    reactants = np.asarray(gas.reactant_stoich_coeffs, dtype=np.float64)
+    products = np.asarray(gas.product_stoich_coeffs, dtype=np.float64)
+    net = products - reactants
+    molecular_weights = np.asarray(gas.molecular_weights, dtype=np.float64)
+    reversible = np.asarray([bool(gas.reaction(idx).reversible) for idx in range(gas.n_reactions)], dtype=bool)
+    return ReactionStoichiometry(
+        net=net,
+        reactants=reactants,
+        products=products,
+        mass_fraction_matrix=molecular_weights[:, None] * net,
+        reversible=reversible,
+    )
+
+
+def reaction_affinity_over_rt(stoich_net: np.ndarray, chemical_potentials_over_rt: np.ndarray) -> np.ndarray:
+    """Return dimensionless reaction affinities A / RT.
+
+    For species chemical potentials mu_i and net stoichiometry S_ij
+    (products minus reactants), reaction affinity is:
+
+        A_j = -sum_i S_ij * mu_i
+
+    Passing mu_i / RT returns A_j / RT. Positive affinity corresponds to the
+    thermodynamically favored forward direction under the supplied state.
+    """
+
+    stoich_net = np.asarray(stoich_net, dtype=np.float64)
+    mu_over_rt = np.asarray(chemical_potentials_over_rt, dtype=np.float64)
+    return -(mu_over_rt @ stoich_net)
 
 
 def element_totals_from_mole_amounts(gas, mole_amounts: np.ndarray) -> np.ndarray:

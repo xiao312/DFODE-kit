@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import h5py
 
 from dfode_kit.evaluation.conservation import conservation_summary
 from dfode_kit.evaluation.metrics import summarize_predictions
@@ -70,6 +71,9 @@ def _load_stoich_model(checkpoint, input_dim: int, device: torch.device):
         stoichiometric_mass_matrix=np.asarray(checkpoint["stoichiometric_mass_matrix"], dtype=np.float64),
         latent_dim=int(cfg.get("latent_dim", 16)),
         hidden_dim=int(cfg.get("hidden_dim", 128)),
+        flux_mode=cfg.get("flux_mode", "direct"),
+        transform_alpha=float(cfg.get("transform_alpha", 0.1)),
+        transform_scale_by_alpha=bool(cfg.get("transform_scale_by_alpha", True)),
     )
     model.load_state_dict(checkpoint["net"])
     model.to(device)
@@ -98,6 +102,16 @@ def _relative_time_error(true_dt: np.ndarray, pred_dt: np.ndarray) -> dict[str, 
     }
 
 
+def _read_sequence_phase_name(source_path: str) -> str | None:
+    with h5py.File(source_path, "r") as h5:
+        phase = h5.attrs.get("phase_name")
+    if phase is None:
+        return None
+    if isinstance(phase, bytes):
+        return phase.decode()
+    return str(phase)
+
+
 def evaluate_latent_sequence_model(
     checkpoint_path: str,
     source_path: str,
@@ -108,6 +122,7 @@ def evaluate_latent_sequence_model(
     mech_path: str | None = None,
 ) -> dict:
     raw_sequences, times, species_names = load_sequence_arrays(source_path, dtype=np.float64)
+    sequence_phase_name = _read_sequence_phase_name(source_path)
     torch_device = torch.device(device or ("cuda:0" if torch.cuda.is_available() else "cpu"))
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     model_type = checkpoint.get("model_type", "ae_latent_gru")
@@ -205,7 +220,8 @@ def evaluate_latent_sequence_model(
     if mech_path is not None:
         import cantera as ct
 
-        gas = ct.Solution(mech_path)
+        phase_name = checkpoint.get("phase_name") or sequence_phase_name
+        gas = ct.Solution(mech_path, phase_name) if phase_name is not None else ct.Solution(mech_path)
         results["conservation_metrics"] = conservation_summary(gas, true_species_flat, pred_species_flat)
 
     if output_path is not None:

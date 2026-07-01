@@ -7,7 +7,8 @@ import torch
 
 from dfode_kit.models.latent_baseline import StoichiometricFluxModel
 from dfode_kit.physics.atom_conservation import stoichiometric_mass_fraction_matrix
-from dfode_kit.training.conserved_sequence import _flatten_pairs
+from dfode_kit.models.latent_baseline import signed_power_transform
+from dfode_kit.training.conserved_sequence import _flatten_pairs, _regression_loss, read_sequence_phase_name
 from dfode_kit.training.latent_sequence import load_sequence_arrays
 
 
@@ -19,6 +20,11 @@ class StoichSequenceTrainingConfig:
     batch_size: int = 4096
     lr: float = 1e-3
     time_weight: float = 0.01
+    transform_alpha: float = 0.1
+    species_loss_weight: float = 0.1
+    loss_kind: str = "mae"
+    transform_scale_by_alpha: bool = True
+    flux_mode: str = "signed-power"
 
 
 def train_stoich_sequence_model(
@@ -33,6 +39,7 @@ def train_stoich_sequence_model(
 
     cfg = config or StoichSequenceTrainingConfig()
     raw_sequences, times, species_names = load_sequence_arrays(source_path, dtype=np.float64)
+    phase_name = read_sequence_phase_name(source_path)
     current, target, log_dt = _flatten_pairs(raw_sequences, times)
 
     state_mean = current.mean(axis=0)
@@ -46,7 +53,7 @@ def train_stoich_sequence_model(
     target_norm = ((target - state_mean) / state_std).astype(np.float32)
     log_dt_norm = ((log_dt - log_dt_mean) / log_dt_std).astype(np.float32)
 
-    gas = ct.Solution(mech_path)
+    gas = ct.Solution(mech_path, phase_name) if phase_name is not None else ct.Solution(mech_path)
     stoich_mass = stoichiometric_mass_fraction_matrix(gas)
     torch_device = torch.device(device or ("cuda:0" if torch.cuda.is_available() else "cpu"))
 
@@ -63,6 +70,9 @@ def train_stoich_sequence_model(
         stoichiometric_mass_matrix=stoich_mass,
         latent_dim=cfg.latent_dim,
         hidden_dim=cfg.hidden_dim,
+        flux_mode=cfg.flux_mode,
+        transform_alpha=cfg.transform_alpha,
+        transform_scale_by_alpha=cfg.transform_scale_by_alpha,
     ).to(torch_device)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr)
 
@@ -78,10 +88,39 @@ def train_stoich_sequence_model(
             target_y_batch = target_y_batch.to(torch_device)
             log_dt_batch = log_dt_batch.to(torch_device)
             output = model(current_batch, log_dt_batch, current_species=current_y_batch)
-            tp_loss = torch.nn.functional.mse_loss(output["next_state"][..., :2], target_batch[..., :2].to(torch.float64))
-            species_loss = torch.nn.functional.mse_loss(output["next_state"][..., 2:], target_y_batch)
-            state_loss = tp_loss + species_loss
-            time_loss = torch.nn.functional.mse_loss(output["log_dt"], log_dt_batch)
+            tp_loss = _regression_loss(
+                output["next_state"][..., :2],
+                target_batch[..., :2].to(torch.float64),
+                loss_kind=cfg.loss_kind,
+            )
+            y_loss = _regression_loss(
+                signed_power_transform(
+                    output["next_state"][..., 2:],
+                    alpha=cfg.transform_alpha,
+                    scale_by_alpha=cfg.transform_scale_by_alpha,
+                ),
+                signed_power_transform(
+                    target_y_batch,
+                    alpha=cfg.transform_alpha,
+                    scale_by_alpha=cfg.transform_scale_by_alpha,
+                ),
+                loss_kind=cfg.loss_kind,
+            )
+            delta_loss = _regression_loss(
+                signed_power_transform(
+                    output["delta_y"],
+                    alpha=cfg.transform_alpha,
+                    scale_by_alpha=cfg.transform_scale_by_alpha,
+                ),
+                signed_power_transform(
+                    target_y_batch - current_y_batch,
+                    alpha=cfg.transform_alpha,
+                    scale_by_alpha=cfg.transform_scale_by_alpha,
+                ),
+                loss_kind=cfg.loss_kind,
+            )
+            state_loss = tp_loss + y_loss + cfg.species_loss_weight * delta_loss
+            time_loss = _regression_loss(output["log_dt"], log_dt_batch, loss_kind=cfg.loss_kind)
             loss = state_loss + cfg.time_weight * time_loss
 
             optimizer.zero_grad()
@@ -102,6 +141,7 @@ def train_stoich_sequence_model(
             "log_dt_std": log_dt_std.tolist(),
             "species_names": species_names,
             "mechanism": mech_path,
+            "phase_name": phase_name,
             "stoichiometric_mass_matrix": stoich_mass.tolist(),
             "training_config": {
                 "latent_dim": cfg.latent_dim,
@@ -110,6 +150,11 @@ def train_stoich_sequence_model(
                 "batch_size": cfg.batch_size,
                 "lr": cfg.lr,
                 "time_weight": cfg.time_weight,
+                "transform_alpha": cfg.transform_alpha,
+                "species_loss_weight": cfg.species_loss_weight,
+                "loss_kind": cfg.loss_kind,
+                "transform_scale_by_alpha": cfg.transform_scale_by_alpha,
+                "flux_mode": cfg.flux_mode,
             },
             "final_metrics": {
                 "loss": last_loss,

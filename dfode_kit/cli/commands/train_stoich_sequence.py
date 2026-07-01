@@ -15,6 +15,17 @@ def add_command_parser(subparsers):
     parser.add_argument("--batch-size", type=int, default=4096)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--time-weight", type=float, default=0.01)
+    parser.add_argument("--transform-alpha", type=float, default=0.1)
+    parser.add_argument("--species-loss-weight", type=float, default=0.1)
+    parser.add_argument("--loss-kind", choices=("mse", "mae"), default="mae")
+    parser.add_argument("--flux-mode", choices=("direct", "signed-power"), default="signed-power")
+    parser.add_argument(
+        "--no-transform-scale-by-alpha",
+        action="store_false",
+        dest="transform_scale_by_alpha",
+        default=True,
+        help="Disable Ke-style /alpha scaling for ablations.",
+    )
     parser.add_argument("--device", default=None, help="Torch device override, e.g. 'cpu' or 'cuda:0'.")
 
 
@@ -32,6 +43,11 @@ def handle_command(args):
             batch_size=args.batch_size,
             lr=args.lr,
             time_weight=args.time_weight,
+            transform_alpha=args.transform_alpha,
+            species_loss_weight=args.species_loss_weight,
+            loss_kind=args.loss_kind,
+            transform_scale_by_alpha=args.transform_scale_by_alpha,
+            flux_mode=args.flux_mode,
         ),
         device=args.device,
     )
