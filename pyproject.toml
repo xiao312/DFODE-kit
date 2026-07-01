@@ -17,6 +17,9 @@ dependencies = [
 dev = [
     "pytest",
 ]
+hit = [
+    "nslab2d @ git+https://github.com/xiao312/NS2dLab_Python.git",
+]
 
 [project.scripts]
 dfode-kit = "dfode_kit.cli.main:main"

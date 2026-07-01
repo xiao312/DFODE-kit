@@ -39,6 +39,10 @@ _COMMAND_SPECS = {
         'module': 'dfode_kit.cli.commands.diagnose_0d_reactivity',
         'help': 'Diagnose reactive-state coverage in 0D sequence datasets.',
     },
+    'design-hit-flame-case': {
+        'module': 'dfode_kit.cli.commands.design_hit_flame_case',
+        'help': 'Design a mechanism-aware 2D HIT premixed-flame validation case.',
+    },
     'evaluate-latent-sequence': {
         'module': 'dfode_kit.cli.commands.evaluate_latent_sequence',
         'help': 'Evaluate a latent sequence model checkpoint.',
@@ -46,6 +50,10 @@ _COMMAND_SPECS = {
     'evaluate-stoich-interval': {
         'module': 'dfode_kit.cli.commands.evaluate_stoich_interval',
         'help': 'Evaluate a variable-dt stoichiometric interval model.',
+    },
+    'export-hit-openfoam-u': {
+        'module': 'dfode_kit.cli.commands.export_hit_openfoam_u',
+        'help': 'Export a designed 2D HIT velocity field to an OpenFOAM U file.',
     },
     'benchmark-stoich-interval-runtime': {
         'module': 'dfode_kit.cli.commands.benchmark_stoich_interval_runtime',
