@@ -7,7 +7,7 @@ name = "dfode"
 version = "0.1"
 dependencies = [
     "numpy",
-    "cantera<3.1",
+    "cantera>=3.2.0",
     "h5py",
     "matplotlib",
     "torch",
