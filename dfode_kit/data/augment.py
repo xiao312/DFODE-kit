@@ -10,7 +10,7 @@ def single_step(npstate, chem, time_step=1e-6):
     T_old, P_old, Y_old = npstate[0], npstate[1], npstate[2:]
     gas.TPY = T_old, P_old, Y_old
     res_1st = [T_old, P_old] + list(gas.Y)
-    reactor = ct.IdealGasConstPressureReactor(gas, name='R1')
+    reactor = ct.IdealGasConstPressureReactor(gas, name='R1', clone=False)
     sim = ct.ReactorNet([reactor])
 
     sim.advance(time_step)
@@ -156,7 +156,7 @@ def label(
 
     labeled_data = np.empty((array.shape[0], 2 * n_species + 4))
 
-    reactor = ct.Reactor(gas, name='Reactor1', energy='off')
+    reactor = ct.Reactor(gas, name='Reactor1', energy='off', clone=False)
     reactor_net = ct.ReactorNet([reactor])
     reactor_net.rtol, reactor_net.atol = 1e-6, 1e-10
 

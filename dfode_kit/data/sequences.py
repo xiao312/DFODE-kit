@@ -99,7 +99,7 @@ def generate_constant_pressure_sequence(
     gas.TP = condition.temperature, condition.pressure
     gas.set_equivalence_ratio(condition.phi, condition.fuel, condition.oxidizer)
 
-    reactor = ct.IdealGasConstPressureReactor(gas, energy=energy)
+    reactor = ct.IdealGasConstPressureReactor(gas, energy=energy, clone=False)
     network = ct.ReactorNet([reactor])
 
     sequence = np.empty((times_arr.shape[0], 2 + gas.n_species), dtype=np.float64)

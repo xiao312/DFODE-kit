@@ -251,7 +251,7 @@ def benchmark_stoich_interval_runtime(
         cvode_timings = []
         for idx in range(n_cvode):
             gas.TPY = float(current[idx, 0]), float(current[idx, 1]), current[idx, 2:]
-            reactor = ct.IdealGasConstPressureReactor(gas)
+            reactor = ct.IdealGasConstPressureReactor(gas, clone=False)
             network = ct.ReactorNet([reactor])
             start_time = time.perf_counter()
             network.advance(float(dt[idx]))

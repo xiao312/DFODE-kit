@@ -135,7 +135,7 @@ def integrate_h5(
 
     if cvode_integration:
         gas = ct.Solution(mech)
-        reactor = ct.Reactor(gas, name='Reactor1', energy='off')
+        reactor = ct.Reactor(gas, name='Reactor1', energy='off', clone=False)
         reactor_net = ct.ReactorNet([reactor])
         reactor_net.rtol, reactor_net.atol = 1e-6, 1e-10
 
