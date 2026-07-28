@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inside Cantera ReactorNet::advance()</title>
+  <style>
+    :root {
+      --paper: #f3efe5;
+      --paper-deep: #e7dfce;
+      --ink: #18201f;
+      --muted: #5e6964;
+      --line: #c9c0ad;
+      --navy: #173b4d;
+      --blue: #2d7183;
+      --orange: #d46b35;
+      --gold: #b58a32;
+      --green: #36715b;
+      --code: #132322;
+      --code-ink: #dce8df;
+      --white: #fffdf7;
+      --shadow: 0 18px 50px rgba(38, 43, 37, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(23, 59, 77, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 59, 77, 0.045) 1px, transparent 1px),
+        radial-gradient(circle at 8% 4%, rgba(212, 107, 53, 0.15), transparent 28rem),
+        radial-gradient(circle at 96% 16%, rgba(45, 113, 131, 0.13), transparent 30rem),
+        var(--paper);
+      background-size: 28px 28px, 28px 28px, auto, auto, auto;
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.62;
+    }
+
+    a { color: var(--blue); }
+    a:hover { color: var(--orange); }
+
+    code, pre, .mono, .eyebrow, .metric-value, nav {
+      font-family: "IBM Plex Mono", "Cascadia Code", "Liberation Mono", monospace;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 76px 0 46px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--orange);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      font-family: "Palatino Linotype", Palatino, Georgia, serif;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(3rem, 8vw, 6.6rem);
+      font-weight: 500;
+    }
+
+    h1 span { color: var(--blue); }
+
+    .lede {
+      max-width: 800px;
+      margin: 28px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.08rem, 2vw, 1.35rem);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .tag {
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 253, 247, 0.62);
+      color: var(--muted);
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.76rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 52px;
+      padding: 42px 0 90px;
+    }
+
+    nav {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      padding: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 247, 0.76);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(9px);
+      font-size: 0.76rem;
+    }
+
+    nav strong {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--orange);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    nav a {
+      display: block;
+      padding: 7px 0;
+      border-top: 1px solid rgba(201, 192, 173, 0.62);
+      color: var(--navy);
+      text-decoration: none;
+    }
+
+    main { min-width: 0; }
+
+    section {
+      margin-bottom: 68px;
+      scroll-margin-top: 24px;
+    }
+
+    h2 {
+      margin: 0 0 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--ink);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500;
+    }
+
+    h3 {
+      margin: 32px 0 12px;
+      color: var(--navy);
+      font-size: 1.45rem;
+    }
+
+    p { max-width: 82ch; }
+
+    .summary-grid,
+    .metric-grid,
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 247, 0.76);
+      box-shadow: 0 10px 24px rgba(38, 43, 37, 0.06);
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--navy);
+      font-size: 1.05rem;
+    }
+
+    .card p { margin: 0; color: var(--muted); }
+
+    .metric-value {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--orange);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+      margin: 28px 0;
+    }
+
+    .flow-step {
+      position: relative;
+      display: flex;
+      min-height: 112px;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--navy);
+      text-align: center;
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .flow-step:not(:last-child)::after {
+      position: absolute;
+      z-index: 2;
+      right: -12px;
+      content: ">";
+      color: var(--orange);
+      font-size: 1.25rem;
+    }
+
+    .equation {
+      margin: 22px 0;
+      padding: 22px 26px;
+      border-left: 5px solid var(--blue);
+      background: rgba(45, 113, 131, 0.08);
+      color: var(--navy);
+      font-size: 1.14rem;
+      overflow-x: auto;
+    }
+
+    pre {
+      margin: 20px 0;
+      padding: 22px;
+      overflow-x: auto;
+      border: 1px solid #29413f;
+      border-radius: 2px;
+      background: var(--code);
+      color: var(--code-ink);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      tab-size: 4;
+    }
+
+    code {
+      padding: 0.12em 0.35em;
+      background: rgba(23, 59, 77, 0.08);
+      color: var(--navy);
+      font-size: 0.9em;
+    }
+
+    pre code { padding: 0; background: transparent; color: inherit; }
+
+    .table-wrap {
+      margin: 24px 0;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: var(--white);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child { text-align: left; }
+
+    th {
+      background: var(--navy);
+      color: var(--white);
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.76rem;
+      letter-spacing: 0.03em;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .stacked {
+      display: flex;
+      height: 58px;
+      margin: 24px 0 12px;
+      overflow: hidden;
+      border: 1px solid var(--ink);
+      color: var(--white);
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .stacked span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .reactor { width: 38%; background: var(--orange); }
+    .network { width: 19%; background: var(--gold); }
+    .cvodes { width: 43%; background: var(--navy); }
+
+    .note,
+    .warning,
+    .recommendation {
+      margin: 24px 0;
+      padding: 18px 20px;
+      border-left: 5px solid var(--blue);
+      background: rgba(255, 253, 247, 0.76);
+    }
+
+    .warning { border-left-color: var(--orange); }
+    .recommendation { border-left-color: var(--green); }
+
+    .note strong,
+    .warning strong,
+    .recommendation strong {
+      color: var(--navy);
+    }
+
+    ol.steps {
+      margin: 20px 0;
+      padding: 0;
+      counter-reset: report-step;
+      list-style: none;
+    }
+
+    ol.steps li {
+      position: relative;
+      min-height: 58px;
+      margin: 0 0 12px;
+      padding: 10px 14px 10px 58px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 247, 0.68);
+      counter-increment: report-step;
+    }
+
+    ol.steps li::before {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--navy);
+      color: var(--white);
+      content: counter(report-step);
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.78rem;
+    }
+
+    .checklist {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .checklist li {
+      position: relative;
+      margin: 9px 0;
+      padding-left: 28px;
+    }
+
+    .checklist li::before {
+      position: absolute;
+      left: 0;
+      color: var(--green);
+      content: "[ok]";
+      font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    footer {
+      padding: 30px 0 54px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; }
+      .summary-grid, .metric-grid, .option-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-step { min-height: 72px; }
+      .flow-step:not(:last-child)::after {
+        right: 50%;
+        bottom: -17px;
+        transform: rotate(90deg);
+      }
+    }
+
+    @media print {
+      body { background: white; }
+      nav { display: none; }
+      .layout { display: block; }
+      .card, .table-wrap, .flow-step { box-shadow: none; }
+      a { color: inherit; text-decoration: none; }
+      section { break-inside: avoid; }
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <p class="eyebrow">DFODE-kit / Chemistry integration profiling / 2026-07-13</p>
+      <h1>Inside <span>ReactorNet::advance()</span></h1>
+      <p class="lede">
+        A persistent report on how Cantera 2.6 advances one DeepFlame chemistry
+        cell, where its time goes, why implicit integration repeats chemistry
+        evaluations, and how to expose the underlying SUNDIALS CVODE statistics.
+      </p>
+      <div class="meta">
+        <span class="tag">Cantera 2.6.0</span>
+        <span class="tag">SUNDIALS 5.7</span>
+        <span class="tag">CVODES / BDF / Newton</span>
+        <span class="tag">DeepFlame-style frozen energy</span>
+        <span class="tag">Burke H2: 9 species / 23 reactions</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell layout">
+    <nav aria-label="Report contents">
+      <strong>Contents</strong>
+      <a href="#summary">Executive summary</a>
+      <a href="#call-path">DeepFlame call path</a>
+      <a href="#advance">Inside advance()</a>
+      <a href="#implicit">Implicit BDF solve</a>
+      <a href="#rhs">RHS and Jacobian work</a>
+      <a href="#error-control">Error control</a>
+      <a href="#timing">Measured timing</a>
+      <a href="#stats-gap">Why stats are hidden</a>
+      <a href="#backport">Recommended 2.6 backport</a>
+      <a href="#alternatives">Alternative routes</a>
+      <a href="#validation">Validation checklist</a>
+      <a href="#sources">Primary sources</a>
+    </nav>
+
+    <main>
+      <section id="summary">
+        <h2>Executive summary</h2>
+        <div class="summary-grid">
+          <article class="card">
+            <span class="metric-value">57%</span>
+            <strong>All RHS callback work</strong>
+            <p>Reactor chemistry plus ReactorNet state transfer and equation assembly.</p>
+          </article>
+          <article class="card">
+            <span class="metric-value">43%</span>
+            <strong>CVODES remainder</strong>
+            <p>Newton orchestration, error control, dense linear algebra, step selection, and interpolation.</p>
+          </article>
+          <article class="card">
+            <span class="metric-value">17-29%</span>
+            <strong>Extra RHS callbacks</strong>
+            <p>Callbacks inferred to come from finite-difference Jacobian and linear-solver work.</p>
+          </article>
+        </div>
+
+        <div class="recommendation">
+          <strong>Recommended instrumentation route:</strong>
+          backport a typed, non-virtual <code>solverStats()</code> method from
+          Cantera 3.2 into an isolated Cantera 2.6 build. Query it immediately
+          after each <code>advance()</code>. Do not modify the active Conda
+          environment in place, and do not use private-layout preprocessor hacks
+          for persistent benchmarks.
+        </div>
+      </section>
+
+      <section id="call-path">
+        <h2>The DeepFlame-style call path</h2>
+        <p>
+          DeepFlame reuses one Cantera reactor and network object, but each CFD
+          cell supplies a new initial thermochemical state. The essential loop is:
+        </p>
+
+        <pre><code>gas.setState_TPY(T_cell, P_cell, Y_cell);
+reactor.syncState();
+network.advance(delta_t);
+gas.getMassFractions(Y_next);
+network.setInitialTime(0.0);
+
+RR[k] = rho * (Y_next[k] - Y_cell[k]) / delta_t;</code></pre>
+
+        <div class="flow" aria-label="Chemistry call flow">
+          <div class="flow-step">Set cell<br>T, P, Y</div>
+          <div class="flow-step">Synchronize<br>reactor</div>
+          <div class="flow-step">CVODES<br>advance(dt)</div>
+          <div class="flow-step">Read<br>Y_next</div>
+          <div class="flow-step">Construct<br>RR and Qdot</div>
+        </div>
+
+        <p>
+          Calling <code>syncState()</code> after changing the gas state makes the
+          network reinitialize its integrator. Reusing C++ objects avoids repeated
+          construction, but the next cell normally cannot reuse the previous
+          cell's BDF history, Newton state, or Jacobian factorization.
+        </p>
+      </section>
+
+      <section id="advance">
+        <h2>What advance() does</h2>
+        <p>
+          <code>ReactorNet::advance(t_out)</code> is an adaptive implicit
+          integration request, not a single update from the initial state to the
+          output state. Cantera 2.6 delegates it to
+          <code>CVodesIntegrator::integrate(t_out)</code>, which calls SUNDIALS
+          CVODES with <code>CV_NORMAL</code> mode.
+        </p>
+
+        <pre><code>advance(target_time):
+    initialize_or_reinitialize_solver()
+
+    while CVODES has not produced the requested output:
+        choose internal step size h and BDF order q
+        predict the state at the new internal time
+
+        repeat Newton correction:
+            evaluate ReactorNet RHS f(t, y)
+            refresh the Jacobian when needed
+            set up and solve the implicit linear system
+            correct the candidate state
+
+        estimate the local integration error
+
+        if error test fails:
+            reject the step and reduce h
+        else:
+            accept the step and adapt h and q
+
+    return/interpolate the solution at target_time
+    copy the solution into the reactor and gas phase</code></pre>
+
+        <p>
+          For the current frozen-energy reactor, the principal physical equations
+          are the species equations:
+        </p>
+
+        <div class="equation">
+          dY<sub>k</sub>/dt = W<sub>k</sub> omega_dot<sub>k</sub> / rho
+        </div>
+
+        <p>
+          The reactor energy equation is disabled, so temperature is fixed during
+          the chemistry call. The CFD solver handles the coupled energy update
+          outside this reactor integration.
+        </p>
+      </section>
+
+      <section id="implicit">
+        <h2>Why the solve is implicit</h2>
+        <p>
+          A first-order implicit step illustrates the structure. The unknown next
+          state appears inside the chemistry function:
+        </p>
+
+        <div class="equation">
+          y<sub>n+1</sub> = y<sub>n</sub> + h f(t<sub>n+1</sub>, y<sub>n+1</sub>)
+        </div>
+
+        <p>CVODES therefore solves the nonlinear residual:</p>
+
+        <div class="equation">
+          F(y<sub>n+1</sub>) = y<sub>n+1</sub> - y<sub>n</sub>
+          - h f(t<sub>n+1</sub>, y<sub>n+1</sub>) = 0
+        </div>
+
+        <p>A Newton correction has the simplified form:</p>
+
+        <div class="equation">
+          (I - gamma J) delta_y = -F,
+          &nbsp;&nbsp; J = df/dy,
+          &nbsp;&nbsp; y &larr; y + delta_y
+        </div>
+
+        <p>
+          Higher-order BDF methods retain the same core difficulty: each accepted
+          internal time step requires a nonlinear solve, and each nonlinear solve
+          may require several chemistry and Jacobian evaluations.
+        </p>
+      </section>
+
+      <section id="rhs">
+        <h2>RHS and Jacobian work</h2>
+        <h3>The ReactorNet callback</h3>
+        <p>
+          CVODES reaches the chemistry through
+          <code>ReactorNet::eval(t, y, ydot, p)</code>. One callback approximately
+          performs the following work:
+        </p>
+
+        <div class="flow" aria-label="RHS callback flow">
+          <div class="flow-step">Scatter candidate<br>state y</div>
+          <div class="flow-step">Update thermo<br>state</div>
+          <div class="flow-step">Evaluate rate<br>constants</div>
+          <div class="flow-step">Evaluate net<br>production rates</div>
+          <div class="flow-step">Assemble<br>dy/dt</div>
+        </div>
+
+        <h3>Finite-difference Jacobian</h3>
+        <p>
+          With the current dense numerical setup, Jacobian columns are estimated
+          by perturbing candidate state components:
+        </p>
+
+        <div class="equation">
+          J<sub>:,i</sub> approximately equals
+          [f(y + epsilon<sub>i</sub> e<sub>i</sub>) - f(y)] / epsilon<sub>i</sub>
+        </div>
+
+        <p>
+          This explains clusters of many callbacks at the same solver time. The
+          profiler observed as many as 17 callbacks at one solver time for a
+          reactive H2 cell. These calls do not represent 17 advances in physical
+          time; they are trial and perturbation evaluations used by the implicit
+          solve.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Requested dt</th>
+                <th>Direct RHS / cell</th>
+                <th>All callbacks / cell</th>
+                <th>Extra inferred linear/Jacobian RHS</th>
+                <th>Extra share</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1e-7 s</td><td>28.9</td><td>40.9</td><td>12.0</td><td>29.3%</td></tr>
+              <tr><td>1e-6 s</td><td>61.5</td><td>76.8</td><td>15.3</td><td>19.9%</td></tr>
+              <tr><td>1e-5 s</td><td>144.4</td><td>173.8</td><td>29.5</td><td>16.9%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note">
+          <strong>Expected cross-check:</strong>
+          after exposing the raw counters,
+          <code>rhs_evals + lin_rhs_evals</code> should approximately equal the
+          profiler's total virtual RHS callback count. This directly tests the
+          interpretation of the previously hidden callbacks.
+        </div>
+      </section>
+
+      <section id="error-control">
+        <h2>Error control and rejected steps</h2>
+        <p>
+          CVODES scales each state error with the configured absolute and relative
+          tolerances. A simplified component scale is:
+        </p>
+
+        <div class="equation">
+          scale<sub>i</sub> = atol + rtol |y<sub>i</sub>|
+        </div>
+
+        <p>The candidate step is accepted only when a weighted norm satisfies:</p>
+
+        <div class="equation">
+          norm(error<sub>i</sub> / scale<sub>i</sub>) &le; 1
+        </div>
+
+        <p>
+          A failed test discards the candidate, reduces the internal step size,
+          and repeats part of the nonlinear solve. This is particularly relevant
+          for combustion because trace-species mass fractions span many orders of
+          magnitude. Raw <code>err_test_fails</code>, internal step sizes, and
+          nonlinear convergence failures are therefore valuable diagnostics for
+          both CVODES and neural-surrogate comparisons.
+        </p>
+      </section>
+
+      <section id="timing">
+        <h2>Measured time inside advance()</h2>
+        <div class="stacked" aria-label="Mean profiled time split">
+          <span class="reactor">Reactor RHS<br>38%</span>
+          <span class="network">Network<br>19%</span>
+          <span class="cvodes">CVODES remainder<br>43%</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Requested dt</th>
+                <th>Reactor RHS</th>
+                <th>ReactorNet overhead</th>
+                <th>CVODES remainder</th>
+                <th>Total profiled advance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1e-7 s</td><td>74.8 us</td><td>40.9 us</td><td>82.8 us</td><td>198.5 us</td></tr>
+              <tr><td>1e-6 s</td><td>142.5 us</td><td>70.6 us</td><td>162.3 us</td><td>375.4 us</td></tr>
+              <tr><td>1e-5 s</td><td>193.9 us</td><td>95.6 us</td><td>216.8 us</td><td>506.3 us</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          The largest single measured bucket is the non-RHS CVODES remainder.
+          However, the numerical solver also determines how many times the RHS
+          buckets execute. It is therefore misleading to call only the 43%
+          remainder "solver cost." A better conceptual decomposition is:
+        </p>
+
+        <pre><code>implicit-solver work =
+    CVODES orchestration and dense linear algebra
+  + repeated nonlinear-iteration RHS calls
+  + finite-difference Jacobian RHS calls
+  + rejected-step retries</code></pre>
+
+        <div class="warning">
+          <strong>Profiling perturbation:</strong>
+          nested clocks and one in-memory record per callback add overhead. Use
+          these percentages and callback traces for diagnosis. Use an unprofiled,
+          CPU-pinned run for final speed comparisons.
+        </div>
+      </section>
+
+      <section id="stats-gap">
+        <h2>Why CVodeGet* statistics are hidden in Cantera 2.6</h2>
+        <p>
+          SUNDIALS exposes the desired optional outputs through C functions that
+          all require the private CVODES memory pointer:
+        </p>
+
+        <pre><code>CVodeGetNumSteps(cvode_mem, &steps);
+CVodeGetNumRhsEvals(cvode_mem, &rhs_evals);
+CVodeGetNumErrTestFails(cvode_mem, &err_test_fails);
+CVodeGetNonlinSolvStats(cvode_mem, &nonlinear_iters, &nonlinear_fails);
+CVodeGetNumJacEvals(cvode_mem, &jac_evals);
+CVodeGetNumLinRhsEvals(cvode_mem, &linear_rhs_evals);
+CVodeGetNumLinSolvSetups(cvode_mem, &linear_setups);
+CVodeGetLastStep(cvode_mem, &last_h);
+CVodeGetCurrentStep(cvode_mem, &next_h);
+CVodeGetCurrentTime(cvode_mem, &internal_time);</code></pre>
+
+        <p>
+          In Cantera 2.6, <code>CVodesIntegrator::m_cvode_mem</code> is private.
+          The public abstract <code>Integrator</code> API exposes only a small
+          subset, including <code>nEvals()</code> and <code>lastOrder()</code>.
+          The existing <code>nEvals()</code> implementation simply calls
+          <code>CVodeGetNumRhsEvals(m_cvode_mem, ...)</code>. External application
+          code cannot call the other functions because it cannot obtain the
+          memory pointer.
+        </p>
+
+        <p>
+          Cantera 3.2 solves this at the wrapper level with
+          <code>CVodesIntegrator::solverStats()</code>, which calls the SUNDIALS
+          functions internally and returns named statistics. This implementation
+          is the appropriate reference for a 2.6 backport.
+        </p>
+      </section>
+
+      <section id="backport">
+        <h2>Recommended Cantera 2.6 backport</h2>
+        <p>
+          Add a typed, non-virtual statistics method directly to the concrete
+          <code>CVodesIntegrator</code>. This avoids changing the abstract
+          <code>Integrator</code> vtable and keeps the modification narrowly scoped.
+        </p>
+
+        <h3>1. Define a typed result</h3>
+        <pre><code>// include/cantera/numerics/CVodesIntegrator.h
+struct CvodesStats {
+    long int steps = 0;
+    long int rhsEvals = 0;
+    long int linearRhsEvals = 0;
+    long int jacobianEvals = 0;
+    long int linearSolverSetups = 0;
+    long int errorTestFails = 0;
+    long int nonlinearIterations = 0;
+    long int nonlinearConvergenceFails = 0;
+    int lastOrder = 0;
+    int currentOrder = 0;
+    double initialStep = 0.0;
+    double lastStep = 0.0;
+    double nextStep = 0.0;
+    double internalTime = 0.0;
+};
+
+class CVodesIntegrator : public Integrator {
+public:
+    // Existing methods...
+    CvodesStats solverStats() const;
+
+private:
+    void* m_cvode_mem;
+    // Existing members...
+};</code></pre>
+
+        <h3>2. Query SUNDIALS inside the wrapper</h3>
+        <pre><code>// src/numerics/CVodesIntegrator.cpp
+#include &lt;cvodes/cvodes.h&gt;
+#include &lt;cvodes/cvodes_ls.h&gt;
+
+CvodesStats CVodesIntegrator::solverStats() const
+{
+    if (!m_cvode_mem) {
+        throw CanteraError(
+            "CVodesIntegrator::solverStats",
+            "CVODES integrator is not initialized");
+    }
+
+    CvodesStats s;
+    CVodeGetNumSteps(m_cvode_mem, &s.steps);
+    CVodeGetNumRhsEvals(m_cvode_mem, &s.rhsEvals);
+    CVodeGetNumLinRhsEvals(m_cvode_mem, &s.linearRhsEvals);
+    CVodeGetNumJacEvals(m_cvode_mem, &s.jacobianEvals);
+    CVodeGetNumLinSolvSetups(m_cvode_mem, &s.linearSolverSetups);
+    CVodeGetNumErrTestFails(m_cvode_mem, &s.errorTestFails);
+    CVodeGetNonlinSolvStats(
+        m_cvode_mem,
+        &s.nonlinearIterations,
+        &s.nonlinearConvergenceFails);
+    CVodeGetLastOrder(m_cvode_mem, &s.lastOrder);
+    CVodeGetCurrentOrder(m_cvode_mem, &s.currentOrder);
+    CVodeGetActualInitStep(m_cvode_mem, &s.initialStep);
+    CVodeGetLastStep(m_cvode_mem, &s.lastStep);
+    CVodeGetCurrentStep(m_cvode_mem, &s.nextStep);
+    CVodeGetCurrentTime(m_cvode_mem, &s.internalTime);
+    return s;
+}</code></pre>
+
+        <div class="note">
+          Production code should check every SUNDIALS return flag. The abbreviated
+          example keeps the data flow readable. The installed SUNDIALS 5.7 headers
+          on <code>lh40902</code> provide these functions.
+        </div>
+
+        <h3>3. Query immediately after advance()</h3>
+        <pre><code>network.advance(dt);
+
+auto* cvodes = dynamic_cast&lt;Cantera::CVodesIntegrator*&gt;(
+    &network.integrator());
+if (!cvodes) {
+    throw std::runtime_error("Expected CVodesIntegrator");
+}
+
+const auto stats = cvodes-&gt;solverStats();
+
+// Record before setInitialTime(0.0) triggers the next reinitialization.
+writeStats(cell_index, dt, stats);
+
+network.setInitialTime(0.0);</code></pre>
+
+        <h3>4. Build in an isolated prefix</h3>
+        <ol class="steps">
+          <li>Clone or unpack Cantera <code>v2.6.0</code> under a date-prefixed server workspace.</li>
+          <li>Apply the small header and implementation patch. Keep it as a tracked patch file in DFODE-kit.</li>
+          <li>Build against the same SUNDIALS 5.7 and compiler ABI as the DeepFlame environment.</li>
+          <li>Install into a dedicated prefix such as <code>/data1/kexiao/260713_cantera26_stats_lh40902/install</code>.</li>
+          <li>Compile the standalone harness against that prefix before considering DeepFlame linkage.</li>
+          <li>Only after parity checks, build or launch an instrumented DeepFlame variant against the patched library.</li>
+        </ol>
+
+        <p>
+          Do not overwrite <code>df-share</code>. An isolated prefix makes it easy
+          to compare patched and stock libraries and avoids silently changing
+          existing DeepFlame runs.
+        </p>
+
+        <h3>5. Suggested CSV fields</h3>
+        <pre><code>cell, dt, progress,
+steps, rhs_evals, linear_rhs_evals,
+jacobian_evals, linear_solver_setups,
+nonlinear_iterations, nonlinear_convergence_fails,
+error_test_fails, last_order, current_order,
+initial_step, last_step, next_step, internal_time,
+advance_wall_us</code></pre>
+
+        <p>
+          These fields answer whether a slow cell is slow because of more accepted
+          steps, more Newton work per step, more Jacobian refreshes, failed error
+          tests, or genuinely expensive chemistry callbacks.
+        </p>
+      </section>
+
+      <section id="alternatives">
+        <h2>Alternative routes</h2>
+        <div class="option-grid">
+          <article class="card">
+            <strong>A. Header-only memory accessor</strong>
+            <p>
+              Add an inline <code>void* cvodeMemory()</code> accessor to the 2.6
+              header and call <code>CVodeGet*</code> from the harness. It does not
+              change object layout, but it exposes private implementation details
+              and depends on an exactly matching header/library pair. Useful for a
+              short probe, not the preferred persistent interface.
+            </p>
+          </article>
+          <article class="card">
+            <strong>B. Upgrade to Cantera 3.2</strong>
+            <p>
+              Use the native <code>solverStats()</code> API. This is clean for
+              DFODE-kit, but it does not exactly profile the current DeepFlame
+              Cantera 2.6 binary and may change solver behavior and performance.
+            </p>
+          </article>
+          <article class="card">
+            <strong>C. CV_ONE_STEP trace mode</strong>
+            <p>
+              Patch a diagnostic integrator loop to call CVODES one accepted step
+              at a time and query counters after every step. This yields stepwise
+              history, but it changes the calling path and adds substantial
+              overhead. Keep it separate from the baseline timing mode.
+            </p>
+          </article>
+        </div>
+
+        <div class="warning">
+          <strong>Avoid:</strong>
+          <code>#define private public</code>, object-layout reinterpretation, or editing
+          Conda headers without rebuilding against a matching copy. These methods
+          are fragile and make benchmark provenance difficult to defend.
+        </div>
+      </section>
+
+      <section id="validation">
+        <h2>Validation checklist</h2>
+        <ul class="checklist">
+          <li>Patched and stock libraries produce matching final T, P, and Y for identical cells.</li>
+          <li>Element and mass conservation errors remain unchanged.</li>
+          <li><code>rhs_evals + linear_rhs_evals</code> agrees with profiled callback counts.</li>
+          <li>Statistics are queried before resetting the network time.</li>
+          <li>Counter-query time is excluded from <code>advance_wall_us</code>.</li>
+          <li>Unprofiled stock and patched builds have statistically equivalent runtime.</li>
+          <li>CPU affinity and warm-up policy are recorded with every benchmark.</li>
+          <li>Per-cell counters are summarized by reactive progress and requested dt.</li>
+        </ul>
+
+        <div class="recommendation">
+          <strong>Immediate next experiment:</strong>
+          backport the aggregate counter method, rerun the Burke H2 sweep, and
+          verify that the hidden 12.0, 15.3, and 29.5 callbacks per cell appear as
+          <code>linear_rhs_evals</code>. That is the smallest experiment that
+          validates both the callback profiler and the CVODES interpretation.
+        </div>
+      </section>
+
+      <section id="sources">
+        <h2>Primary sources</h2>
+        <p>
+          <a href="https://github.com/Cantera/cantera/blob/v2.6.0/src/numerics/CVodesIntegrator.cpp">
+            Cantera 2.6.0 CVodesIntegrator.cpp
+          </a>
+          shows the BDF/Newton setup, the private CVODES call path, and the existing
+          <code>nEvals()</code> wrapper.
+        </p>
+        <p>
+          <a href="https://github.com/Cantera/cantera/blob/v2.6.0/include/cantera/numerics/CVodesIntegrator.h">
+            Cantera 2.6.0 CVodesIntegrator.h
+          </a>
+          shows that <code>m_cvode_mem</code> is private and that no full statistics
+          method is exposed.
+        </p>
+        <p>
+          <a href="https://github.com/Cantera/cantera/blob/v3.2.0/src/numerics/CVodesIntegrator.cpp">
+            Cantera 3.2.0 CVodesIntegrator.cpp
+          </a>
+          provides the upstream <code>solverStats()</code> implementation used as
+          the reference for the proposed backport.
+        </p>
+        <p>
+          <a href="https://sundials.readthedocs.io/en/v6.0.0/cvodes/Usage/SIM.html">
+            SUNDIALS CVODES optional-output documentation
+          </a>
+          defines the step, RHS, Jacobian, nonlinear-solver, error-test, and
+          step-size counters returned by the <code>CVodeGet*</code> family.
+        </p>
+      </section>
+  <section id="cantera-32-validation">
+    <h2>Cantera 3.2 native-statistics validation</h2>
+    <p>
+      On 2026-07-13, the standalone DeepFlame-style harness was built against
+      Cantera 3.2.0 and SUNDIALS 7.5.0 on <code>lh40902</code>. This version of
+      Cantera exposes CVODES statistics through <code>ReactorNet::solverStats()</code>,
+      so the callback profiler can be checked against native solver counters rather
+      than relying only on inferred call classes.
+    </p>
+
+    <h3>Reactive test case</h3>
+    <ul>
+      <li>Mechanism: Burke2012, 9 species and 23 reactions.</li>
+      <li>Mixture: stoichiometric H2/air at 1 atm and 1200 K.</li>
+      <li>States: 11 unburned-to-equilibrium flame-progress states.</li>
+      <li>Frozen-energy reactor, matching the chemistry-only DeepFlame call pattern.</li>
+      <li>Intervals: <code>1e-7</code>, <code>1e-5</code>, and <code>1e-3</code> s.</li>
+      <li>Sampling: 8 measured repeats after 2 warm-up repeats.</li>
+    </ul>
+
+    <p>
+      The harness must construct the reactor with <code>clone=false</code> and call
+      <code>reactor.restoreState()</code> after <code>advance()</code>. Without the
+      explicit ownership choice, the external phase used for readback can remain at
+      the input state even though CVODES integrated the reactor's internal state.
+      The corrected maximum species changes agree with an independent Cantera 3.2
+      reactor calculation.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>dt (s)</th>
+          <th>max |delta Y|</th>
+          <th>advance (us)</th>
+          <th>steps</th>
+          <th>RHS</th>
+          <th>linear RHS</th>
+          <th>total callbacks</th>
+          <th>Jacobian evals</th>
+          <th>nonlinear iters</th>
+          <th>error-test fails</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1e-7</td>
+          <td>7.236e-3</td>
+          <td>142.9</td>
+          <td>25.09</td>
+          <td>38.82</td>
+          <td>12.00</td>
+          <td>50.82</td>
+          <td>1.00</td>
+          <td>35.82</td>
+          <td>1.45</td>
+        </tr>
+        <tr>
+          <td>1e-5</td>
+          <td>1.345e-1</td>
+          <td>646.6</td>
+          <td>134.82</td>
+          <td>189.00</td>
+          <td>38.18</td>
+          <td>227.18</td>
+          <td>3.18</td>
+          <td>186.00</td>
+          <td>5.00</td>
+        </tr>
+        <tr>
+          <td>1e-3</td>
+          <td>2.508e-1</td>
+          <td>1903.0</td>
+          <td>404.91</td>
+          <td>596.09</td>
+          <td>101.45</td>
+          <td>697.55</td>
+          <td>8.45</td>
+          <td>593.09</td>
+          <td>25.82</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>What the native counters prove</h3>
+    <p>For every one of the 264 measured cell integrations:</p>
+    <pre><code>profiled callback calls
+  = CVODES rhs_evals
+  + CVODES lin_rhs_evals
+
+profiled callback calls - native total RHS calls = 0</code></pre>
+    <p>
+      Thus, <code>rhs_evals</code> alone undercounts chemistry callbacks. The extra
+      callbacks are finite-difference or linear-solver RHS evaluations reported as
+      <code>lin_rhs_evals</code>. A Cantera 2.6 instrumentation backport should expose
+      both counters and their sum.
+    </p>
+
+    <h3>Measured cost split</h3>
+    <p>
+      Across these reactive intervals, all RHS callbacks account for about 63-64%
+      of <code>advance()</code>. The reactor chemistry evaluation itself accounts for
+      about 39-40%, ReactorNet callback assembly for about 23-24%, and CVODES work
+      outside callbacks for about 35-37%. The dominant cost is therefore distributed
+      across chemistry RHS evaluation, network assembly, and solver control/linear
+      algebra rather than belonging to one function alone.
+    </p>
+
+    <p>
+      Full remote output:
+      <code>/data1/kexiao/260624_ml4chem_ode_lh40902/260713_cantera32_solver_stats_burke_reactive_v3</code>.
+      The native per-cell counters are in <code>solver_stats.csv</code>.
+    </p>
+  </section>
+  <section id="implicit-integration-primer">
+    <h2>Implicit Chemistry Integration Primer: Backward Euler and Radau IIA</h2>
+    <p>
+      This section explains the numerical methods behind the proposed
+      neural-predictor and implicit-corrector experiment. The neural network is not
+      required to produce the final accepted state. It supplies an initial guess,
+      while a physical implicit solver corrects that guess to a specified residual
+      tolerance.
+    </p>
+
+    <h3>1. The chemistry ODE</h3>
+    <p>Write the thermochemical state as</p>
+    \[
+      x(t) = [Y_1,\ldots,Y_{N_s},T].
+    \]
+    <p>The chemical mechanism defines its time derivative:</p>
+    \[
+      \frac{dx}{dt}=f(x).
+    \]
+    <p>
+      Here, \(f(x)\) contains species production rates and, for an adiabatic
+      reactor, the temperature source term. In a frozen-temperature DeepFlame
+      chemistry call, \(x\) contains the species mass fractions while \(T\) and
+      \(P\) are fixed parameters. The time-integration problem is to calculate
+      \(x_{n+1}=x(t_n+\Delta t)\) from the known state \(x_n=x(t_n)\).
+    </p>
+
+    <h3>2. Forward Euler: use the current reaction rate</h3>
+    <p>The simplest update is</p>
+    \[
+      x_{n+1}=x_n+\Delta t\,f(x_n).
+    \]
+    <p>
+      This is an <strong>explicit</strong> method because every quantity on the
+      right-hand side is known. Consider one irreversible reaction,
+    </p>
+    \[
+      A\rightarrow B,
+      \qquad
+      \frac{dY_A}{dt}=-kY_A.
+    \]
+    <p>Forward Euler gives</p>
+    \[
+      Y_{A,n+1}=Y_{A,n}(1-k\Delta t).
+    \]
+    <p>If \(k\Delta t=100\), then</p>
+    \[
+      Y_{A,n+1}=-99Y_{A,n},
+    \]
+    <p>
+      which is negative and unstable. Fast reactions therefore force explicit
+      methods to use very small timesteps even when the CFD timestep is much
+      larger.
+    </p>
+
+    <h3>3. Backward Euler: make the future state self-consistent</h3>
+    <p>Backward Euler evaluates the reaction rate at the unknown future state:</p>
+    \[
+      x_{n+1}=x_n+\Delta t\,f(x_{n+1}).
+    \]
+    <p>For the same decay reaction,</p>
+    \[
+      Y_{A,n+1}=Y_{A,n}-k\Delta t\,Y_{A,n+1},
+    \]
+    <p>so</p>
+    \[
+      Y_{A,n+1}=\frac{Y_{A,n}}{1+k\Delta t}.
+    \]
+    <p>At \(k\Delta t=100\),</p>
+    \[
+      Y_{A,n+1}=\frac{Y_{A,n}}{101}>0.
+    \]
+    <p>
+      The exact result is \(Y_{A,n}e^{-100}\), which is almost zero. Backward
+      Euler is not exact, but it remains bounded and damps the unresolved fast
+      mode instead of making it explode.
+    </p>
+
+    <div style="border-left: 4px solid #c9793b; padding: 0.75rem 1rem; margin: 1rem 0; background: rgba(201,121,59,0.08);">
+      <strong>Stability is not accuracy.</strong>
+      A stable method does not explode. An accurate method closely follows the
+      true trajectory. Backward Euler is very stable but only first-order accurate,
+      so a large timestep may over-damp or smear the chemistry.
+    </div>
+
+    <h3>4. Newton iteration solves the implicit equation</h3>
+    <p>Define the backward-Euler residual</p>
+    \[
+      G(x)=x-x_n-\Delta t\,f(x).
+    \]
+    <p>The desired future state is a root:</p>
+    \[
+      G(x_{n+1})=0.
+    \]
+    <p>
+      Detailed chemical source terms are nonlinear, so this root is normally found
+      iteratively. Starting from a guess \(x^{(0)}\), Newton's method solves
+    </p>
+    \[
+      \left[I-\Delta t\,J_f\!\left(x^{(k)}\right)\right]
+      \delta^{(k)}
+      =-G\!\left(x^{(k)}\right),
+    \]
+    <p>and updates</p>
+    \[
+      x^{(k+1)}=x^{(k)}+\lambda_k\delta^{(k)},
+      \qquad 0<\lambda_k\leq1.
+    \]
+    <p>The chemical Jacobian is</p>
+    \[
+      J_f=\frac{\partial f}{\partial x}.
+    \]
+    <p>
+      It measures how every source term changes when every species or temperature
+      changes. The damping factor \(\lambda_k\) can prevent unsafe Newton updates,
+      including steps that move species deeply into negative values.
+    </p>
+
+    <h3>5. The neural network supplies only the initial guess</h3>
+    <p>A conventional initialization is often</p>
+    \[
+      x^{(0)}=x_n.
+    \]
+    <p>The hybrid initialization is</p>
+    \[
+      x^{(0)}=\Phi_\theta(x_n,\Delta t),
+    \]
+    <p>
+      where \(\Phi_\theta\) is a trained DFODE interval model. Newton still solves
+      the physical residual. If the network begins closer to the root, fewer
+      nonlinear iterations may be required. If its proposal is invalid or has a
+      worse residual than the conventional guess, the solver rejects it.
+    </p>
+    <pre><code>current state x_n
+      |
+      v
+DFODE prediction
+      |
+      v
+implicit residual G(x)
+      |
+      v
+damped Newton correction
+      |
+      v
+converged implicit state</code></pre>
+
+    <h3>6. Why Backward Euler is only the first experiment</h3>
+    <p>
+      Backward Euler describes the whole interval using one derivative evaluated at
+      its endpoint:
+    </p>
+    \[
+      x_{n+1}=x_n+\Delta t\,f(x_{n+1}).
+    \]
+    <p>
+      It is ideal for testing whether a neural prediction improves Newton
+      initialization, but its first-order discretization can be inaccurate at large
+      \(\Delta t\). A useful production candidate should sample the trajectory
+      inside the interval while retaining strong stiff stability.
+    </p>
+
+    <h3>7. Runge-Kutta stages represent points inside the timestep</h3>
+    <p>
+      Introduce stage states \(Z_1,\ldots,Z_s\). Each stage approximates the
+      chemical state at a selected point inside the interval. A general implicit
+      Runge-Kutta method satisfies
+    </p>
+    \[
+      Z_i=x_n+\Delta t\sum_{j=1}^{s}a_{ij}f(Z_j),
+      \qquad i=1,\ldots,s,
+    \]
+    <p>and computes the endpoint from</p>
+    \[
+      x_{n+1}=x_n+\Delta t\sum_{j=1}^{s}b_jf(Z_j).
+    \]
+    <p>
+      The coefficients \(a_{ij}\), \(b_j\), and stage locations \(c_i\) define
+      the method. Because the stage equations depend on one another, all stage
+      states are solved together.
+    </p>
+
+    <h3>8. Radau IIA</h3>
+    <p>
+      Radau IIA is a particular implicit Runge-Kutta collocation family. Its final
+      stage lies at the end of the timestep, and the method is L-stable and stiffly
+      accurate. An \(s\)-stage Radau IIA method has order \(2s-1\).
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Stages</th>
+          <th>Order</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>1</td>
+          <td>Backward Euler</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>3</td>
+          <td>Recommended first higher-order hybrid</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>5</td>
+          <td>More accurate, with a larger coupled solve</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>9. Two-stage Radau IIA equations</h3>
+    <p>The two stage locations are</p>
+    \[
+      c_1=\frac13,
+      \qquad
+      c_2=1.
+    \]
+    <p>
+      Thus, \(Z_1\) approximates a state about one-third through the interval and
+      \(Z_2\) approximates the endpoint. Their coupled equations are
+    </p>
+    \[
+      Z_1=x_n+\Delta t
+      \left[
+        \frac{5}{12}f(Z_1)-\frac{1}{12}f(Z_2)
+      \right],
+    \]
+    \[
+      Z_2=x_n+\Delta t
+      \left[
+        \frac34 f(Z_1)+\frac14 f(Z_2)
+      \right].
+    \]
+    <p>Because the method is stiffly accurate,</p>
+    \[
+      x_{n+1}=Z_2.
+    \]
+    <p>
+      The negative coefficient in the first equation is part of the high-order
+      collocation formula. It does not represent a negative physical timestep.
+    </p>
+
+    <h3>10. Collocation interpretation</h3>
+    <p>
+      Imagine fitting a smooth polynomial path \(p(t)\) across the timestep. Radau
+      IIA requires the path to begin at the known state,
+    </p>
+    \[
+      p(t_n)=x_n,
+    \]
+    <p>and requires its slope to agree with the chemical ODE at every stage:</p>
+    \[
+      p'\!\left(t_n+c_i\Delta t\right)
+      =f\!\left(p(t_n+c_i\Delta t)\right).
+    \]
+    <p>
+      In simple terms, Radau IIA finds a smooth path whose slope agrees with the
+      chemical kinetics at carefully selected points inside the interval.
+    </p>
+
+    <h3>11. Newton system for all Radau stages</h3>
+    <p>For each stage, define</p>
+    \[
+      R_i(Z)=Z_i-x_n-\Delta t\sum_{j=1}^{s}a_{ij}f(Z_j).
+    \]
+    <p>All stage residuals must vanish:</p>
+    \[
+      R(Z)=0.
+    \]
+    <p>The block Jacobian used by Newton is</p>
+    \[
+      \frac{\partial R_i}{\partial Z_j}
+      =\delta_{ij}I-\Delta t\,a_{ij}J_f(Z_j).
+    \]
+    <p>In compact form, under a common-Jacobian approximation,</p>
+    \[
+      \left[I_s\otimes I-\Delta t\,A\otimes J_f\right]\Delta Z
+      =-R(Z).
+    \]
+    <p>
+      For a chemistry state with ten variables, a two-stage method has about twenty
+      coupled stage unknowns. The larger linear system is the cost of obtaining
+      higher order while preserving strong stiff stability.
+    </p>
+
+    <h3>12. DFODE initialization of the Radau stages</h3>
+    <p>A simple conventional stage guess is</p>
+    \[
+      Z_1^{(0)}=x_n,
+      \qquad
+      Z_2^{(0)}=x_n.
+    \]
+    <p>The variable-timestep DFODE model can instead provide</p>
+    \[
+      Z_1^{(0)}=
+      \Phi_\theta\!\left(x_n,\frac13\Delta t\right),
+    \]
+    \[
+      Z_2^{(0)}=
+      \Phi_\theta(x_n,\Delta t).
+    \]
+    <p>
+      Cantera supplies the physical source terms \(f(Z_1)\) and \(f(Z_2)\), and
+      damped Newton corrects the two guesses until the Radau residual meets the
+      requested tolerance.
+    </p>
+    <pre><code>DFODE(x_n, dt/3) -> initial Z1
+DFODE(x_n, dt)   -> initial Z2
+                       |
+                       v
+              Cantera stage sources
+                       |
+                       v
+                Radau residual
+                       |
+                       v
+                 damped Newton
+                       |
+                       v
+             corrected x_next = Z2</code></pre>
+
+    <h3>13. Why this avoids the current semigroup failure</h3>
+    <p>The unstable neural free rollout has the form</p>
+    \[
+      \Phi_{\Delta t_2}
+      \!\left(\Phi_{\Delta t_1}(x_n)\right).
+    \]
+    <p>
+      The second network call receives an imperfect network prediction, which may
+      lie outside the training manifold. Radau initialization instead evaluates
+    </p>
+    \[
+      \Phi_\theta(x_n,\Delta t/3)
+      \quad\text{and}\quad
+      \Phi_\theta(x_n,\Delta t).
+    \]
+    <p>
+      Both calls start from the same true state \(x_n\). No network prediction is
+      fed back into another network call. The physical Radau equations then couple
+      and correct the proposed stages.
+    </p>
+
+    <h3>14. L-stability and fast chemical modes</h3>
+    <p>For the fast-decay test equation</p>
+    \[
+      \frac{dy}{dt}=-\lambda y,
+      \qquad \lambda>0,
+    \]
+    <p>a numerical method can be written as</p>
+    \[
+      y_{n+1}=R(\lambda\Delta t)y_n,
+    \]
+    <p>
+      where \(R\) is the amplification factor. An L-stable method satisfies
+    </p>
+    \[
+      R(\lambda\Delta t)\rightarrow0
+      \qquad\text{as}\qquad
+      \lambda\Delta t\rightarrow\infty.
+    \]
+    <p>
+      Thus, unresolved fast modes are driven toward zero rather than oscillating or
+      growing. Backward Euler and every Radau IIA method are L-stable, which makes
+      them natural candidates for stiff chemical kinetics.
+    </p>
+
+    <h3>15. What Newton correction does and does not guarantee</h3>
+    <p>Newton correction enforces the selected discrete equations:</p>
+    \[
+      \lVert R(Z)\rVert < \text{nonlinear solver tolerance}.
+    \]
+    <p>
+      It does not make the discrete Radau solution identical to the exact continuous
+      trajectory. The total numerical error contains two conceptually different
+      parts:
+    </p>
+    \[
+      \text{total error}
+      =\text{time-discretization error}
+      +\text{nonlinear-solve error}.
+    \]
+    <p>
+      Newton reduces the nonlinear-solve error. Moving from backward Euler to
+      two-stage or three-stage Radau IIA reduces the time-discretization error. The
+      corrected solution must therefore still be compared with a high-accuracy
+      CVODE reference.
+    </p>
+
+    <h3>16. Practical DFODE-kit roles</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Is the neural output final?</th>
+          <th>Physical correction?</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pure DFODE</td>
+          <td>Yes</td>
+          <td>No</td>
+          <td>Maximum speed with greater reliability risk</td>
+        </tr>
+        <tr>
+          <td>DFODE + backward Euler</td>
+          <td>No</td>
+          <td>Yes</td>
+          <td>Simplest neural warm-start experiment</td>
+        </tr>
+        <tr>
+          <td>DFODE + Radau IIA</td>
+          <td>No</td>
+          <td>Yes</td>
+          <td>Main accurate hybrid candidate</td>
+        </tr>
+        <tr>
+          <td>CVODE</td>
+          <td>No neural model</td>
+          <td>Yes</td>
+          <td>Classical baseline and fallback</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      The first implementation should use backward Euler because its residual and
+      Newton behavior are easy to inspect. If neural initialization substantially
+      reduces iterations without increasing failures, the main scientific
+      experiment should move to two-stage Radau IIA.
+    </p>
+  </section>
+</main>
+  </div>
+
+  <footer>
+    <div class="shell">
+      DFODE-kit persistent engineering report. Measurements are from the
+      standalone DeepFlame-style Cantera timing harness on lh40902. Synthetic
+      flame-progress states are timing probes, not substitutes for CFD field replay.
+    </div>
+  </footer>
+</body>
+</html>
