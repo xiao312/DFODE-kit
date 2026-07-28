@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 import numpy as np
 import torch
@@ -84,7 +85,18 @@ def _load_model(checkpoint, input_dim: int, device: torch.device):
             transform_alpha=float(cfg.get("transform_alpha", 0.1)),
             transform_scale_by_alpha=bool(cfg.get("transform_scale_by_alpha", True)),
         )
-    model.load_state_dict(checkpoint["net"], strict=checkpoint.get("model_type") != "latent_substep_stoichiometric_interval")
+    model_type = checkpoint.get("model_type")
+    incompatible = model.load_state_dict(checkpoint["net"], strict=False)
+    if model_type != "latent_substep_stoichiometric_interval":
+        missing = list(incompatible.missing_keys)
+        unexpected = [
+            key for key in incompatible.unexpected_keys if not key.startswith("time_event_head.")
+        ]
+        if missing or unexpected:
+            raise RuntimeError(
+                "checkpoint is incompatible with the active interval model: "
+                f"missing_keys={missing}, unexpected_keys={unexpected}"
+            )
     model.to(device)
     model.eval()
     return model
@@ -139,6 +151,7 @@ def evaluate_stoich_interval_model(
     mech_path: str | None = None,
     device: str | None = None,
     small_thresholds=(1e-15, 1e-12),
+    _return_prediction_arrays: bool = False,
 ) -> dict:
     current, target, dt, dt_bin, dt_bin_edges, species_names, attrs = load_interval_pair_arrays(source_path, dtype=np.float64)
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
@@ -209,6 +222,9 @@ def evaluate_stoich_interval_model(
     free_energy_proxy_chunks = []
     ideal_free_energy_chunks = []
     batch_size = 65536
+    if torch_device.type == "cuda":
+        torch.cuda.synchronize(torch_device)
+    prediction_started = time.perf_counter()
     with torch.no_grad():
         for start in range(0, current.shape[0], batch_size):
             if is_thermo_model:
@@ -386,6 +402,9 @@ def evaluate_stoich_interval_model(
                 free_energy_proxy_chunks.append(output["local_free_energy_proxy_delta"].detach().cpu().numpy())
             if "ideal_mixture_free_energy_delta" in output:
                 ideal_free_energy_chunks.append(output["ideal_mixture_free_energy_delta"].detach().cpu().numpy())
+    if torch_device.type == "cuda":
+        torch.cuda.synchronize(torch_device)
+    prediction_seconds = time.perf_counter() - prediction_started
     pred_raw = np.concatenate(predictions, axis=0)
     pred = np.empty_like(target, dtype=np.float64)
     pred[:, :2] = pred_raw[:, :2] * state_std[:2] + state_mean[:2]
@@ -428,6 +447,12 @@ def evaluate_stoich_interval_model(
         ),
         "checkpoint_training_config": checkpoint.get("training_config", {}),
         "checkpoint_final_metrics": checkpoint.get("final_metrics", {}),
+        "neural_prediction_runtime": {
+            "seconds": float(prediction_seconds),
+            "microseconds_per_sample": float(1e6 * prediction_seconds / current.shape[0]),
+            "batch_size": int(batch_size),
+            "single_pass": True,
+        },
     }
     if predicted_substep_chunks:
         predicted_substeps = np.concatenate(predicted_substep_chunks)
@@ -472,5 +497,17 @@ def evaluate_stoich_interval_model(
         out = Path(output_path)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(_to_jsonable(results), indent=2, sort_keys=True))
+
+    if _return_prediction_arrays:
+        results["_prediction_arrays"] = {
+            "current": current,
+            "target": target,
+            "prediction": pred,
+            "dt": dt,
+            "dt_bin": dt_bin,
+            "dt_bin_edges": dt_bin_edges,
+            "species_names": species_names,
+            "attrs": attrs,
+        }
 
     return results

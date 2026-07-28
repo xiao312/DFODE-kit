@@ -3,6 +3,18 @@ from collections import OrderedDict
 
 
 _COMMAND_SPECS = {
+    "generate-implicit-root-data": {
+        "module": "dfode_kit.cli.commands.generate_implicit_root_data",
+        "help": "Generate exact Backward-Euler root pairs by adaptive continuation.",
+    },
+    "evaluate-hybrid-integrators": {
+        "module": "dfode_kit.cli.commands.evaluate_hybrid_integrators",
+        "help": "Compare adaptive implicit solvers with conventional and neural guesses.",
+    },
+    "evaluate-implicit-warm-start": {
+        "module": "dfode_kit.cli.commands.evaluate_implicit_warm_start",
+        "help": "Evaluate neural warm starts for a Backward-Euler chemistry solve.",
+    },
     'augment': {
         'module': 'dfode_kit.cli.commands.augment',
         'help': 'Perform data augmentation.',
