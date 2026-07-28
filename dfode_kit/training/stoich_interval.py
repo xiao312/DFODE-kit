@@ -23,6 +23,11 @@ except ImportError:  # pragma: no cover - allows integration to land before mode
     ThermoProgressSubstepStoichiometricIntervalModel = None
 from dfode_kit.physics.atom_conservation import reaction_stoichiometry, stoichiometric_mass_fraction_matrix
 from dfode_kit.training.conserved_sequence import _regression_loss
+from dfode_kit.training.reproducibility import (
+    DeterministicEpochSampler,
+    configure_reproducibility,
+    model_state_sha256,
+)
 
 
 THERMO_FEATURE_VARIANTS = {"thermo-affinity", "substep-soft-thermo", "thermo-progress-substep"}
@@ -31,6 +36,8 @@ SUBSTEP_VARIANTS = {"substep", "substep-soft-thermo", "thermo-progress-substep"}
 
 @dataclass(frozen=True)
 class StoichIntervalTrainingConfig:
+    seed: int = 20260728
+    deterministic: bool = False
     latent_dim: int = 16
     hidden_dim: int = 128
     epochs: int = 100
@@ -279,6 +286,10 @@ def train_stoich_interval_model(
     import cantera as ct
 
     cfg = config or StoichIntervalTrainingConfig()
+    reproducibility = configure_reproducibility(
+        seed=cfg.seed,
+        deterministic=cfg.deterministic,
+    )
     if cfg.model_variant not in {"stoich", "thermo-affinity", "substep", "substep-soft-thermo", "thermo-progress-substep"}:
         raise ValueError(f"Unsupported model_variant: {cfg.model_variant}")
     current, target, dt, _dt_bin, dt_bin_edges, species_names, attrs = load_interval_pair_arrays(source_path, dtype=np.float64)
@@ -370,7 +381,13 @@ def train_stoich_interval_model(
             ]
         )
     tensors = torch.utils.data.TensorDataset(*tensor_items)
-    loader = torch.utils.data.DataLoader(tensors, batch_size=cfg.batch_size, shuffle=True)
+    sampler = DeterministicEpochSampler(tensors, seed=cfg.seed)
+    loader = torch.utils.data.DataLoader(
+        tensors,
+        batch_size=cfg.batch_size,
+        sampler=sampler,
+        shuffle=False,
+    )
     if cfg.model_variant == "thermo-affinity":
         model = ThermoStoichiometricIntervalModel(
             input_dim=current.shape[-1],
@@ -431,6 +448,7 @@ def train_stoich_interval_model(
             transform_alpha=cfg.transform_alpha,
             transform_scale_by_alpha=cfg.transform_scale_by_alpha,
         ).to(torch_device)
+    initial_parameter_sha256 = model_state_sha256(model)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr)
     perturb_generator = None
     if cfg.input_perturb_alpha > 0.0:
@@ -687,7 +705,13 @@ def train_stoich_interval_model(
             "thermo_feature_mean": None if thermo_feature_mean is None else thermo_feature_mean.tolist(),
             "thermo_feature_std": None if thermo_feature_std is None else thermo_feature_std.tolist(),
             "dt_bin_edges": dt_bin_edges.tolist(),
+            "reproducibility": {
+                **reproducibility,
+                "initial_parameter_sha256": initial_parameter_sha256,
+            },
             "training_config": {
+                "seed": cfg.seed,
+                "deterministic": cfg.deterministic,
                 "model_variant": cfg.model_variant,
                 "latent_dim": cfg.latent_dim,
                 "hidden_dim": cfg.hidden_dim,

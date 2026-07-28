@@ -9,6 +9,17 @@ def add_command_parser(subparsers):
     parser.add_argument("--source", required=True, help="Input interval-pair HDF5 dataset.")
     parser.add_argument("--output", required=True, help="Output Torch checkpoint path.")
     parser.add_argument("--mech", required=True, help="Cantera mechanism used for stoichiometric fluxes.")
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=20260728,
+        help="Global model-initialization and epoch-shuffle seed.",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Require deterministic Torch algorithms and disable TF32.",
+    )
     parser.add_argument("--latent-dim", type=int, default=16)
     parser.add_argument("--hidden-dim", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=100)
@@ -84,6 +95,8 @@ def handle_command(args):
         args.output,
         args.mech,
         config=StoichIntervalTrainingConfig(
+            seed=args.seed,
+            deterministic=args.deterministic,
             latent_dim=args.latent_dim,
             hidden_dim=args.hidden_dim,
             epochs=args.epochs,
