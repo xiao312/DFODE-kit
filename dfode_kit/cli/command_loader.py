@@ -31,6 +31,22 @@ _COMMAND_SPECS = {
         'module': 'dfode_kit.cli.commands.generate_0d_suite',
         'help': 'Generate train/validation 0D reactor sequence suites.',
     },
+    'generate-cfd-conditioned-sequences': {
+        'module': 'dfode_kit.cli.commands.generate_cfd_conditioned_sequences',
+        'help': 'Generate Cantera trajectories from CFD cell-state snapshots.',
+    },
+    'interpolate-cfd-snapshot': {
+        'module': 'dfode_kit.cli.commands.interpolate_cfd_snapshot',
+        'help': 'Interpolate CFD neighbor states on a temperature grid.',
+    },
+    'split-cfd-snapshot': {
+        'module': 'dfode_kit.cli.commands.split_cfd_snapshot',
+        'help': 'Split interpolated CFD states by spatial blocks.',
+    },
+    'generate-cfd-one-step-pairs': {
+        'module': 'dfode_kit.cli.commands.generate_cfd_one_step_pairs',
+        'help': 'Generate fixed-dt Cantera pairs from CFD states.',
+    },
     'generate-interval-pairs': {
         'module': 'dfode_kit.cli.commands.generate_interval_pairs',
         'help': 'Convert 0D sequence trajectories into variable-dt interval pairs.',
@@ -63,6 +79,10 @@ _COMMAND_SPECS = {
         'module': 'dfode_kit.cli.commands.evaluate_stoich_interval',
         'help': 'Evaluate a variable-dt stoichiometric interval model.',
     },
+    'evaluate-positive-interval': {
+        'module': 'dfode_kit.cli.commands.evaluate_positive_interval',
+        'help': 'Evaluate positivity-preserving interval models and projections.',
+    },
     'export-hit-openfoam-u': {
         'module': 'dfode_kit.cli.commands.export_hit_openfoam_u',
         'help': 'Export a designed 2D HIT velocity field to an OpenFOAM U file.',
@@ -74,6 +94,10 @@ _COMMAND_SPECS = {
     'label': {
         'module': 'dfode_kit.cli.commands.label',
         'help': 'Label data.',
+    },
+    'merge-interval-pairs': {
+        'module': 'dfode_kit.cli.commands.merge_interval_pairs',
+        'help': 'Merge compatible interval-pair datasets with provenance.',
     },
     'run-case': {
         'module': 'dfode_kit.cli.commands.run_case',
@@ -98,6 +122,10 @@ _COMMAND_SPECS = {
     'train-stoich-interval': {
         'module': 'dfode_kit.cli.commands.train_stoich_interval',
         'help': 'Train a variable-dt stoichiometric interval baseline.',
+    },
+    'train-positive-interval': {
+        'module': 'dfode_kit.cli.commands.train_positive_interval',
+        'help': 'Train Patankar or reaction-trajectory positive interval models.',
     },
     'train-unified-conserved-sequence': {
         'module': 'dfode_kit.cli.commands.train_unified_conserved_sequence',
