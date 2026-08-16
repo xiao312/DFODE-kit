@@ -12,14 +12,20 @@
 set -euo pipefail
 
 module purge
-module load compiler/dtk/26.04
+module load "${DFODE_DTK_MODULE:-compiler/dtk/26.04}"
+if [[ -n "${DFODE_MPI_MODULE:-}" ]]; then
+  module load "${DFODE_MPI_COMPILER_MODULE:-compiler/devtoolset/7.3.1}"
+  module load "$DFODE_MPI_MODULE"
+fi
 
 export PYTHONUNBUFFERED=1
 export HIP_VISIBLE_DEVICES="${HIP_VISIBLE_DEVICES:-0}"
 export ROCR_VISIBLE_DEVICES="${ROCR_VISIBLE_DEVICES:-0}"
+NPROC_PER_NODE="${NPROC_PER_NODE:-1}"
 if [[ -n "${DFODE_TORCH_SITE:-}" ]]; then
   export PYTHONPATH="$DFODE_TORCH_SITE${PYTHONPATH:+:$PYTHONPATH}"
 fi
+export PYTHONPATH="$DFODE_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 : "${DFODE_ROOT:?set DFODE_ROOT}"
 : "${TRAIN_SOURCE:?set TRAIN_SOURCE}"
 : "${VALIDATION_SOURCE:?set VALIDATION_SOURCE}"
@@ -30,7 +36,8 @@ fi
 mkdir -p logs "$OUTPUT_ROOT"
 cd "$DFODE_ROOT"
 
-"$PYTHON" scripts/train_positive_interval_distributed.py \
+"$PYTHON" -m torch.distributed.run --standalone --nproc_per_node="$NPROC_PER_NODE" \
+  scripts/train_positive_interval_distributed.py \
   --train-source "$TRAIN_SOURCE" \
   --validation-source "$VALIDATION_SOURCE" \
   --mechanism "$MECHANISM" \
