@@ -331,7 +331,7 @@ class FluentNeuralPatankarWrapper(torch.nn.Module):
         candidates = torch.where(
             self.reactant_mask[None],
             reactant_availability,
-            torch.ones_like(reactant_availability),
+            reactant_availability * 0.0 + 1.0,
         )
         hard_availability = candidates.amin(dim=-1)
         if self.availability_mode == "smooth-safe":
