@@ -109,6 +109,8 @@ def artifact_delta(module, physical_input, y0, direct_delta):
             interpretations = []
             if array.shape == direct_delta.shape:
                 interpretations.extend((("delta", array), ("next_species", array - y0.detach().cpu().numpy())))
+            if array.ndim == 2 and array.shape[1] == direct_delta.shape[1] + 1:
+                interpretations.append(("thermochemical_delta", array[:, 1:]))
             if array.ndim == 2 and array.shape[1] == direct_delta.shape[1] + 2:
                 interpretations.append(("next_state", array[:, 2:] - y0.detach().cpu().numpy()))
             for interpretation, delta in interpretations:
