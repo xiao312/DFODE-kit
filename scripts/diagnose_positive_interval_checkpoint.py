@@ -166,8 +166,12 @@ def main() -> None:
         t_np = ((np.log(np.maximum(dt, 1.0e-300))[:, None] - log_dt_mean) / log_dt_std).astype(np.float32)
         physical_np = np.concatenate([current, dt[:, None]], axis=1).astype(np.float32)
         runtime_x = (
-            physical_np[:, :-1] - state_mean.astype(np.float32)
-        ) / state_std.astype(np.float32)
+            (
+                physical_np[:, :-1].astype(np.float64)
+                - state_mean
+            )
+            / state_std
+        ).astype(np.float32)
         runtime_t = (
             np.log(np.maximum(physical_np[:, -1:], np.float32(1.0e-30)))
             - np.float32(log_dt_mean.reshape(-1)[0])
@@ -218,9 +222,9 @@ def main() -> None:
                 if component_audit is None:
                     runtime_x_tensor = torch.from_numpy(runtime_x[start:stop]).to(device)
                     runtime_t_tensor = torch.from_numpy(runtime_t[start:stop]).to(device)
-                    wrapper_x = (
-                        physical[:, :-1] - eager_wrapper.state_mean
-                    ) / eager_wrapper.state_std
+                    wrapper_x, _wrapper_state_low = (
+                        eager_wrapper._normalize_state(physical[:, :-1])
+                    )
                     wrapper_t = (
                         torch.log(torch.clamp(physical[:, -1:], min=1.0e-30))
                         - eager_wrapper.log_dt_mean
