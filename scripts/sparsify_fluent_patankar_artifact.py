@@ -13,6 +13,13 @@ import numpy as np
 import torch
 
 
+THERMOCHEMICAL_HEAD_INPUT_LEGACY = "latent-delta-y"
+THERMOCHEMICAL_HEAD_INPUT_STATE_TIME = "latent-state-time-delta-y"
+TOTAL_ENTHALPY_TARGET_SIGNED_POWER = "signed-power"
+TOTAL_ENTHALPY_RESIDUAL_NONE = "none"
+TOTAL_ENTHALPY_RESIDUAL_SIGNED_POWER = "signed-power"
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -40,11 +47,46 @@ def extent_scale_from_module(module: torch.jit.ScriptModule) -> float:
 
 
 class SparsePatankarWrapper(torch.nn.Module):
-    def __init__(self, dense: torch.jit.ScriptModule):
+    def __init__(
+        self,
+        dense: torch.jit.ScriptModule,
+        *,
+        emits_thermochemical_scalar: bool,
+        thermochemical_head_input_mode: str,
+        thermochemical_scale: float,
+        total_enthalpy_target_transform: str = "identity",
+        total_enthalpy_transform_alpha: float = 0.1,
+        total_enthalpy_residual_mode: str = TOTAL_ENTHALPY_RESIDUAL_NONE,
+        total_enthalpy_residual_alpha: float = 0.1,
+    ):
         super().__init__()
         self.encoder = dense.encoder
         self.demand_head = dense.demand_head
         self.extent_scale = extent_scale_from_module(dense)
+        self.emits_thermochemical_scalar = emits_thermochemical_scalar
+        self.thermochemical_head_input_mode = thermochemical_head_input_mode
+        if emits_thermochemical_scalar:
+            self.thermochemical_head = dense.thermochemical_head
+            self.thermochemical_scale = float(thermochemical_scale)
+            self.total_enthalpy_target_transform = str(
+                total_enthalpy_target_transform
+            )
+            self.total_enthalpy_transform_alpha = float(
+                total_enthalpy_transform_alpha
+            )
+            self.total_enthalpy_residual_mode = str(
+                total_enthalpy_residual_mode
+            )
+            self.total_enthalpy_residual_alpha = float(
+                total_enthalpy_residual_alpha
+            )
+            if (
+                self.total_enthalpy_residual_mode
+                == TOTAL_ENTHALPY_RESIDUAL_SIGNED_POWER
+            ):
+                self.total_enthalpy_residual_head = (
+                    dense.total_enthalpy_residual_head
+                )
         self.register_buffer("consumption", dense.consumption.detach().clone())
         self.register_buffer(
             "process_stoich",
@@ -116,7 +158,54 @@ class SparsePatankarWrapper(torch.nn.Module):
         process_extent = (
             demand * process_availability * (1.0 - 1.0e-12)
         )
-        return process_extent @ self.process_stoich.T
+        delta_y = process_extent @ self.process_stoich.T
+        if not self.emits_thermochemical_scalar:
+            return delta_y
+        delta_y_features = (
+            torch.sign(delta_y)
+            * torch.pow(torch.abs(delta_y).clamp_min(1.0e-30), 0.1)
+        ).to(hidden.dtype)
+        thermochemical_feature_blocks = [hidden]
+        if (
+            self.thermochemical_head_input_mode
+            == THERMOCHEMICAL_HEAD_INPUT_STATE_TIME
+        ):
+            thermochemical_feature_blocks.extend(
+                [state_normalized, log_dt_normalized]
+            )
+        thermochemical_feature_blocks.append(delta_y_features)
+        thermochemical_scaled = self.thermochemical_head(
+            torch.cat(thermochemical_feature_blocks, dim=1)
+        ).to(torch.float64)
+        if (
+            self.total_enthalpy_residual_mode
+            == TOTAL_ENTHALPY_RESIDUAL_SIGNED_POWER
+        ):
+            residual_head_space = self.total_enthalpy_residual_head(
+                torch.cat(thermochemical_feature_blocks, dim=1)
+            ).to(torch.float64)
+            thermochemical_scaled = thermochemical_scaled + (
+                torch.sign(residual_head_space)
+                * torch.pow(
+                    torch.abs(residual_head_space),
+                    1.0 / self.total_enthalpy_residual_alpha,
+                )
+            )
+        elif (
+            self.total_enthalpy_target_transform
+            == TOTAL_ENTHALPY_TARGET_SIGNED_POWER
+        ):
+            thermochemical_scaled = (
+                torch.sign(thermochemical_scaled)
+                * torch.pow(
+                    torch.abs(thermochemical_scaled),
+                    1.0 / self.total_enthalpy_transform_alpha,
+                )
+            )
+        thermochemical_increment = (
+            thermochemical_scaled * self.thermochemical_scale
+        )
+        return torch.cat([thermochemical_increment, delta_y], dim=1)
 
 
 def main() -> None:
@@ -127,6 +216,27 @@ def main() -> None:
 
     dense = torch.jit.load(str(args.input / "model.pt"), map_location="cpu")
     dense.eval()
+    manifest_path = args.input / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    output_fields = manifest["output"]["fields"]
+    emits_thermochemical_scalar = bool(
+        output_fields and output_fields[0] in {"delta_T", "delta_h_total"}
+    )
+    thermochemical_head_input_mode = str(
+        manifest.get("training_config", {}).get(
+            "thermochemical_head_input_mode",
+            THERMOCHEMICAL_HEAD_INPUT_LEGACY,
+        )
+    )
+    training_config = manifest.get("training_config", {})
+    thermochemical_scale = float(
+        training_config.get(
+            "total_enthalpy_delta_scale"
+            if output_fields and output_fields[0] == "delta_h_total"
+            else "temperature_delta_scale",
+            1.0,
+        )
+    )
     reference = np.load(args.input / "reference_io.npz")
     physical_input = torch.from_numpy(
         np.asarray(reference["physical_input"], dtype=np.float32)
@@ -134,7 +244,29 @@ def main() -> None:
     current_species = torch.from_numpy(
         np.asarray(reference["current_species"], dtype=np.float64)
     )
-    sparse = SparsePatankarWrapper(dense).eval()
+    sparse = SparsePatankarWrapper(
+        dense,
+        emits_thermochemical_scalar=emits_thermochemical_scalar,
+        thermochemical_head_input_mode=thermochemical_head_input_mode,
+        thermochemical_scale=thermochemical_scale,
+        total_enthalpy_target_transform=str(
+            training_config.get(
+                "total_enthalpy_target_transform", "identity"
+            )
+        ),
+        total_enthalpy_transform_alpha=float(
+            training_config.get("total_enthalpy_transform_alpha", 0.1)
+        ),
+        total_enthalpy_residual_mode=str(
+            training_config.get(
+                "total_enthalpy_residual_mode",
+                TOTAL_ENTHALPY_RESIDUAL_NONE,
+            )
+        ),
+        total_enthalpy_residual_alpha=float(
+            training_config.get("total_enthalpy_residual_alpha", 0.1)
+        ),
+    ).eval()
     with torch.inference_mode():
         dense_output = dense(physical_input, current_species)
         sparse_output = sparse(physical_input, current_species)
@@ -166,7 +298,7 @@ def main() -> None:
     manifest_path = args.output / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["hard_layer"]["limiter_implementation"] = (
-        "sparse-reactant-index"
+        "sparse-reactant-index-hard"
     )
     manifest["sparse_equivalence_max_abs_error"] = equivalence_error
     manifest["reference_max_abs_error"] = trace_error
