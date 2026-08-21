@@ -8,6 +8,19 @@ from dfode_kit.physics.atom_conservation import (
     negative_mass_fraction_rate,
     stoichiometric_mass_fraction_matrix,
 )
+from dfode_kit.physics.thermochemical_closure import (
+    Nasa7ThermoData,
+    NonPhysicalStateError,
+    NumpyThermochemicalClosure,
+    OfflineThermoComparison,
+    SpeciesOnlyClosureContract,
+    TemperatureBracketError,
+    TemperatureConvergenceError,
+    TemperatureSolveResult,
+    ThermochemicalClosureError,
+    ThermochemicalEndpoint,
+    TorchThermochemicalClosure,
+)
 
 __all__ = [
     "atom_molecule_matrix",
@@ -18,4 +31,15 @@ __all__ = [
     "mass_fraction_sum_error",
     "negative_mass_fraction_rate",
     "stoichiometric_mass_fraction_matrix",
+    "Nasa7ThermoData",
+    "NonPhysicalStateError",
+    "NumpyThermochemicalClosure",
+    "OfflineThermoComparison",
+    "SpeciesOnlyClosureContract",
+    "TemperatureBracketError",
+    "TemperatureConvergenceError",
+    "TemperatureSolveResult",
+    "ThermochemicalClosureError",
+    "ThermochemicalEndpoint",
+    "TorchThermochemicalClosure",
 ]
