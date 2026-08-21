@@ -1,3 +1,17 @@
+from dfode_kit.evaluation.fluent_deployment import (
+    binned_regression_summary,
+    conditioned_source_summaries,
+    cosine_similarity,
+    density_increment_nmae,
+    endpoint_from_delta,
+    limiter_conditioned_summary,
+    normalized_mae,
+    prediction_stage_summary,
+    regression_summary,
+    species_source_from_increment,
+    species_source_summary,
+    summarize_fluent_deployment,
+)
 from dfode_kit.evaluation.metrics import (
     a_index,
     mae,
@@ -9,6 +23,18 @@ from dfode_kit.evaluation.metrics import (
 )
 
 __all__ = [
+    "binned_regression_summary",
+    "conditioned_source_summaries",
+    "cosine_similarity",
+    "density_increment_nmae",
+    "endpoint_from_delta",
+    "limiter_conditioned_summary",
+    "normalized_mae",
+    "prediction_stage_summary",
+    "regression_summary",
+    "species_source_from_increment",
+    "species_source_summary",
+    "summarize_fluent_deployment",
     "a_index",
     "mae",
     "per_species_summary",
@@ -16,5 +42,4 @@ __all__ = [
     "rmse",
     "sspi",
     "summarize_predictions",
-    "per_species_summary",
 ]

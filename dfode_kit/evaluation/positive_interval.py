@@ -21,11 +21,34 @@ from dfode_kit.physics.positive_integration import (
 )
 
 
+def _availability_settings(checkpoint) -> tuple[str, float]:
+    """Recover NeuralPatankar availability settings across checkpoint versions."""
+    cfg = checkpoint.get("training_config", {})
+    mode = checkpoint.get(
+        "availability_mode",
+        cfg.get("availability_mode", "hard"),
+    )
+    p_norm = float(
+        checkpoint.get(
+            "availability_p_norm",
+            cfg.get("availability_p_norm", 32.0),
+        )
+    )
+    if mode not in {"hard", "smooth-safe"}:
+        raise ValueError(
+            "checkpoint availability_mode must be 'hard' or 'smooth-safe'"
+        )
+    if not np.isfinite(p_norm) or p_norm < 1.0:
+        raise ValueError("checkpoint availability_p_norm must be finite and at least one")
+    return str(mode), p_norm
+
+
 def _load_positive_model(checkpoint, gas, input_dim, device):
     cfg = checkpoint["training_config"]
     stoich = reaction_stoichiometry(gas)
     mw = np.asarray(gas.molecular_weights, dtype=np.float64)
     if checkpoint["positive_model_type"] == "neural-patankar":
+        availability_mode, availability_p_norm = _availability_settings(checkpoint)
         model = NeuralPatankarIntervalModel(
             input_dim,
             mw[:, None] * stoich.reactants,
@@ -35,6 +58,11 @@ def _load_positive_model(checkpoint, gas, input_dim, device):
             hidden_dim=int(cfg["hidden_dim"]),
             extent_scale=float(cfg["extent_scale"]),
             availability_floor=float(cfg["positivity_floor"]),
+            temperature_delta_scale=float(
+                cfg.get("temperature_delta_scale", 10.0)
+            ),
+            availability_mode=availability_mode,
+            availability_p_norm=availability_p_norm,
         )
     else:
         model = ReactionTrajectoryFreeEnergyModel(
@@ -49,7 +77,7 @@ def _load_positive_model(checkpoint, gas, input_dim, device):
             proximal_beta=float(cfg["proximal_beta"]),
             positivity_floor=float(cfg["positivity_floor"]),
         )
-    model.load_state_dict(checkpoint["net"])
+    model.load_state_dict(checkpoint["net"], strict=False)
     return model.to(device).eval()
 
 
@@ -102,7 +130,19 @@ def _predict_positive(checkpoint_path, source_path, gas, device):
             if affinity is not None:
                 args.append(torch.tensor(affinity[start:stop], dtype=torch.float32, device=device))
             output = model(*args, **kwargs)
-            chunks.append(output["next_state"].detach().cpu().numpy())
+            next_state = output["next_state"].clone()
+            next_temperature = (
+                torch.as_tensor(
+                    current[start:stop, 0],
+                    dtype=torch.float64,
+                    device=device,
+                )
+                + output["delta_temperature"].reshape(-1)
+            )
+            next_state[:, 0] = (
+                next_temperature - state_mean[0]
+            ) / state_std[0]
+            chunks.append(next_state.detach().cpu().numpy())
             if "local_free_energy_delta" in output:
                 free_energy_chunks.append(output["local_free_energy_delta"].detach().cpu().numpy())
     if device.type == "cuda":

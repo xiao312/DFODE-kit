@@ -40,7 +40,12 @@ def load_prefix(path: str, limit: int) -> tuple[np.ndarray, np.ndarray, np.ndarr
     return current, target, dt
 
 
-def physical_metrics(predicted: np.ndarray, target: np.ndarray, current: np.ndarray) -> dict:
+def physical_metrics(
+    predicted: np.ndarray,
+    target: np.ndarray,
+    current: np.ndarray,
+    species_names: list[str],
+) -> dict:
     true_delta = target[:, 2:] - current[:, 2:]
     error = predicted - true_delta
     true_abs = float(np.abs(true_delta).sum())
@@ -55,7 +60,39 @@ def physical_metrics(predicted: np.ndarray, target: np.ndarray, current: np.ndar
         row_predicted_norm * row_true_norm, 1.0e-300
     )
     active_entries = np.abs(true_delta) > 1.0e-12
-    return {
+    endpoint = current[:, 2:] + predicted
+    endpoint_true = target[:, 2:]
+    thresholds = (1.0e-15, 1.0e-12, 1.0e-10, 1.0e-8)
+    per_species = {}
+    for index, name in enumerate(species_names):
+        component_true = true_delta[:, index]
+        component_predicted = predicted[:, index]
+        component_error = component_predicted - component_true
+        component_magnitude = float(np.abs(component_true).sum())
+        component = {
+            "delta_mae": float(np.mean(np.abs(component_error))),
+            "delta_nmae": float(
+                np.abs(component_error).sum()
+                / max(component_magnitude, 1.0e-300)
+            ),
+            "endpoint_mae": float(
+                np.mean(np.abs(endpoint[:, index] - endpoint_true[:, index]))
+            ),
+            "true_mean_abs_delta": float(np.mean(np.abs(component_true))),
+            "predicted_mean_abs_delta": float(
+                np.mean(np.abs(component_predicted))
+            ),
+        }
+        component["sspi"] = {}
+        for threshold in thresholds:
+            small = np.abs(component_true) < threshold
+            component["sspi"][f"{threshold:.0e}"] = (
+                float(np.mean(np.abs(component_predicted[small]) < threshold))
+                if np.any(small)
+                else None
+            )
+        per_species[name] = component
+    result = {
         "samples": int(current.shape[0]),
         "true_mean_abs_delta_y": float(np.abs(true_delta).mean()),
         "predicted_mean_abs_delta_y": float(np.abs(predicted).mean()),
@@ -68,7 +105,17 @@ def physical_metrics(predicted: np.ndarray, target: np.ndarray, current: np.ndar
         "negative_next_species_rate": float(np.mean(current[:, 2:] + predicted < 0.0)),
         "mean_mass_sum_error": float(np.mean(np.abs(np.sum(current[:, 2:] + predicted, axis=1) - 1.0))),
         "zero_baseline_normalized_delta_mae": 1.0,
+        "per_species": per_species,
     }
+    result["delta_sspi"] = {}
+    for threshold in thresholds:
+        small = np.abs(true_delta) < threshold
+        result["delta_sspi"][f"{threshold:.0e}"] = (
+            float(np.mean(np.abs(predicted[small]) < threshold))
+            if np.any(small)
+            else None
+        )
+    return result
 
 
 def wrapper_species_delta(value: torch.Tensor, species_count: int) -> torch.Tensor:
@@ -262,22 +309,25 @@ def main() -> None:
         zero_time_prediction = np.concatenate(zero_time_parts)
         eager_sparse_prediction = np.concatenate(eager_sparse_parts)
         eager_dense_prediction = np.concatenate(eager_dense_parts)
-        dataset_report = physical_metrics(predicted, target, current)
+        species_names = list(checkpoint["species_names"])
+        dataset_report = physical_metrics(
+            predicted, target, current, species_names
+        )
         dataset_report["component_audit"] = component_audit
         dataset_report["checkpoint_with_runtime_normalization"] = physical_metrics(
-            runtime_normalized_prediction, target, current
+            runtime_normalized_prediction, target, current, species_names
         )
         dataset_report["checkpoint_with_zero_normalized_time"] = physical_metrics(
-            zero_time_prediction, target, current
+            zero_time_prediction, target, current, species_names
         )
         dataset_report["checkpoint_runtime_normalization_max_abs_delta_difference"] = float(
             np.max(np.abs(predicted - runtime_normalized_prediction))
         )
         dataset_report["eager_sparse_wrapper"] = physical_metrics(
-            eager_sparse_prediction, target, current
+            eager_sparse_prediction, target, current, species_names
         )
         dataset_report["eager_dense_wrapper"] = physical_metrics(
-            eager_dense_prediction, target, current
+            eager_dense_prediction, target, current, species_names
         )
         dataset_report["runtime_checkpoint_eager_dense_max_abs_delta_difference"] = float(
             np.max(np.abs(runtime_normalized_prediction - eager_dense_prediction))
@@ -307,7 +357,9 @@ def main() -> None:
         dataset_report["availability_limited_row_rate"] = float(np.mean(availability < 1.0 - 1.0e-10))
         if artifact_parts:
             artifact_prediction = np.concatenate(artifact_parts)
-            dataset_report["artifact"] = physical_metrics(artifact_prediction, target, current)
+            dataset_report["artifact"] = physical_metrics(
+                artifact_prediction, target, current, species_names
+            )
             dataset_report["checkpoint_artifact_max_abs_delta_difference"] = float(np.max(np.abs(predicted - artifact_prediction)))
         if artifact_attempts is not None:
             dataset_report["artifact_call_diagnostics"] = artifact_attempts
