@@ -36,3 +36,7 @@ content verification passes and `dist/` contains HTML, the data sidecar, and its
 build manifest. Read the copied app's AGENTS.md before authoring or building.
 Check the rendered report when a browser is available. A build alone is not a
 visual or scientific validation. Record any unavailable check honestly.
+When publishing through Git, preserve generated HTML/JSON bytes with scoped
+`-text` attributes. Git newline normalization can otherwise invalidate the
+content-addressed data hash. Fetch the published HTML and sidecar and compare
+their SHA256 values with `data-app-build.json`; HTTP 200 alone is insufficient.

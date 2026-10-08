@@ -294,6 +294,15 @@ The report compiler also accepts `--historical-validation`, `--heldout`,
 remain separate from equal-budget new fits, and the two test populations remain
 separate. It never publishes weights or raw mechanism files.
 
+`filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
+measures the effect of the inspected historical curation rule without changing
+data: keep `sum(hf_298 * delta_Y) <= 200 J/kg`. This is not a universal validity
+test and does not mean rejecting every endothermic step. Report accepted-label
+counts and temperature segments before interpreting sensitivity scores. Optional
+model scores are validation-only diagnostics on kept/rejected subsets, not a new
+model-selection rule or permission to filter the reserved CFD test. `--dry-run`
+checks input provenance without writing. Existing labels and results are immutable.
+
 ```bash
 python -m pytest tests/test_flame_*.py -q
 ```
