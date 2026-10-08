@@ -40,6 +40,10 @@ normalization itself and raw reference data remain FP64. This differs from the
 earlier physical initial-state re-integration test after raw FP32 rounding.
 Channels that are exactly zero in every accepted training label are fixed to zero
 for every variant; record those channel indices. No test labels choose these channels.
+Input ranges within 64 FP64 epsilons of their own magnitude use magnitude scaling,
+not tiny standard-deviation scaling. This prevents constant pressure and inert
+fractions from becoming unit-scale roundoff noise. The rule uses training rows only
+and does not discard small trace species that have real relative variation.
 
 Report pooled species budget errors, separate reliable relative errors, temperature
 errors, per-species and magnitude-bin metrics, negative endpoints, mass error,

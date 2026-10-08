@@ -30,6 +30,12 @@ def network(inputs, outputs, widths, seed, dtype):
 def preprocessing(data, target):
     split, delta = data["split"], data["delta"]
     inputs = TrainOnlyNormalizer.fit(data["inputs"], split, center=True)
+    training_inputs = data["inputs"][split == "train"]
+    magnitude = np.max(np.abs(training_inputs), axis=0)
+    roundoff_only = np.ptp(training_inputs, axis=0) <= 64 * np.finfo(float).eps * magnitude
+    # Constant pressure/inert fractions can differ by solver roundoff. Do not
+    # magnify that noise to unit variance. Tiny but varying trace species remain.
+    inputs.scale[roundoff_only] = np.where(magnitude[roundoff_only] == 0, 1., magnitude[roundoff_only])
     asinh_scale = fit_asinh_scale(delta, split)
     scale = data["weights"] if target == "budget-linear" else asinh_scale if target == "scaled-asinh" else 1.
     encoded = encode(delta, target, scale)

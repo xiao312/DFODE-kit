@@ -110,6 +110,7 @@ img{{width:100%;height:auto}}table{{border-collapse:collapse;width:100%;font-siz
 It is a small interpolation test, not a chemistry-solver replacement.</p>
 <section><h2>Step 1 — Make checked answers</h2>
 <p><strong>What we did:</strong> run eight H2 and eight CH4 reaction trajectories. Cantera/CVODES produced the starting states.
+One trajectory is a reaction history from one initial condition. An interval is a short integration from one selected state in that history.
 From each selected state, SciPy Radau integrated the temperature and species changes directly. It started the change at zero;
 it did not obtain the label by subtracting two nearly equal stored endpoints.</p>
 <p><strong>Why:</strong> the first pilot showed that endpoint subtraction can lose small changes. We compared the direct
@@ -137,6 +138,7 @@ Target normalization and final reconstruction use FP64. Timing includes validati
 <section><h2>Step 4 — Compare physical errors</h2>
 <p>The species budget is <code>1e-12 + 1e-6 * abs(Y_initial)</code>. Divide the prediction error by this budget.
 A value below 1 is within budget. The reported p99 is the 99th percentile across accepted test species components;
+99% of those component errors are at or below this value.
 it is not a guarantee on every sample and is not the interval-maximum statistic from checkpoint 02.</p>
 <img src="comparison.png" alt="Test budget errors for all representations and precisions against the zero-change baseline">
 {measurements}{''.join(decisions)}

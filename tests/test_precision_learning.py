@@ -91,6 +91,18 @@ def test_train_only_scales_and_identical_precision_initialization():
         np.testing.assert_array_equal(a.detach().double().numpy(), b.detach().numpy())
 
 
+def test_near_constant_pressure_does_not_amplify_roundoff():
+    trainer = load_trainer()
+    records, manifest, experiment = fixture()
+    extra = copy.deepcopy(records[0])
+    extra["id"] = "another-train"
+    extra["state"]["P"] += 1e-11
+    data, _ = partition(records + [extra], manifest, experiment, "h2")
+    fitted = trainer.preprocessing(data, "budget-linear")
+    assert fitted[0].scale[1] > 1e5
+    assert np.max(np.abs(fitted[0].transform(data["inputs"])[data["split"] == "train", 1])) < 1e-14
+
+
 def test_small_training_run_has_fixed_updates_and_saved_predictions(tmp_path):
     trainer = load_trainer()
     trainer.torch.set_num_threads(1)
