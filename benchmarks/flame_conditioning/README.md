@@ -233,6 +233,18 @@ before opening the 2D source. Report partial work explicitly if it cannot finish
 
 ## Reserved 2D snapshot evaluation
 
+`diagnose_test_labels.py <failed-test> --output <new-diagnosis> --dry-run`
+checks a completed test-label artifact without loading or scoring models. The live
+run profiles strict endpoint rejections, then checks up to eight failed states:
+the first failure, the most negative endpoint, and fixed temperature quantiles.
+Compare the saved reused-reactor solve with a fresh reactor, a tighter absolute
+tolerance, a step-limited solve, and two direct-increment Radau solves. Save all
+signed values and hashes. The output is a diagnosis, not a replacement label set
+or an automatic change to the acceptance rule. Require a new output directory;
+the failed test and frozen models remain read-only. Dependencies are the existing
+chemistry module and pinned research environment. Verify with
+`python -m pytest tests/test_flame_label_diagnosis.py -q`.
+
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
 It never reads the old pickle files or runs the old training scripts. Both controls
 use the saved 4x800 GELU FP32 weights, original species order and Pa pressure.
