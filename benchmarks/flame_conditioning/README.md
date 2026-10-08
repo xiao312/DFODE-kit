@@ -426,6 +426,9 @@ reader and coordinate implementation. A diagnostic range violation is not a
 causal attribution or proof of multivariate support. This analysis occurs after
 test scoring; any later model repair needs fresh test evidence. Verify with
 `python -m pytest tests/test_flame_input_support.py -q`.
+The review compiler accepts `--input-support <summary.json>` only when its
+training and test hashes match the other reviewed evidence. Keep the diagnostic
+separate from the predeclared comparison and from any claim of causal repair.
 
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing

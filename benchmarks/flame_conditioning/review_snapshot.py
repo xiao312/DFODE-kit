@@ -87,6 +87,7 @@ def main():
     parser.add_argument("--heldout", type=Path)
     parser.add_argument("--heldout-audit", type=Path)
     parser.add_argument("--reference-recovery", type=Path)
+    parser.add_argument("--input-support", type=Path)
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
@@ -98,6 +99,8 @@ def main():
         parser.error("A held-out audit must accompany its completed evaluation")
     if args.reference_recovery and not args.heldout:
         parser.error("A reference amendment must accompany its completed evaluation")
+    if args.input_support and not args.heldout:
+        parser.error("Input support must accompany its completed test evaluation")
     rows = []
     for path in args.training:
         saved = json.loads(path.read_text())
@@ -245,6 +248,16 @@ def main():
                 "definition": "Original strict acceptance and independently checked recovery counts. Raw signed labels, source cells, and frozen model plan remain unchanged; only reference eligibility changes."}],
                 ["Post-reference, pre-score amendment, not the original strict protocol. Every recovered row has four fresh comparison solves.",
                  "The negative endpoint floor is a numerical-noise screen, not rigorous positivity or accurate relative digits."])}
+    if args.input_support:
+        support = json.loads(args.input_support.read_text())
+        if (support["status"] != "complete" or support["test_manifest_sha256"] != heldout["test_manifest_sha256"]
+                or support["training_summary_sha256"] not in {sha256(path) for path in args.training}):
+            raise ValueError("Input-support evidence differs from the reviewed training or test")
+        snapshot["queries"]["input_support"] = {"rows": support["rows"],
+            "source": source([args.input_support, args.heldout], [{"label": "Post-score input support",
+                "definition": "Raw training and observed ranges, population-specific outside-range fractions, and absolute distances after the frozen input encoding and training scale. Species use Y**0.1; temperature and pressure are linear. Constant training features use the documented scale fallback."}],
+                ["Descriptive post-score diagnosis; no model, scaler, or prediction was changed.",
+                 "Univariate ranges do not prove multivariate coverage or establish a sole cause. Future repairs require fresh test evidence."])}
     if args.scaling:
         scaling = json.loads(args.scaling.read_text())
         if scaling["status"] != "verified":

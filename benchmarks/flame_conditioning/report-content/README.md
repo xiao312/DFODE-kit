@@ -55,6 +55,10 @@ When `reference_recovery` is present, show the strict rejection and amended
 eligibility counts before the test scores. State that raw signed labels remain
 unchanged and the amendment occurred after reference inspection but before model
 scoring. Never describe the amended test as the unchanged original protocol.
+Optional `input_support` evidence is a post-score diagnosis. Keep validation,
+uniform-test, and balanced-test rows separate. Distinguish raw physical ranges
+from transformed-feature scales. A range mismatch is not a causal ablation or
+permission to tune against the same test. Retain all feature rows in source data.
 The preselected species view shows NH3, CH4, NO, and OH, using each species'
 physical-budget p99. This selection is chemical-role based, not chosen from test
 errors. The offline balanced-population view is not a domain-average emissions
