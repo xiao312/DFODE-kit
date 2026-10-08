@@ -1,0 +1,125 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkpoint 03 follow-up: can the model fit known answers?</title><style>
+body{font:16px/1.65 system-ui,sans-serif;color:#182b3e;background:#f4f6fa;max-width:1200px;margin:auto;padding:28px}
+section{background:white;padding:24px;margin:22px 0;border-radius:12px}h1,h2{line-height:1.25}a{color:#1d6094}
+img{width:100%;height:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d6dfe8}
+.scroll{overflow-x:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.notice{border-left:5px solid #b66b12;padding:15px;background:#fff4e3}
+</style></head><body><nav><a href="../index.html">Research home</a> · <a href="../checkpoint-03/report.html">First model comparison</a> ·
+<a href="summary.json">Measured results</a> · <a href="https://github.com/xiao312/DFODE-kit/issues/3">Review in Issue #3</a></nav>
+<h1>Can the model fit answers it has already seen?</h1>
+<p>Checkpoint 03 follow-up. All fitting ran on lh40902. This is a training-data diagnosis, not a new test of unseen states.</p>
+<p class="notice"><strong>Main result:</strong> 4 of 4 direct linear-head controls meet every physical budget.
+0 of 12 Adam fits meet every budget at the fixed final checkpoint of 5,000 updates.
+Three one-example Adam runs briefly meet the species budgets, then lose that accuracy.
+The narrow examples can be represented, but the tested training procedure does not reliably keep an accurate fit.
+A loss change alone does not solve the problem.</p>
+<section><h2>Step 1 — Reproduce the problem</h2>
+<p>We loaded the previous H2 budget-linear FP64 model and asked it to predict the first training example again.
+The largest species error was 2.146 million times its budget. The read-only <code>fit_probe.py --row 0</code> check returned failure.
+This showed that poor results were not limited to new, unseen states.</p>
+<p><strong>Why this matters:</strong> before asking whether the model generalizes, first check whether the fitting method can reproduce known answers.
+A failed scientific accuracy threshold does not, by itself, identify a software defect.</p></section>
+<section><h2>Step 2 — Use checked answers, without new chemistry solves</h2>
+<p>We reused the accepted checkpoint 03 reference data. Cantera/CVODES had supplied the starting states.
+SciPy Radau had integrated the changes directly, with the reference-agreement checks described in the earlier reports.
+Neither solver generated new labels in this diagnosis. These labels remain working references, not exact mathematical truth.</p>
+<p>For each mechanism, we used one example, eight examples, and all training examples (H2: 133; CH4: 144).
+The eight examples come from the 1400 K training parent, at eight time anchors, with interval h = 1e-6 s.
+The one-example set is its first anchor. A 1400 K parent does not mean the temperature stays at 1400 K during reaction.</p>
+<p>We did not use validation or test rows. Scales use only the original training split, and stay fixed across subsets.
+The old test set has already been reviewed; it must not silently become a tuning set.</p></section>
+<section><h2>Step 3 — Separate three questions</h2>
+<ol><li><strong>Loss weighting:</strong> for the same subset and model, compare the existing normalized-coordinate loss with physical-budget loss.</li>
+<li><strong>Training duration:</strong> compare fixed checkpoints at 200 and 5,000 updates in each run. Do not select the best intermediate result.</li>
+<li><strong>Range of examples:</strong> compare one, eight and all training rows. This changes the task, so it is a separate probe.</li></ol>
+<p>All fits use budget-linear outputs, FP64, two 64-unit tanh layers, seed 20261008, Adam at learning rate 0.001, and full batches.
+The same mechanism starts from the same weights in every run. The original 200-update study selected an epoch using validation;
+these fixed final checkpoints are not a direct replacement for those selected-model scores.</p>
+<p><strong>What the two losses mean:</strong> the existing loss divides each output by its typical training magnitude.
+It asks for similar accuracy relative to that typical magnitude. The physical loss instead gives equal weight to equal fractions of the specified error budgets.
+We divide that physical loss by one global training-only constant to keep the numbers manageable. Relative weights stay unchanged;
+Adam's effective epsilon can still change. Both losses include temperature and active species outputs.</p>
+<p>Neither loss directly minimizes the worst error or p99. Average error can improve while more small components leave their budgets.</p></section>
+<section><h2>Step 4 — Read the measured errors</h2>
+<p>Species budget: <code>1e-12 + 1e-6 * abs(Y_initial)</code>. Temperature budget: <code>1e-6 + 1e-8 * abs(T_initial)</code>.
+Divide absolute error by its budget. A value of 1 is the limit. The strict pass requires every component to be at or below 1.</p>
+<img src="fit-errors.png" alt="Maximum training errors for 200 and 5000 Adam updates and direct linear-head controls; only direct controls meet all budgets">
+<div class="scroll"><table><thead><tr><th>Mechanism</th><th>Subset / rows</th><th>Loss</th><th>Species p99 at 200</th><th>Species p99 at 5,000</th><th>Species RMS at 5,000</th><th>Species above budget</th><th>Max: T and species</th></tr></thead><tbody><tr><td>H2</td><td>one / 1</td><td>coordinate</td><td>6.6625</td><td>65.905</td><td>25.283</td><td>40.0%</td><td>125.68</td></tr><tr><td>H2</td><td>one / 1</td><td>physical-budget</td><td>21.291</td><td>4316.3</td><td>1860.6</td><td>80.0%</td><td>31250</td></tr><tr><td>H2</td><td>narrow / 8</td><td>coordinate</td><td>13498</td><td>12977</td><td>2626.8</td><td>80.0%</td><td>15434</td></tr><tr><td>H2</td><td>narrow / 8</td><td>physical-budget</td><td>2.0225e+05</td><td>13847</td><td>2318.9</td><td>77.5%</td><td>13882</td></tr><tr><td>H2</td><td>all / 133</td><td>coordinate</td><td>5.4885e+06</td><td>1.5421e+05</td><td>39887</td><td>79.9%</td><td>6.5011e+05</td></tr><tr><td>H2</td><td>all / 133</td><td>physical-budget</td><td>7.8698e+06</td><td>1.5673e+05</td><td>35590</td><td>80.0%</td><td>4.2932e+05</td></tr><tr><td>CH4</td><td>one / 1</td><td>coordinate</td><td>1.7922</td><td>1003.3</td><td>245.34</td><td>69.8%</td><td>1498.9</td></tr><tr><td>CH4</td><td>one / 1</td><td>physical-budget</td><td>45.927</td><td>35.5</td><td>7.9022</td><td>43.4%</td><td>41.46</td></tr><tr><td>CH4</td><td>narrow / 8</td><td>coordinate</td><td>4548.3</td><td>1139.2</td><td>368.03</td><td>62.5%</td><td>5509.3</td></tr><tr><td>CH4</td><td>narrow / 8</td><td>physical-budget</td><td>3237.9</td><td>1050.7</td><td>327.27</td><td>85.6%</td><td>4845.8</td></tr><tr><td>CH4</td><td>all / 144</td><td>coordinate</td><td>8.5894e+05</td><td>21850</td><td>9918.1</td><td>80.6%</td><td>3.5812e+05</td></tr><tr><td>CH4</td><td>all / 144</td><td>physical-budget</td><td>7.6871e+05</td><td>14754</td><td>5491.1</td><td>93.7%</td><td>1.6589e+05</td></tr></tbody></table></div>
+<p>Species p99 pools every species component in the selected rows. H2 has 10 species; CH4 has 53.
+For example, the eight-row sets contain 80 and 424 species errors. Temperature is not in species p99; it is in the all-component maximum.</p>
+<p><strong>What changed:</strong> more updates greatly reduce the full-set error, but do not reach the budgets.
+For CH4 on all training rows, physical loss reduces final species p99 from about 21,850 to 14,754 budgets.
+However, the fraction above budget rises from about 81% to 94%. For H2, physical loss slightly worsens p99.
+These results do not support a universal loss winner.</p>
+<img src="fit-curves.png" alt="One-example and eight-example Adam training curves show non-monotonic physical errors">
+<p><strong>Important limit:</strong> the one-example coordinate fits finish worse at 5,000 updates than at 200.
+These curves show that more updates at a fixed step size are not a reliable route to high accuracy.
+They do not, on their own, identify which optimizer setting should replace it.</p>
+<div class="scroll"><table><thead><tr><th>Mechanism</th><th>One-example loss</th><th>Lowest recorded species max: update</th><th>Species max / budget</th></tr></thead><tbody><tr><td>H2</td><td>coordinate</td><td>900</td><td>3.6644e-10</td></tr><tr><td>H2</td><td>physical-budget</td><td>1200</td><td>9.4299e-11</td></tr><tr><td>CH4</td><td>coordinate</td><td>800</td><td>3.1433e-11</td></tr><tr><td>CH4</td><td>physical-budget</td><td>4800</td><td>30.99</td></tr></tbody></table></div>
+<p>Three one-example runs briefly bring every species error within budget, then move out again.
+This is a post-run diagnosis of the recorded curve, not a new selected-model result.
+Intermediate temperature maxima and model weights were not saved, so those points cannot be called complete passes or replayed.
+Final weights and both prescribed full-score checkpoints are retained. A future stopping rule must check all components and save the passing weights.</p></section>
+<section><h2>Step 5 — Check representation and implementation separately</h2>
+<p>For the one/eight-row controls, we kept the hidden layers at their initial weights.
+We then solved the final linear layer directly by SVD least squares. This is like fitting coefficients to known answers,
+without thousands of gradient updates. It uses the same model shape and the same input/output scales.</p>
+<div class="scroll"><table><thead><tr><th>Mechanism</th><th>Subset / rows</th><th>Feature rank</th><th>Condition number</th><th>Max: T and species</th><th>Within budget?</th></tr></thead><tbody><tr><td>H2</td><td>one / 1</td><td>1</td><td>1</td><td>2.647e-11</td><td>yes</td></tr><tr><td>H2</td><td>narrow / 8</td><td>8</td><td>64701</td><td>1.2619e-07</td><td>yes</td></tr><tr><td>CH4</td><td>one / 1</td><td>1</td><td>1</td><td>9.9262e-12</td><td>yes</td></tr><tr><td>CH4</td><td>narrow / 8</td><td>8</td><td>2.324e+05</td><td>7.7866e-09</td><td>yes</td></tr></tbody></table></div>
+<p>All four controls meet the budgets. The eight-row feature matrices have full row rank.
+This is evidence that the model can fit these particular narrow sets. It is not evidence that the model predicts new states well.
+The condition numbers warn that the solve can be sensitive; this is not a recommended general-purpose chemistry surrogate.</p>
+<p>We also encoded, normalized and decoded the exact labels, without a learned model:</p><div class="scroll"><table><thead><tr><th>Mechanism</th><th>Encode-normalize-decode maximum / budget</th></tr></thead><tbody><tr><td>H2</td><td>1.7559e-08</td></tr><tr><td>CH4</td><td>1.6941e-09</td></tr></tbody></table></div>
+<p>The resulting errors are far below budget. Tests check that the physical-loss value and gradient match the direct budget-error formula.
+Saved-model replay checks the final predictions and recomputes the scores. No scaling/reconstruction defect was found in these checks.</p></section>
+<section><h2>Step 6 — Decide what to do next</h2>
+<p><strong>Supported:</strong> training procedure and loss weighting matter. The current fixed-rate Adam setup is not accurate enough,
+at its final checkpoint, even when the small model can represent the examples. Some accurate species fits are lost with continued updates.
+There is no demonstrated approximation ceiling on the eight-row sets.</p>
+<p><strong>Not supported:</strong> a useful chemistry surrogate, many correct relative digits for all tiny increments,
+a robust winner among representations, or a reason to add residual stages now. Only one seed and one narrow parent were checked.</p>
+<p><strong>Recommended next test:</strong> keep these same training-only sets and test a bounded optimizer-polishing stage
+(for example, a decreasing step size or L-BFGS), with a predeclared all-component stopping rule and saved passing weights.
+First establish repeatable training fit.
+Then use additional, predeclared parent trajectories and seeds to test generalization. Do not run a broad search, full grid,
+residual stack or full trajectory rollout yet.</p></section>
+<section><h2>Reproduction and cost</h2>
+<p>The 12 Adam fits and four head controls took 59.74 seconds in a one-CPU, 4-GB, offline container on lh40902.
+This is runner wall time, not a timing comparison between learning algorithms. The kernel did not support a separate swap limit.
+Raw arrays, scales, predictions and weights remain under <code>runs/representation/fit-diagnostic-20261008</code> in the server project.</p>
+<p><a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments/benchmarks/precision_conditioning/learning">Source and commands</a> ·
+<a href="https://github.com/xiao312/DFODE-kit/pull/4">Draft PR #4</a></p><pre>{
+  &quot;source&quot;: {
+    &quot;commit&quot;: &quot;a1cbce31c4ebadd791a38cdc5d586fae317574b2&quot;,
+    &quot;dirty&quot;: false
+  },
+  &quot;input_run&quot;: &quot;checkpoint03-20261008&quot;,
+  &quot;input_sha256&quot;: {
+    &quot;h2&quot;: &quot;b7cce98e4bfab3f8022b4d01a02ad923f14bd945923fe973f673fc35b1192496&quot;,
+    &quot;ch4&quot;: &quot;c3af430cacf94e0bf680dc011dcd26aa146030efb4512ba5001d9a8f399324ad&quot;
+  },
+  &quot;torch&quot;: &quot;2.5.1+cpu&quot;,
+  &quot;config&quot;: {
+    &quot;schema_version&quot;: 1,
+    &quot;target&quot;: &quot;budget-linear&quot;,
+    &quot;precision&quot;: &quot;float64&quot;,
+    &quot;parent_temperature_K&quot;: 1400,
+    &quot;interval_s&quot;: 1e-06,
+    &quot;narrow_rows&quot;: 8,
+    &quot;hidden_widths&quot;: [
+      64,
+      64
+    ],
+    &quot;seed&quot;: 20261008,
+    &quot;learning_rate&quot;: 0.001,
+    &quot;updates&quot;: 5000,
+    &quot;snapshots&quot;: [
+      200,
+      5000
+    ],
+    &quot;losses&quot;: [
+      &quot;coordinate&quot;,
+      &quot;physical-budget&quot;
+    ],
+    &quot;wall_time_seconds&quot;: 3600
+  }
+}</pre></section></body></html>
