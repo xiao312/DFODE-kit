@@ -28,6 +28,11 @@ as the unresolved-label fraction; inert-species zeros have no relative error.
 Model rows expose the training seed. Primary four-target charts retain seed
 20261009; the conventional-only 20261010 repeat has its own explanatory block.
 Do not merge repeated fits into a best-seed summary.
+The compact density table retains every completed primary-seed conventional
+4x800/10k-update fit, in ascending actual training count. Missing larger fits do
+not appear as zero. It does not select rows by validation or test performance.
+Training-only scales are refit at each size; this is a full-protocol data-size
+comparison, not an isolated fixed-scaler ablation.
 Historical raw inverse-domain violations are separate from performed corrections.
 Show absent diagnostics as not recorded, not zero. Preserve small nonzero rates
 in percentage formatting. Test-batch diagnostics do not become population rates.
