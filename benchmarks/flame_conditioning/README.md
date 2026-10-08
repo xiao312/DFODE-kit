@@ -285,6 +285,14 @@ step; `--steps 100` gives the separately bounded 100-step compatibility run.
 Keep original CVODE tolerances 1e-6/1e-10 for this first runtime check. The installed
 Cantera is 2.6.0, unlike labeling 3.2.0; do not upgrade it. A copied restart smoke
 test is neither an ignition reproduction nor a learned-model CFD validation.
+After that check, `--tolerance-preset tight` creates a separate copy with CVODE
+relative/absolute tolerances 1e-12/1e-21. The default `study` preset is unchanged.
+Both copies keep ANN disabled and the same fixed timestep, mesh and initial fields.
+`compare_cfd.py <study-case> <tight-case> --original <read-only-source>` checks
+both completed runs, matching input hashes and the one allowed dictionary change.
+It reports final field differences; `--output <new.json>` saves the result.
+Default is read-only. This is tolerance sensitivity over 100 steps, not a rigorous
+error bound, timestep/mesh convergence, or a neural-model accuracy/speedup test.
 The installed solver also constructs a spray cloud. The copy uses the repository's
 inactive `sprayCloudProperties` dictionary, records its hash, and rejects a template
 that does not explicitly disable both spray activity and coupling. The original

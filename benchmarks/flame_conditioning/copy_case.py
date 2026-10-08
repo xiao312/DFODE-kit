@@ -18,6 +18,7 @@ MECHANISM_SHA256 = "26a27fb3c19c6000ed46d70947faeaf4813b6161ca7186fb6cc9ad55ede2
 MESH_FILES = ("points", "faces", "owner", "neighbour", "boundary")
 CONSTANT_FILES = ("g", "thermophysicalProperties", "turbulenceProperties", "combustionProperties")
 SPRAY_TEMPLATE = Path(__file__).resolve().parents[2] / "canonical_cases/oneD_freely_propagating_flame/constant/sprayCloudProperties"
+TOLERANCE_PRESETS = {"study": ("1e-6", "1e-10"), "tight": ("1e-12", "1e-21")}
 
 
 def inactive_spray_dictionary():
@@ -67,15 +68,18 @@ functions {{}}
 '''
 
 
-def chemistry_dictionary(mechanism):
+def chemistry_dictionary(mechanism, tolerance_preset="study"):
+    if tolerance_preset not in TOLERANCE_PRESETS:
+        raise ValueError("Unknown chemistry tolerance preset")
+    relative, absolute = TOLERANCE_PRESETS[tolerance_preset]
     return header("CanteraTorchProperties", "constant") + f'''
 chemistry on;
 CanteraMechanismFile "{mechanism}";
 transportModel "Mix";
 odeCoeffs
 {{
-    relTol 1e-6;
-    absTol 1e-10;
+    relTol {relative};
+    absTol {absolute};
 }}
 inertSpecie AR;
 splittingStrategy off;
@@ -132,6 +136,7 @@ def main():
     parser.add_argument("--mechanism", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--steps", type=int, default=1)
+    parser.add_argument("--tolerance-preset", choices=TOLERANCE_PRESETS, default="study")
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
     source, output = args.source_case.resolve(), args.output.resolve()
@@ -145,6 +150,9 @@ def main():
     files = inspect_source(source, gas.species_names)
     plan = {"source_case": str(source), "output_case": str(output), "source": source_revision(),
             "steps": args.steps, "start_time_s": .0025, "interval_s": 1e-6,
+            "tolerance_preset": args.tolerance_preset,
+            "cvode_rtol": float(TOLERANCE_PRESETS[args.tolerance_preset][0]),
+            "cvode_atol": float(TOLERANCE_PRESETS[args.tolerance_preset][1]),
             "mechanism_sha256": MECHANISM_SHA256, "copied_files": [str(path) for path in files],
             "inactive_spray_template_sha256": sha256(SPRAY_TEMPLATE),
             "original_sha256": {str(path): sha256(source / path) for path in files},
@@ -164,7 +172,8 @@ def main():
     solution.write_text(adapt_energy_solvers(solution.read_text()))
     (output / "system/controlDict").write_text(control)
     (output / "constant/sprayCloudProperties").write_text(spray)
-    (output / "constant/CanteraTorchProperties").write_text(chemistry_dictionary(output / "mechanism.yaml"))
+    (output / "constant/CanteraTorchProperties").write_text(
+        chemistry_dictionary(output / "mechanism.yaml", args.tolerance_preset))
     plan["prepared_sha256"] = {str(path.relative_to(output)): sha256(path) for path in output.rglob("*") if path.is_file()}
     (output / "preparation.json").write_text(json.dumps(plan, indent=2, allow_nan=False))
 

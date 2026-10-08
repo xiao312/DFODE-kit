@@ -37,3 +37,11 @@ def test_chemistry_preserves_original_tolerances_and_disables_nn():
     assert "torch false;" in text and "GPU false;" in text
     assert "active false;" in text
     assert "inertSpecie AR;" in text
+
+
+def test_tight_control_changes_only_tolerances():
+    study = chemistry_dictionary("/case/mechanism.yaml")
+    tight = chemistry_dictionary("/case/mechanism.yaml", "tight")
+    assert tight == study.replace("relTol 1e-6;", "relTol 1e-12;").replace("absTol 1e-10;", "absTol 1e-21;")
+    with pytest.raises(ValueError, match="Unknown"):
+        chemistry_dictionary("/case/mechanism.yaml", "unknown")
