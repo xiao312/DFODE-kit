@@ -70,6 +70,9 @@ environment details and large arrays are not public artifacts. Generate the repo
 with `reference/report.py` first. The landing page then links both checkpoints.
 Pass `--learning-review <run>/review` to add checkpoint 03. Its allowlist contains
 HTML, three exported PNG figures and measured summary JSON, not weights or arrays.
+Pass `--fit-review <fit-run>/review` to include the checkpoint 03 training-fit
+follow-up. Its allowlist is HTML, summary JSON and two figures. It is not checkpoint
+04 (residual learning). The fit report depends only on saved diagnostic results.
 
 ```bash
 python benchmarks/precision_conditioning/publish_pages.py runs/precision-conditioning/audit.json --output runs/research-pages --dry-run

@@ -73,3 +73,17 @@ def test_pages_reference_allowlist(tmp_path):
     assert result.returncode == 0, result.stderr
     assert {p.name for p in (destination / "checkpoint-03").iterdir()} == learning_files
     assert "Checkpoint 03 · ready" in (destination / "index.html").read_text(encoding="utf-8")
+    fit = tmp_path / "fit"
+    fit.mkdir()
+    fit_files = {"report.html", "summary.json", "fit-errors.png", "fit-curves.png"}
+    for name in fit_files:
+        (fit / name).write_text("placeholder")
+    (fit / "summary.json").write_text(json.dumps({"status": "complete"}))
+    (fit / "weights.pt").write_text("not public")
+    result = run_script("publish_pages.py", source, "--output", destination, "--fit-review", fit, "--dry-run")
+    assert result.returncode == 0, result.stderr
+    assert not (destination / "checkpoint-03-fit").exists()
+    result = run_script("publish_pages.py", source, "--output", destination, "--fit-review", fit)
+    assert result.returncode == 0, result.stderr
+    assert {p.name for p in (destination / "checkpoint-03-fit").iterdir()} == fit_files
+    assert "fit diagnosis" in (destination / "index.html").read_text(encoding="utf-8")

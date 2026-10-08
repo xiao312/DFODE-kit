@@ -11,7 +11,7 @@ import shutil
 from build_report import build_html
 
 
-def landing_page(report, reference=None, learning=None):
+def landing_page(report, reference=None, learning=None, fit=None):
     count = report["sample_count"]
     lost = report["state_addition_lost_nonzero"]
     cards = [
@@ -45,6 +45,15 @@ in FP32 and FP64. Chemistry and training ran on lh40902. This small test uses on
 <a href="checkpoint-03/summary.json">Download measured metrics</a></p></section>''' + latest
         status = "Checkpoint 03 · ready for scientific review"
         next_step = "Review the model errors and training curves before further data expansion or residual learning."
+    if fit is not None:
+        latest = '''<section class="checkpoint"><h2>Latest: can the model fit known answers?</h2>
+<p>The narrow training sets can be represented by the model. Some one-example Adam runs briefly meet species budgets,
+then lose that accuracy. No final Adam fit meets every budget. This is a training-only diagnosis, not a generalization result.</p>
+<img src="checkpoint-03-fit/fit-errors.png" alt="Training-fit errors: direct head controls pass; Adam fits remain outside budget">
+<p><a href="checkpoint-03-fit/report.html">Read the step-by-step fit diagnosis</a> ·
+<a href="checkpoint-03-fit/summary.json">Measured results</a></p></section>''' + latest
+        status = "Checkpoint 03 fit diagnosis · ready for scientific review"
+        next_step = "Review a bounded optimizer-polishing test before expanding the data or adding residual models."
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DFODE-kit Research Review</title><style>
@@ -92,6 +101,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--reference-run", type=Path)
     parser.add_argument("--learning-review", type=Path)
+    parser.add_argument("--fit-review", type=Path)
     args = parser.parse_args()
     figure_path = args.source.with_name("coordinate-audit.png")
     if not args.source.is_file() or not figure_path.is_file():
@@ -102,6 +112,9 @@ def main():
     learning_files = ("report.html", "summary.json", "comparison.png", "learning-curves.png", "magnitude-errors.png")
     if args.learning_review and any(not (args.learning_review / name).is_file() for name in learning_files):
         parser.error("learning report, summary and three figures must exist")
+    fit_files = ("report.html", "summary.json", "fit-errors.png", "fit-curves.png")
+    if args.fit_review and any(not (args.fit_review / name).is_file() for name in fit_files):
+        parser.error("fit report, summary and two figures must exist")
     if args.dry_run:
         print(json.dumps({"source": str(args.source), "figure": str(figure_path), "output": str(args.output)}))
         return
@@ -125,14 +138,21 @@ def main():
         learning_destination.mkdir(parents=True, exist_ok=True)
         for name in learning_files:
             shutil.copy2(args.learning_review / name, learning_destination / name)
-    (args.output / "index.html").write_text(landing_page(report, reference, learning), encoding="utf-8")
+    fit = None
+    if args.fit_review:
+        fit = json.loads((args.fit_review / "summary.json").read_text())
+        fit_destination = args.output / "checkpoint-03-fit"
+        fit_destination.mkdir(parents=True, exist_ok=True)
+        for name in fit_files:
+            shutil.copy2(args.fit_review / name, fit_destination / name)
+    (args.output / "index.html").write_text(landing_page(report, reference, learning, fit), encoding="utf-8")
     (args.output / ".nojekyll").touch()
     (args.output / "publication.json").write_text(json.dumps({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "benchmark": "precision_conditioning", "versions": report["versions"],
-        "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3" if reference or learning else "https://github.com/xiao312/DFODE-kit/issues/2",
+        "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3" if reference or learning or fit else "https://github.com/xiao312/DFODE-kit/issues/2",
     }, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"output": str(args.output), "files": 6 + (len(reference_files) if reference else 0) + (len(learning_files) if learning else 0)}))
+    print(json.dumps({"output": str(args.output), "files": 6 + (len(reference_files) if reference else 0) + (len(learning_files) if learning else 0) + (len(fit_files) if fit else 0)}))
 
 
 if __name__ == "__main__":

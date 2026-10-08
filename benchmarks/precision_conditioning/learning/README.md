@@ -114,6 +114,21 @@ fits and four linear-head controls. Scientific pass requires every species and
 temperature component to be within budget; a failed pass is retained, not hidden.
 Tests verify the physical loss/gradient identity and train-only subset selection.
 
+```bash
+python benchmarks/precision_conditioning/learning/fit_diagnostic.py runs/representation/checkpoint03-20261008 --output runs/representation/fit-001 --dry-run
+python benchmarks/precision_conditioning/learning/fit_diagnostic.py runs/representation/checkpoint03-20261008 --output runs/representation/fit-001
+python benchmarks/precision_conditioning/learning/verify_fit.py runs/representation/fit-001
+python benchmarks/precision_conditioning/learning/fit_review.py runs/representation/fit-001
+python -m pytest tests/test_precision_fit.py -q
+```
+
+Only the final model weights are saved. Curve samples retain species p99/max but
+not intermediate temperature maxima. Do not call an intermediate species-only
+pass an all-component pass. Fixed 200/5000 checkpoints retain complete scores.
+The first run found transient species fits followed by accuracy loss, not proof
+that Adam can never fit a single example. The diagnostic does not change or repair
+the original models; its failed scientific thresholds remain part of the evidence.
+
 ## Verification commands
 
 ```bash
