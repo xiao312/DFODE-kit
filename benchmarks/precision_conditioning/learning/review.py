@@ -20,6 +20,7 @@ def table(headers, rows):
 def figures(summary, output):
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 11, "axes.spines.top": False, "axes.spines.right": False})
     fig, axes = plt.subplots(1, 2, figsize=(13, 5.5), layout="constrained")
+    max_error = max(r["test"]["budget_p99"] for r in summary["variants"])
     for ax, mechanism in zip(axes, ("h2", "ch4")):
         rows = [r for r in summary["variants"] if r["mechanism"] == mechanism]
         for position, row in enumerate(rows):
@@ -28,6 +29,7 @@ def figures(summary, output):
         ax.set_yticks(range(len(rows)), [f"{r['target']} / {r['precision'].replace('float', 'FP')}" for r in rows])
         ax.invert_yaxis()
         ax.set_xscale("log")
+        ax.set_xlim(.4, max_error * 4)
         baseline = summary["datasets"][mechanism]["zero_baseline"]["budget_p99"]
         ax.axvline(baseline, color="#303840", linestyle="--", label="Predict zero change")
         ax.axvline(1, color="#303840", linestyle=":", label="Physical budget = 1")
@@ -77,6 +79,19 @@ def figures(summary, output):
 def report(summary):
     audits = summary["datasets"]
     rows = summary["variants"]
+    best_by_validation = {name: min((r for r in rows if r["mechanism"] == name), key=lambda r: r["validation_budget_p99"]) for name in audits}
+    findings = []
+    for name, selected in best_by_validation.items():
+        baseline = audits[name]["zero_baseline"]["budget_p99"]
+        reduction = 100 * (1 - selected["test"]["budget_p99"] / baseline)
+        findings.append(f"{name.upper()}: {escape(selected['target'])} has the lowest validation p99. Its test p99 is {selected['test']['budget_p99']:.5g} budgets, a {reduction:.2f}% reduction from predicting zero.")
+    paired_differences = []
+    for name in audits:
+        for target in COLORS:
+            pair = [r for r in rows if r["mechanism"] == name and r["target"] == target]
+            pair.sort(key=lambda r: r["precision"])
+            paired_differences.append(abs(pair[0]["test"]["budget_p99"] - pair[1]["test"]["budget_p99"]) / pair[1]["test"]["budget_p99"])
+    outcome = ' '.join(findings)
     rejected = sum(len(a["excluded"]) for a in audits.values())
     data_table = table(["Mechanism", "Checked intervals", "Train accepted", "Validation accepted", "Test accepted", "Excluded"],
                        [[name.upper(), a["source_rows"], *[a["counts"][s] for s in ("train", "validation", "test")], len(a["excluded"])] for name, a in audits.items()])
@@ -108,6 +123,9 @@ img{{width:100%;height:auto}}table{{border-collapse:collapse;width:100%;font-siz
 <h1>Can a different target representation make a small model more accurate?</h1>
 <p>This is our first chemistry learning test. All chemistry generation and model training ran on lh40902.
 It is a small interpolation test, not a chemistry-solver replacement.</p>
+<p class="notice"><strong>Main result:</strong> {outcome} None of these models has test p99 within the physical budget.
+The largest relative difference in paired FP32/FP64 test p99 is {max(paired_differences):.3g}.
+At this short training budget, FP64 does not materially improve the physical errors. This does not prove that FP64 is never needed.</p>
 <section><h2>Step 1 — Make checked answers</h2>
 <p><strong>What we did:</strong> run eight H2 and eight CH4 reaction trajectories. Cantera/CVODES produced the starting states.
 One trajectory is a reaction history from one initial condition. An interval is a short integration from one selected state in that history.
@@ -149,6 +167,9 @@ A model must improve on this baseline before we call it useful.</p>
 Relative errors use only components that passed the stricter reference-relative mask.</p>{worst}</section>
 <section><h2>Step 5 — Check what the training curves support</h2>
 <img src="learning-curves.png" alt="Validation budget errors during the fixed 200-epoch training runs">
+<p>FP32 and FP64 curves nearly overlap. Each panel has its own vertical range.
+Training-coordinate loss fell, but physical validation error often rose. Some best epochs were near the start.
+Thus, minimizing the current normalized loss did not reliably minimize the physical error we care about.</p>
 <p>A lower error in one run does not establish a universal winner. One seed cannot measure training variability.
 Different target coordinates and output scales also change the physical weighting of the training loss;
 this is a comparison of complete target pipelines, not an isolated proof about numerical storage.</p>

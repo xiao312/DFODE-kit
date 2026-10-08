@@ -14,6 +14,8 @@ No residual model or trajectory rollout is included at this gate.
 2. `train.py <run> --dry-run` checks data fitness and prints the model plan.
    Omit `--dry-run` to run the fixed comparison. It refuses existing training output.
 3. `review.py <run>` exports selected figures and a step-by-step HTML report.
+4. `verify_run.py <run>` independently recomputes saved test scores, checks matching
+   updates/initial weights, and replays each saved model without training or writes.
 
 `experiment.json` owns the eight temperatures and fixed whole-parent split:
 six train, one validation, one test per mechanism. Pressure is 1 atm and phi is 1.
