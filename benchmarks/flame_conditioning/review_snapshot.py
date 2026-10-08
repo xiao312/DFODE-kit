@@ -60,6 +60,7 @@ def main():
     parser.add_argument("--parity", type=Path)
     parser.add_argument("--historical-validation", type=Path)
     parser.add_argument("--heldout", type=Path)
+    parser.add_argument("--heldout-audit", type=Path)
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
@@ -67,6 +68,8 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.heldout_audit and not args.heldout:
+        parser.error("A held-out audit must accompany its completed evaluation")
     rows = []
     for path in args.training:
         saved = json.loads(path.read_text())
@@ -158,6 +161,19 @@ def main():
             "Uniform and temperature-balanced samples overlap; do not pool them or average their scores.",
             "Timing covers one combined offline batch, not each population separately or a CFD speedup.",
             "Historical models may have prior training/evaluation exposure; only newly trained controls were kept from this snapshot."])}
+        snapshot["queries"]["heldout_sampling"] = {"rows": [
+            {"population": name, **counts, "excluded": counts["selected"] - counts["accepted"]}
+            for name, counts in heldout["sample_counts"].items()],
+            "source": source([args.heldout], [{"label": "Test label acceptance", "definition": "Selected cell counts and accepted fixed-T/V labels, reported separately for the overlapping uniform and balanced populations."}],
+                             ["Do not add the two population counts; some cells occur in both."])}
+        if args.heldout_audit:
+            audit = json.loads(args.heldout_audit.read_text())
+            if (heldout["audit_summary_sha256"] != sha256(args.heldout_audit)
+                    or audit["status"] != "complete" or audit["budget_fit_fraction"] != 1.0):
+                raise ValueError("Held-out audit is incomplete, failed, or differs from the scored audit")
+            snapshot["queries"]["heldout_reference"] = {"rows": [reference_row(audit)],
+                "source": source([args.heldout_audit], [{"label": "Test reference agreement", "definition": "Selected reserved-snapshot states checked by tighter/step-limited CVODE and direct-increment Radau, before model scoring. Zero and unresolved nonzero references remain separate."}],
+                                 ["Subset empirical agreement, not certification of all test labels or many significant digits."])}
     if args.scaling:
         scaling = json.loads(args.scaling.read_text())
         if scaling["status"] != "verified":

@@ -325,6 +325,10 @@ evidence. Filter rows retain split counts and the exact rule; they do not modify
 the dataset or introduce a new model-selection rule. Historical controls
 remain separate from equal-budget new fits, and the two test populations remain
 separate. It never publishes weights or raw mechanism files.
+`--heldout-audit <summary.json>` adds the test's independent subset check and
+must match the audit hash in the completed held-out evaluation. Keep numerical
+zero references separate from unresolved nonzero entries. Test sampling rows
+report selected, accepted, and excluded counts for each overlapping population.
 
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing

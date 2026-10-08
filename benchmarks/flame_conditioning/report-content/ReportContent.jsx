@@ -18,6 +18,8 @@ export function ReportContent() {
   const expanded = snapshot.queries.expanded_reference?.rows;
   const filterAudit = snapshot.queries.filter_audit?.rows;
   const heldout = snapshot.queries.heldout?.rows;
+  const testSampling = snapshot.queries.heldout_sampling?.rows;
+  const testReference = snapshot.queries.heldout_reference?.rows;
   const testRuns = [...new Set((heldout || []).filter(row => row.name.startsWith("training-backbone-longer")).map(row => row.name.split("--")[0]))];
   const testRunSize = name => Number(name.match(/longer(\d+)k/)?.[1] || 0);
   const largestTestRun = testRuns.sort((a, b) => testRunSize(b) - testRunSize(a))[0];
@@ -91,6 +93,11 @@ export function ReportContent() {
     </DataComponent>}
     {heldout && prose("flame-heldout-context", "Reserved CFD snapshot", "heldout", heldout,
       "## The separate 2D snapshot: two different questions\n\nAll model identities and the 305/1000 K switching thresholds were fixed before this snapshot was opened. No model was trained or selected from these test scores. The uniform sample asks how the model performs on randomly selected cells. The temperature-balanced sample gives cold, preheat, reaction, and burnt regions a separate diagnostic view.\n\nDo not combine the two populations. Their cells can overlap, and the balanced sample is not a domain-average estimate. The main tables show the largest completed matched-data run, the zero-change baseline, and the preselected historical source-formula controls. This display rule was fixed before scoring; all frozen scores remain in the source data.\n\nOnly the new models were kept from this snapshot during this work. Prior exposure of the historical weights cannot be excluded. One offline snapshot does not prove stable CFD or accurate flame speed.")}
+    {testSampling && visible("flame-heldout-sampling") && <DataComponent id="flame-heldout-sampling" queryId="heldout_sampling" kind="table" title="Test cells and accepted reference labels" sourceRows={testSampling} displayRows={testSampling}>
+      <DataTable rows={testSampling} label="Separate test populations" columns={[{field:"population",label:"Population"},{field:"selected",label:"Selected cells",renderCell:integer},{field:"accepted",label:"Accepted labels",renderCell:integer},{field:"excluded",label:"Excluded labels",renderCell:integer}]} />
+    </DataComponent>}
+    {testReference && prose("flame-heldout-reference", "Independent test reference check", "heldout_reference", testReference,
+      `### Check the test answers too\n\nThe independent test audit checked ${testReference[0].states} states and ${integer(testReference[0].speciesComponents)} species components. All passed the empirical budget-agreement check. Maximum disagreement was ${testReference[0].uncertaintyBudgetMax.toExponential(2)} times the budget.\n\nOf ${integer(testReference[0].nonzeroReferenceComponents)} nonzero numerical references, ${integer(testReference[0].resolvedNonzeroComponents)} passed the separate relative-resolution screen and ${integer(testReference[0].unresolvedNonzeroComponents)} did not. Another ${integer(testReference[0].zeroReferenceComponents)} references were zero. These are separate counts, not a claim that every tiny test increment has many correct digits.`)}
     {heldout && testTable("uniform", "Reserved 2D snapshot: uniform random cells")}
     {heldout && testTable("balanced", "Reserved 2D snapshot: temperature-balanced diagnostic")}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,

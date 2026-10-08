@@ -11,7 +11,7 @@ It does not run experiments, fetch private artifacts, or select models.
 Input: the sanitized snapshot from `../review_snapshot.py`, with `models`,
 `reference`, and `cfd` queries, plus optional `runtime_parity`, `flame_profile`,
 `historical`, `datasets`, `scaling`, `expanded_reference`, `filter_audit`, and
-`heldout` evidence.
+`heldout`, `heldout_sampling`, and `heldout_reference` evidence.
 Output: the `ReportContent` React export used by a prepared report app.
 Stable report and component IDs must survive updates. Update the narrative when
 the experiment status changes; a data-only refresh is not sufficient.
