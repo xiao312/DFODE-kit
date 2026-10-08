@@ -172,6 +172,16 @@ training. This is a backbone/loss control, not an exact paper reproduction or an
 isolated activation ablation. Optional `activation` and `loss` fields default to
 `tanh` and `mse`, preserving previous configurations and saved-model replay.
 
+The initial backbone control lowered validation p99 for transformed-state and
+budget-linear targets, but did not meet the strict error budget. The next bounded
+scaling check uses `dataset-50k.json` and `learning-source-longer.json`: 10k updates
+on the available 10k or 50k candidates, four targets, identical architecture and
+compute. The requested size is capped by availability; compare actual counts.
+The sampling seed makes the original 10k raw states a prefix of the 50k set and
+keeps validation states identical. Verify these facts before comparing results.
+Audit the expanded training labels separately. The 2D test remains sealed until
+these predeclared comparisons finish; do not tune from its later scores.
+
 ## Reserved 2D snapshot evaluation
 
 `heldout.py --source-array <reserved.npy> --mechanism <study.yaml> --training
