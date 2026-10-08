@@ -1,0 +1,5 @@
+# Compiled report bundles are byte-addressed. Do not normalize line endings.
+/index.html -text
+/data-app-build.json -text
+/snapshot.*.json -text
+/flame-conditioning/* -text
