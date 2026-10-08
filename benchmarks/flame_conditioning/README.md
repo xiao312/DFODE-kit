@@ -279,6 +279,16 @@ The authored report source and its runtime boundary are in `report-content/`.
 When refreshing an existing app snapshot, preserve its stable ID and title.
 The held-out evaluator and both review commands accept `--dry-run` to validate
 their inputs and destination without writing an output artifact.
+`verify_physical.py <dataset> --training <run> [--training <run>] [--historical
+<validation-run>]` independently recomputes the main validation claims from saved
+predictions. It checks sample identities, budget p99, negative endpoints, mass
+drift, and heat-source RMS using Cantera density rather than the training metric's
+density formula. It is read-only by default; `--output <new.json>` saves evidence.
+This does not replace saved-model replay or independent reference integration.
+The report compiler also accepts `--historical-validation`, `--heldout`,
+`--scaling`, and `--expanded-audit` completed JSON evidence. Historical controls
+remain separate from equal-budget new fits, and the two test populations remain
+separate. It never publishes weights or raw mechanism files.
 
 ```bash
 python -m pytest tests/test_flame_*.py -q

@@ -12,6 +12,17 @@ if __package__ in (None, ""):
 from benchmarks.flame_conditioning.extract import sha256
 
 
+def score_row(name, values):
+    heat_denominator = values["heat_release_reference_rms_W_m3"]
+    return {"name": name, "samples": values["samples"],
+            "budgetP99": values["budget_error"]["p99"],
+            "negativeEndpointFraction": values["negative_endpoint_fraction"],
+            "negativeRowFraction": values["negative_endpoint_row_fraction"],
+            "inverseCorrectionFraction": values["inverse_domain_correction_fraction"],
+            "massDriftP99": values["mass_increment_drift"]["p99"],
+            "heatRelativeRms": values["heat_release_error_rms_W_m3"] / heat_denominator if heat_denominator else None}
+
+
 def source(files, definitions, caveats):
     return {"provider": "DFODE-kit reproducible experiments", "name": "Saved experiment evidence",
             "files": [{"name": path.name, "sha256": sha256(path)} for path in files],
@@ -29,6 +40,10 @@ def main():
     parser.add_argument("--audit", type=Path, required=True)
     parser.add_argument("--cfd", type=Path, required=True)
     parser.add_argument("--parity", type=Path)
+    parser.add_argument("--historical-validation", type=Path)
+    parser.add_argument("--heldout", type=Path)
+    parser.add_argument("--scaling", type=Path)
+    parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -94,6 +109,46 @@ def main():
         snapshot["queries"]["flame_profile"] = {"rows": cfd["profiles"], "source": source([args.cfd], [
             {"label": "Temperature profile", "definition": "Initial and final cell temperature versus actual cell-centre x position. Nonuniform mesh coordinates are checked against the original geometry-vector field; the mesh is not assumed uniform."}
         ], ["The 0.1 ms CVODE-only restart is a compatibility check, not a flame-speed or steady-state validation."])}
+    if args.historical_validation:
+        historical = json.loads(args.historical_validation.read_text())
+        if historical["status"] != "complete":
+            raise ValueError("Historical comparison is incomplete")
+        snapshot["queries"]["historical"] = {"rows": [score_row(model["name"], model["validation"]) for model in historical["models"]],
+            "source": source([args.historical_validation], [
+                {"label": "Historical-weight control", "definition": "Preselected existing FP32 weights, checked and converted to plain numerical arrays. Both original-style and stable reconstruction use the same weights; the hybrid uses fixed 305/1000 K thresholds."}
+            ], ["Historical training overlap with this domain is not excluded; this is not independent generalization evidence.",
+                "Historical training used far more data and updates. Do not interpret this as a matched-compute comparison.",
+                "Saved direct-power statistics retain FP32 only. Exact original FP64 preprocessing is unavailable."])}
+    if args.heldout:
+        heldout = json.loads(args.heldout.read_text())
+        if heldout["status"] != "complete":
+            raise ValueError("Reserved-snapshot scoring is incomplete")
+        test_rows = []
+        for model in heldout["models"]:
+            for population, values in model["populations"].items():
+                test_rows.append({**score_row(model["name"], values), "population": population,
+                                  "historical": model["name"].startswith("historical--")})
+        snapshot["queries"]["heldout"] = {"rows": test_rows, "source": source([args.heldout], [
+            {"label": "Reserved 2D snapshot", "definition": "Offline predictions on a predeclared uniform-cell sample and a separate temperature-balanced diagnostic sample. Model hashes and thresholds were fixed before reading the snapshot. No post-test tuning."}
+        ], ["One snapshot is not a coupled CFD trajectory or a statistical generalization study.",
+            "Uniform and temperature-balanced samples overlap; do not pool them or average their scores.",
+            "Historical models may have prior training/evaluation exposure; only newly trained controls were kept from this snapshot."])}
+    if args.scaling:
+        scaling = json.loads(args.scaling.read_text())
+        if scaling["status"] != "verified":
+            raise ValueError("Data-size comparison is not verified")
+        snapshot["queries"]["scaling"] = {"rows": [scaling], "source": source([args.scaling], [
+            {"label": "Data-size identity", "definition": "Same raw training prefix, identical validation inputs and accepted masks, matching source/configuration except training count and wall limit, and stored label differences below 0.01 species budget."}
+        ], ["Equal update counts give the larger dataset fewer average presentations per training state."])}
+    if args.expanded_audit:
+        expanded = json.loads(args.expanded_audit.read_text())
+        if expanded.get("reference_subset_pass") is not True:
+            raise ValueError("Expanded-data reference audit did not pass")
+        snapshot["queries"]["expanded_reference"] = {"rows": [{"states": len(expanded["records"]),
+            "components": expanded["components_checked"], "budgetFitFraction": expanded["budget_fit_fraction"],
+            "uncertaintyBudgetMax": max(row["uncertainty_budget_max"] for row in expanded["records"])}],
+            "source": source([args.expanded_audit], [{"label": "Expanded reference agreement", "definition": "Same independent endpoint/increment checks on a selected subset of the larger dataset."}],
+                             ["Subset agreement does not certify every generated label."])}
     if not args.dry_run:
         args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
     print(json.dumps({"dry_run": args.dry_run, "output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))
