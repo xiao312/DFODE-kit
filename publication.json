@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-08T13:42:23.235441+00:00",
-  "benchmark": "precision_conditioning",
-  "versions": {
-    "python": "3.14.6",
-    "numpy": "2.5.3"
-  },
+  "generated_at": "2026-10-08T16:48:00+00:00",
+  "benchmark": "flame_conditioning",
+  "report_path": "flame-conditioning/",
+  "source_revision": "0ad37e5",
+  "scope": "28 completed new fits and six historical controls; 50k fits in progress; 2D test sealed",
+  "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
