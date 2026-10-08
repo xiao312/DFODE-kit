@@ -50,3 +50,24 @@ Human review and decisions live in the
 [checkpoint 01](https://github.com/xiao312/DFODE-kit/issues/2).
 The optional `plot.py` renderer depends on Matplotlib and produces a PNG suitable
 for inline GitHub attachments. The numerical audit itself requires only NumPy.
+
+`publish_pages.py` builds the public review site into an explicitly selected output
+directory. It consumes the audit JSON and its adjacent `coordinate-audit.png`, uses
+the sibling HTML renderer, and writes a landing page, checkpoint report, metadata and
+downloadable audit. It performs no network calls or Git operations. Use `--dry-run`
+to inspect its inputs and output first. Publish only these generated scientific
+artifacts; credentials and server logs are outside this interface.
+
+```bash
+python benchmarks/precision_conditioning/publish_pages.py runs/precision-conditioning/audit.json --output runs/research-pages --dry-run
+python benchmarks/precision_conditioning/publish_pages.py runs/precision-conditioning/audit.json --output runs/research-pages
+python -m pytest tests/test_precision_conditioning_pages.py -q
+```
+
+Review the [published report](https://xiao312.github.io/DFODE-kit/),
+[Wiki](https://github.com/xiao312/DFODE-kit/wiki),
+[research Discussion](https://github.com/xiao312/DFODE-kit/discussions/5), and
+[Project](https://github.com/users/xiao312/projects/1) (account access required).
+The site is deployed from `research-pages`, separately from the research source.
+Before changing the existing documentation Pages workflow, reconcile its deployment
+with this site; GitHub Pages serves one site for this repository.

@@ -15,6 +15,12 @@
 `benchmarks/precision_conditioning/` owns the standalone representational audit.
 It depends only on NumPy and does not alter production data or training paths.
 `tests/test_precision_conditioning_audit.py` verifies its numerical invariants.
+Optional rendering flows from audit JSON through `plot.py` (Matplotlib) and
+`build_report.py` (standard library) into `publish_pages.py` (standard library).
+The publisher produces static scientific artifacts only; deployment is a separate
+Git operation on `research-pages`. `tests/test_precision_conditioning_pages.py`
+checks its dry-run boundary and generated files. Wiki, Discussions and Projects
+link the evidence without becoming numerical inputs.
 The staged research and review plan is in
 `docs/agents/precision-conditioning-research.md`.
 
