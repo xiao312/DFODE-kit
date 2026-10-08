@@ -66,6 +66,7 @@ def main():
     parser.add_argument("--audit", type=Path, required=True)
     parser.add_argument("--cfd", type=Path, required=True)
     parser.add_argument("--parity", type=Path)
+    parser.add_argument("--cfd-tolerance", type=Path)
     parser.add_argument("--historical-validation", type=Path)
     parser.add_argument("--heldout", type=Path)
     parser.add_argument("--heldout-audit", type=Path)
@@ -139,6 +140,22 @@ def main():
             "maxDifferenceBudget": parity["max_difference_budget"], "budgetFitFraction": parity["budget_fit_fraction"]}],
             "source": source([args.parity], [{"label": "Version/interface parity", "definition": "Difference between fixed-T/V tight Cantera 2.6 Reactor increments and saved Cantera 3.2 IdealGasReactor labels, divided by the species budget."}],
                              ["Selected validation subset only; not a guarantee across every state or all solver settings."])}
+    if args.cfd_tolerance:
+        control = json.loads(args.cfd_tolerance.read_text())
+        if control["status"] != "complete" or not control["original_files_unchanged"]:
+            raise ValueError("CFD tolerance control is incomplete")
+        difference = control["final_field_difference"]
+        snapshot["queries"]["cfd_tolerance"] = {"rows": [{
+            "steps": control["steps"], "cells": control["cells"],
+            "temperatureMaxAbsK": difference["temperature_max_abs_K"],
+            "pressureMaxAbsPa": difference["pressure_max_abs_Pa"],
+            "speciesMaxAbs": difference["species_max_abs"],
+            "finalStateBudgetP99": difference["non_argon_species_budget_p99"],
+            "originalFilesUnchanged": control["original_files_rechecked"]}],
+            "source": source([args.cfd_tolerance], [{"label": "CFD tolerance sensitivity",
+                "definition": "Absolute final-field differences between identical 100-step CVODE-only copies with rtol/atol 1e-6/1e-10 and 1e-12/1e-21. Species budget uses 1e-12 + 1e-6 times the absolute tighter final mass fraction; argon is excluded from p99."}],
+                ["Final-state differences after 100 CFD steps are not the one-step learned-increment metric.",
+                 "Neither run is exact truth. This is not mesh/time convergence, a neural CFD test, or a speedup measurement."])}
     if cfd.get("profiles"):
         snapshot["queries"]["flame_profile"] = {"rows": cfd["profiles"], "source": source([args.cfd], [
             {"label": "Temperature profile", "definition": "Initial and final cell temperature versus actual cell-centre x position. Nonuniform mesh coordinates are checked against the original geometry-vector field; the mesh is not assumed uniform."}

@@ -25,6 +25,11 @@ def test_controls_allow_only_declared_chemistry_difference(tmp_path):
     (cases[1] / "initial").write_text("changed")
     with pytest.raises(ValueError, match="Prepared CFD input changed"):
         check_inputs(*cases)
+    (cases[1] / "initial").write_text("same initial states")
+    chemistry = cases[1] / "constant/CanteraTorchProperties"
+    chemistry.write_text(chemistry.read_text().replace("torch false;", "torch true;"))
+    with pytest.raises(ValueError, match="CVODE-only preset"):
+        check_inputs(*cases)
 
 
 def test_difference_metrics_use_physical_fields_and_exclude_argon_from_budget():

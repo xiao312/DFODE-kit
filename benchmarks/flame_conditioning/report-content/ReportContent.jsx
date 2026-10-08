@@ -14,6 +14,7 @@ export function ReportContent() {
   const reference = snapshot.queries.reference.rows;
   const cfd = snapshot.queries.cfd.rows;
   const parity = snapshot.queries.runtime_parity?.rows;
+  const tolerance = snapshot.queries.cfd_tolerance?.rows;
   const profile = snapshot.queries.flame_profile?.rows;
   const historical = snapshot.queries.historical?.rows;
   const datasets = snapshot.queries.datasets?.rows;
@@ -121,6 +122,8 @@ export function ReportContent() {
     </DataComponent>}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
       `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)}
+    {tolerance && prose("flame-cfd-tolerance", "Numerical tolerance control", "cfd_tolerance", tolerance,
+      `### Tightening chemistry tolerances changes this short run only slightly\n\nWe made a second case copy. It used the same mesh, initial fields, timestep, and installed solver. Neural chemistry stayed off. Only CVODE tolerances changed: relative/absolute values of 10⁻⁶/10⁻¹⁰ became 10⁻¹²/10⁻²¹.\n\nBoth copies completed ${tolerance[0].steps} steps. The largest final temperature difference was ${tolerance[0].temperatureMaxAbsK.toExponential(2)} K. The largest species mass-fraction difference was ${tolerance[0].speciesMaxAbs.toExponential(2)}. All ${tolerance[0].originalFilesUnchanged} original input files retained their hashes.\n\nThe final-state species-budget p99 was ${tolerance[0].finalStateBudgetP99.toFixed(2)}. This uses the tighter final mass fraction in the budget. Do not compare it directly with the one-step learned-increment scores above. This control shows tolerance sensitivity over this short restart. It does not prove an exact solution, mesh or timestep convergence, or neural-model accuracy.`)}
     {parity && prose("flame-runtime-parity", "Runtime version agreement", "runtime_parity", parity,
       `### The older runtime agrees on a checked subset\n\nThe unchanged CFD Cantera ${parity[0].runtimeCantera} environment was tested on ${parity[0].states} validation states. Its tight chemistry increments differed from the Cantera ${parity[0].researchCantera} labels by at most ${parity[0].maxDifferenceBudget.toExponential(2)} of the species error budget. This reduces a compatibility concern without upgrading the installed solver. It does not certify every state.`)}
     {prose("flame-next", "Next decision", "models", models,

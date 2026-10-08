@@ -36,7 +36,11 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
                  {"reference_delta": [0.0], "relative_fit": [False], "uncertainty_budget_max": 0.0}]}
     cfd = {"status": "complete", "original_files_unchanged": True, "steps": 1,
            "original_files_rechecked": 1, "states": []}
-    for name, data in (("training", training), ("audit", audit), ("cfd", cfd)):
+    control = {"status": "complete", "original_files_unchanged": True, "steps": 100,
+               "cells": 500, "original_files_rechecked": 73, "final_field_difference": {
+                   "temperature_max_abs_K": 1e-5, "pressure_max_abs_Pa": 2e-6,
+                   "species_max_abs": 2e-8, "non_argon_species_budget_p99": 5.7}}
+    for name, data in (("training", training), ("audit", audit), ("cfd", cfd), ("control", control)):
         (tmp_path / f"{name}.json").write_text(json.dumps(data))
     heldout = {"status": "complete", "audit_summary_sha256": sha256(tmp_path / "audit.json"),
                "sample_counts": {"uniform": {"selected": 2, "accepted": 1}},
@@ -46,6 +50,7 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
     output = tmp_path / "review.json"
     monkeypatch.setattr(sys, "argv", ["review_snapshot", "--training", str(tmp_path / "training.json"),
         "--audit", str(tmp_path / "audit.json"), "--cfd", str(tmp_path / "cfd.json"),
+        "--cfd-tolerance", str(tmp_path / "control.json"),
         "--heldout", str(heldout_path), "--heldout-audit", str(tmp_path / "audit.json"),
         "--output", str(output)])
     main()
@@ -54,6 +59,7 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
     assert queries["heldout_sampling"]["rows"][0]["excluded"] == 1
     assert queries["heldout_reference"]["rows"][0]["zeroReferenceComponents"] == 1
     assert queries["heldout"]["rows"][0]["batchWallSeconds"] is None
+    assert queries["cfd_tolerance"]["rows"][0]["finalStateBudgetP99"] == 5.7
     assert str(tmp_path) not in text
     heldout["audit_summary_sha256"] = "wrong"
     heldout_path.write_text(json.dumps(heldout))

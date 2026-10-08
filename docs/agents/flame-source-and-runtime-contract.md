@@ -684,3 +684,27 @@ candidate pool. Report rejection counts by source group, temperature, and
 increment magnitude. Keep the validation population fixed. This separates
 the effect of excluding augmentation artifacts from a change in model
 architecture or dataset size; filtering validation could hide a failure.
+
+## Separate CFD tolerance control — 2026-10-09
+
+Two isolated copies completed the same 100 steps, from 2.5 to 2.6 ms, on the
+500-cell mesh. Both used the installed solver with ANN disabled. The first used
+CVODE relative/absolute tolerances 1e-6/1e-10; the second used 1e-12/1e-21.
+The comparison checked identical prepared inputs except for the chemistry
+dictionary's tolerance values and private mechanism path. All 73 original input
+hashes remained unchanged. No shared environment or image was changed.
+
+At the final time, maximum absolute differences were 9.8543446e-6 K in
+temperature, 2.7313072e-6 Pa in pressure, and 1.9650143e-8 in species mass
+fraction. Neither final field had a negative species component. The non-argon
+final-state budget p99 was 5.7427643, using 1e-12 + 1e-6 times the absolute
+tighter-run final mass fraction. This differs from the single chemistry-step
+increment metric and must not be directly ranked against learned-model scores.
+
+The tight run completed in 153.45 process seconds and 307 wall seconds under
+a half-CPU limit. These are context, not a learned-model speedup benchmark.
+This control measures tolerance sensitivity over one short restart. Neither
+run is exact truth. It does not establish mesh/time convergence, long-term
+flame accuracy, or neural chemistry reliability. The deployment gate stays closed.
+Evidence is the private `cfd-tolerance-20261009` run and its sanitized comparison
+in the existing review report; the source cases and mechanism are not published.

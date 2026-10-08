@@ -12,6 +12,8 @@ Input: the sanitized snapshot from `../review_snapshot.py`, with `models`,
 `reference`, and `cfd` queries, plus optional `runtime_parity`, `flame_profile`,
 `historical`, `datasets`, `scaling`, `expanded_reference`, `filter_audit`, and
 `heldout`, `heldout_sampling`, and `heldout_reference` evidence.
+Optional `cfd_tolerance` evidence compares two CVODE-only restart runs. Keep
+its final-state difference distinct from one-step learned-increment errors.
 Output: the `ReportContent` React export used by a prepared report app.
 Stable report and component IDs must survive updates. Update the narrative when
 the experiment status changes; a data-only refresh is not sufficient.

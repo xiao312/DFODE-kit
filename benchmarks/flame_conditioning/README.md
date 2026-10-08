@@ -323,6 +323,8 @@ paths, raw chemistry states, model weights, or mechanism contents. The HTML repo
 is a downstream presentation of this snapshot, with the source hashes retained.
 The authored report source and its runtime boundary are in `report-content/`.
 `--parity <runtime-parity.json>` includes the unchanged-runtime comparison.
+`--cfd-tolerance <comparison.json>` includes the separate 100-step numerical
+tolerance control. Its final-state budget score is not a one-step model score.
 When refreshing an existing app snapshot, preserve its stable ID and title.
 The held-out evaluator and both review commands accept `--dry-run` to validate
 their inputs and destination without writing an output artifact.
