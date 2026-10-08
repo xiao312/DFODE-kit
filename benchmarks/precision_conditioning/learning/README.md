@@ -68,7 +68,53 @@ inside the experiment. Install dependencies before launching the offline contain
 Use one CPU, 4 GB memory, one thread and an external one-hour timeout. Each command
 also records its elapsed time and source revision. Never overwrite a completed run.
 
-## Verification
+## Training-fit diagnosis
+
+`fit_probe.py <run> --mechanism h2 --target budget-linear` replays a saved FP64
+model on training rows only. `--row 0` reduces the check to the first training row.
+This read-only command exits 1 if any species error exceeds its physical budget.
+It does not mean that the code is broken: it is a deliberately strict scientific
+fit check. It never reads validation or test labels for scoring or selects a model.
+Dependencies are the existing saved arrays, preprocessing, `train.network`, NumPy
+and PyTorch. Outputs are JSON on stdout; there are no writes or network calls.
+Expected for the checkpoint 03 models: exit 1, with a reported maximum above 1.
+
+`fit_diagnostic.py <run> --output <new-fit-run> --dry-run` prints a bounded plan.
+Omit `--dry-run` to run it. `fit_experiment.json` pins the plan. Use budget-linear
+coordinates only, to separate output weighting from nonlinear inverse gradients.
+Reuse preprocessing fitted on the original training split. No held-out rows enter
+the diagnostic. Each mechanism uses three subsets: one sample, all eight accepted
+anchors from the 1400 K parent at h=1e-6 s, and all accepted training intervals.
+The one-sample subset is the first of those eight rows. Changing subsets is a
+separate probe, not part of the matched loss comparison.
+
+For each subset, initialize the same FP64 64/64 tanh model with seed 20261008.
+Compare coordinate MSE with physical-budget MSE at fixed updates 200 and 5000.
+Adam, learning rate 1e-3, full-batch inputs and output RMS scales stay unchanged.
+If q is normalized output and s is its output RMS, the budget error is
+`(q - q_reference) * s`. The physical loss averages its square over active
+temperature/species channels, divided by one global constant `max(s_active)^2`.
+This constant uses the original training data and preserves relative physical
+weights. It changes Adam's effective epsilon; record it and do not claim that
+different optimizers are mathematically equivalent. Neither loss directly
+optimizes p99 or guarantees the maximum error. No best epoch is selected.
+
+As a separate capacity control, solve only the final linear layer by NumPy SVD
+least squares, with fixed initial hidden features, for the one/eight-row subsets.
+Record rank and condition number. This is an interpolation/memorization control,
+not evidence of generalization or a comparable-cost training method.
+Record target round-trip error, all row IDs, source/data hashes, loss curves,
+physical scores, final weights, preprocessing and predictions. The runner refuses
+an existing destination, limits itself to one thread and one hour, and uses the
+same offline one-CPU/4-GB container boundary as the original comparison.
+`fit_review.py <fit-run>` makes a static report from those saved results.
+`verify_fit.py <fit-run>` replays final weights, recomputes physical scores and
+checks matching initialization, sample IDs and update counts. Expected: 12 Adam
+fits and four linear-head controls. Scientific pass requires every species and
+temperature component to be within budget; a failed pass is retained, not hidden.
+Tests verify the physical loss/gradient identity and train-only subset selection.
+
+## Verification commands
 
 ```bash
 python benchmarks/precision_conditioning/learning/prepare.py --dry-run

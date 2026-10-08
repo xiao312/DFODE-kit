@@ -35,6 +35,12 @@ The bounded learning comparison lives in `benchmarks/precision_conditioning/lear
 reference.targets -> PyTorch`; `review.py -> saved evidence -> static Pages and
 issue attachments`. It owns checked group splits and fixed model budgets. It does
 not change production preprocessing, model registries or training behavior.
+`learning/fit_probe.py -> saved training arrays/preprocessing and train.network`
+is a read-only scientific fit check. It does not score the held-out test set.
+`learning/fit_diagnostic.py -> train.preprocessing/network and metrics.evaluate`
+reuses only training rows for a bounded loss/update/subset diagnosis.
+`fit_review.py -> saved fit evidence -> static Pages`; `verify_fit.py` independently
+replays the saved diagnostic models. No production module depends on these tools.
 
 ## Current refactor themes
 
