@@ -11,7 +11,7 @@ import shutil
 from build_report import build_html
 
 
-def landing_page(report):
+def landing_page(report, reference=None):
     count = report["sample_count"]
     lost = report["state_addition_lost_nonzero"]
     cards = [
@@ -23,6 +23,20 @@ def landing_page(report):
         ("Research hub", "Milestones, links and the experiment checklist", "https://github.com/xiao312/DFODE-kit/issues/1"),
     ]
     navigation = "".join(f'<a class="card" href="{url}"><strong>{escape(title)}</strong><span>{escape(description)}</span></a>' for title, description, url in cards)
+    latest = ""
+    if reference is not None:
+        latest = f'''<section class="checkpoint"><h2>Latest result: chemistry reference accuracy</h2>
+<p>{reference['interval_count']} intervals ran on lh40902. Of {reference['assessed_species_components']:,}
+species increments, {reference['budget_fit_count']:,} passed the reference-agreement check.
+{reference['relative_fit_count']:,} also passed the stricter relative-error mask. These checks are not rigorous error bounds.</p>
+<img src="checkpoint-02/reference-feasibility.png" alt="Chemistry reference agreement and label fitness">
+<p>No model training or full-grid generation. Review the unresolved labels and add independent
+parent trajectories before the learning comparison.</p>
+<p><a href="checkpoint-02/report.html">Open checkpoint 02</a> ·
+<a href="https://github.com/xiao312/DFODE-kit/issues/3">Review the decision</a></p></section>'''
+    status = "Checkpoint 02 · ready for scientific review" if reference else "Checkpoint 01 · ready for scientific review"
+    next_step = ("Review the chemistry reference masks and the next small set of independent parent trajectories."
+                 if reference else "Select the chemistry mechanism, reactor constraints, timestep range and reference tolerance ladder.")
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DFODE-kit Research Review</title><style>
@@ -41,9 +55,10 @@ a{{color:#1d6094}}footer{{margin-top:36px;font-size:.85rem;color:#526476}}
 <p>A shared place to review the evidence, discuss scientific choices and follow experiments.
 The working direction is error-budget-aware coordinates, residual approximation,
 stable reconstruction and controlled integration.</p>
-<div class="badge">Checkpoint 01 · ready for scientific review</div>
+<div class="badge">{status}</div>
 <nav class="grid" aria-label="Research services">{navigation}</nav>
-<section class="checkpoint"><h2>Latest result: where do tiny increments disappear?</h2>
+{latest}
+<section class="checkpoint"><h2>Checkpoint 01: where do tiny increments disappear?</h2>
 <p>Across {count:,} synthetic state/increment pairs, {lost} known nonzero increments disappear
 when added to the initial state in FP64. Direct increment coordinates preserve them,
 but coordinate compression can amplify inverse-rounding error.</p>
@@ -54,9 +69,8 @@ was evaluated. Asinh's possible learning benefit remains an experimental questio
 <a href="checkpoint-01/audit.json">Download metrics and synthetic inputs</a> ·
 <a href="https://github.com/xiao312/DFODE-kit/issues/2">Discuss this result</a></p></section>
 <section><h2>What needs a decision next?</h2>
-<p>Select the chemistry mechanism, reactor constraints, timestep range and reference tolerance
-ladder. A small H2 case is the proposed initial check; the selected NH3/CH4 mechanism is the
-main scientific target. <a href="https://github.com/xiao312/DFODE-kit/issues/3">Review checkpoint 02</a>.</p></section>
+<p>{next_step} The selected NH3/CH4 mechanism remains pending source verification.
+<a href="https://github.com/xiao312/DFODE-kit/issues/3">Review checkpoint 02</a>.</p></section>
 <footer>Public research review · reproducible source on
 <a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments">the research branch</a>.
 <a href="publication.json">Publication metadata</a>.</footer></body></html>
@@ -68,10 +82,14 @@ def main():
     parser.add_argument("source", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--reference-run", type=Path)
     args = parser.parse_args()
     figure_path = args.source.with_name("coordinate-audit.png")
     if not args.source.is_file() or not figure_path.is_file():
         parser.error("audit.json and adjacent coordinate-audit.png must exist")
+    reference_files = ("report.html", "summary.json", "analysis-provenance.json", "reference-feasibility.png", "reference-cancellation.png")
+    if args.reference_run and any(not (args.reference_run / name).is_file() for name in reference_files):
+        parser.error("reference report, summary, provenance and both figures must exist")
     if args.dry_run:
         print(json.dumps({"source": str(args.source), "figure": str(figure_path), "output": str(args.output)}))
         return
@@ -81,14 +99,21 @@ def main():
     shutil.copy2(args.source, checkpoint / "audit.json")
     shutil.copy2(figure_path, checkpoint / "coordinate-audit.png")
     (checkpoint / "report.html").write_text(build_html(report), encoding="utf-8")
-    (args.output / "index.html").write_text(landing_page(report), encoding="utf-8")
+    reference = None
+    if args.reference_run:
+        reference = json.loads((args.reference_run / "summary.json").read_text())
+        reference_destination = args.output / "checkpoint-02"
+        reference_destination.mkdir(parents=True, exist_ok=True)
+        for name in reference_files:
+            shutil.copy2(args.reference_run / name, reference_destination / name)
+    (args.output / "index.html").write_text(landing_page(report, reference), encoding="utf-8")
     (args.output / ".nojekyll").touch()
     (args.output / "publication.json").write_text(json.dumps({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "benchmark": "precision_conditioning", "versions": report["versions"],
-        "review_issue": "https://github.com/xiao312/DFODE-kit/issues/2",
+        "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3" if reference else "https://github.com/xiao312/DFODE-kit/issues/2",
     }, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"output": str(args.output), "files": 6}))
+    print(json.dumps({"output": str(args.output), "files": 6 + (len(reference_files) if reference else 0)}))
 
 
 if __name__ == "__main__":

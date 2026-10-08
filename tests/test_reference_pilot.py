@@ -71,3 +71,33 @@ def test_quantization_reports_normalization_separately():
     assert abs(sum(quantized["Y"]) - 1) < 1e-15
     assert effects["raw_Y_error_max"] > 0
     assert effects["normalization_change_max"] > 0
+
+
+def test_summary_separates_input_effects_from_reference_error():
+    conservation = {"mass_delta_sum": 0., "element_delta_max": 0.,
+                    "enthalpy_relative_drift": 0., "minimum_mass_fraction": 0.}
+    names = ("absolute18", "absolute21", "step_limited", "radau_check", "radau_reference", "fp32_input")
+    record = {"id": "one", "mechanism": "test", "interval_s": 1e-6,
+              "state": {"T": 900., "Y": [0., .1]}, "failures": {},
+              "solutions": {name: {"delta": [0., 1e-8, 0.], "seconds": 1.,
+                                   "conservation": conservation} for name in names}}
+    record["solutions"]["absolute21"]["delta"] = [0., 1e-8 + 1e-15, 0.]
+    record["solutions"]["fp32_input"]["delta"] = [0., 1e-8 + 3e-15, 0.]
+    summary, components, _ = analysis.summarize([record], CONFIG, [{"id": "test", "species": ["A", "B"]}])
+    assert summary["assessed_species_components"] == 2
+    assert summary["budget_fit_count"] == 2
+    assert summary["relative_fit_count"] == 1
+    assert summary["reference_zero_estimate_count"] == 1
+    quantized = summary["solvers"]["fp32_input"]
+    assert quantized["input_quantization_budget_max_per_interval"]["max"] == pytest.approx(.002)
+    assert quantized["species_budget_error_max_per_interval"]["max"] == pytest.approx(.003)
+    assert components[0]["relative_fit"]
+
+
+def test_report_escapes_table_values_and_refuses_incomplete_run(tmp_path):
+    report = load("report")
+    assert "&lt;script&gt;" in report.table(["Title"], [["<script>"]])
+    (tmp_path / "summary.json").write_text("{}")
+    (tmp_path / "manifest.json").write_text(json.dumps({"status": "running"}))
+    with pytest.raises(ValueError, match="complete pilot"):
+        report.build(tmp_path)

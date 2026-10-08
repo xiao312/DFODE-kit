@@ -75,3 +75,12 @@ records if a solver fails. A one-hour external timeout is required for live runs
 Use one CPU worker. In Docker, also set `--cpus 1 --memory 4g`. Inspect metadata,
 counts, conservation, and solver agreement before publishing. Fast tests must check
 the real direct-increment RHS, target inversion, split isolation and metric masks.
+
+`figures.py <run-directory>` exports two PNG files for inline GitHub review. It reads
+only completed run metrics and raw intervals. `report.py <run-directory>` creates
+the checkpoint HTML using the same static report format as checkpoint 01. It does
+not publish. Use `--dry-run` on both commands to inspect their destinations first.
+Keep the raw run on the server. Publish only the report, summary and figures.
+`analysis-provenance.json` records the raw-input hashes, pilot source revision and
+analysis revision separately. Publish this small file with the report. Re-analysis
+does not alter the original manifest or claim that the pilot used newer source.

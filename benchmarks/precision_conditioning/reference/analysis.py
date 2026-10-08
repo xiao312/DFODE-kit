@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import csv
+from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
+import subprocess
 
 import numpy as np
 
@@ -57,6 +60,14 @@ def summarize(records, config, mechanism_info):
                                "species_budget_error_rms": float(np.sqrt(np.mean(scaled**2))),
                                "species_budget_exceedance_fraction": float(np.mean(scaled > 1)),
                                "temperature_budget_error": float(abs(solution["delta"][0] - assessment["reference"][0]) / assessment["weights"][0])})
+                relative_mask = assessment["relative_fit"][1:]
+                relative = error[relative_mask] / np.abs(assessment["reference"][1:][relative_mask])
+                values["relative_component_count"] = int(relative_mask.sum())
+                values["relative_error_p99"] = float(np.quantile(relative, .99)) if relative.size else None
+                if name == "fp32_input":
+                    input_effect = np.abs(np.asarray(solution["delta"])[1:] -
+                                          np.asarray(record["solutions"]["absolute21"]["delta"])[1:])
+                    values["input_quantization_budget_max"] = float(np.max(input_effect / assessment["weights"][1:]))
             solver_rows.append(values)
         if assessment is None:
             continue
@@ -100,7 +111,11 @@ def summarize(records, config, mechanism_info):
             "element_delta_max": max(row["element_delta_max"] for row in rows),
             "enthalpy_relative_drift_max": max(row["enthalpy_relative_drift"] for row in rows),
             "minimum_mass_fraction": min(row["minimum_mass_fraction"] for row in rows),
+            "masked_relative_error_p99_per_interval": distribution([row["relative_error_p99"] for row in rows if row.get("relative_error_p99") is not None]),
         }
+        if solver == "fp32_input":
+            by_solver[solver]["input_quantization_budget_max_per_interval"] = distribution([
+                row["input_quantization_budget_max"] for row in rows if "input_quantization_budget_max" in row])
     return {"interval_count": len(records), "assessed_species_components": count,
             "assessed_interval_count": len({row["record_id"] for row in component_rows}),
             "budget_fit_count": sum(row["budget_fit"] for row in component_rows),
@@ -118,6 +133,19 @@ def write_analysis(output):
     records = [json.loads(line) for line in (output / "intervals.jsonl").read_text().splitlines() if line.strip()]
     summary, components, solvers = summarize(records, manifest["config"], manifest["mechanisms"])
     (output / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
+    repository = Path(__file__).resolve().parents[3]
+    revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repository, capture_output=True, text=True)
+    changes = subprocess.run(["git", "status", "--porcelain"], cwd=repository, capture_output=True, text=True)
+    provenance = {
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "pilot_source": manifest["source"],
+        "analysis_source": {"commit": revision.stdout.strip() if revision.returncode == 0 else None,
+                            "dirty": bool(changes.stdout.strip()) if changes.returncode == 0 else None},
+        "analysis_script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "intervals_sha256": hashlib.sha256((output / "intervals.jsonl").read_bytes()).hexdigest(),
+        "manifest_sha256": hashlib.sha256((output / "manifest.json").read_bytes()).hexdigest(),
+    }
+    (output / "analysis-provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
     for name, rows in (("components.csv", components), ("solver-metrics.csv", solvers)):
         if not rows:
             continue

@@ -59,6 +59,11 @@ The CLI now uses lighter command discovery and deferred heavy imports for improv
 
 ## Architectural end state of the recent refactor
 
+The research Pages publisher can consume the reference pilot's static report,
+figures, summary and analysis provenance. This is a one-way artifact dependency:
+`reference analysis/renderers -> publish_pages -> research-pages deployment`.
+It does not import the chemistry runner or change production training behavior.
+
 The repository has now completed the transition away from the older compatibility layout. In particular, these legacy layers are removed from `main`:
 
 - `dfode_kit/cli_tools/`
