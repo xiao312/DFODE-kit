@@ -258,7 +258,7 @@ def main():
                                  "continuations": len(dataset.get("continuations", []))})
         snapshot["queries"]["datasets"] = {"rows": dataset_rows, "source": source(args.dataset_manifest, [
             {"label": "Accepted chemistry labels", "definition": "Candidates with finite, nonnegative endpoints and passing fixed-temperature/volume, mass and elemental checks. Failed rows remain in the private artifact but are excluded from fitting."}
-        ], ["The larger generation run reached its first wall limit and finished in a new continuation directory; its elapsed time is the sum of both segments."])}
+        ], ["Each continuation uses a new directory. Generation time sums the recorded wall time of the initial segment and all continuations; it is not CPU time or a CFD speedup."])}
     if args.filter_audit:
         filter_rows = []
         for path in args.filter_audit:
