@@ -20,6 +20,9 @@ completed matched 4x800/10k-update run, zero baseline, and historical source-for
 controls. Keep uniform and temperature-balanced populations in separate tables.
 Retain every frozen model's scores in source data. Never select table rows by
 their test performance.
+Reference rows distinguish zero numerical increments from unresolved nonzero
+increments. A relative-resolution fraction over all species must not be described
+as the unresolved-label fraction; inert-species zeros have no relative error.
 
 ## Dependencies and dependents
 
