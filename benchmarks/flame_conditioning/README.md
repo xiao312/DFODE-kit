@@ -172,6 +172,27 @@ training. This is a backbone/loss control, not an exact paper reproduction or an
 isolated activation ablation. Optional `activation` and `loss` fields default to
 `tanh` and `mse`, preserving previous configurations and saved-model replay.
 
+## Reserved 2D snapshot evaluation
+
+`heldout.py --source-array <reserved.npy> --mechanism <study.yaml> --training
+<completed-training> [--training <another-completed-training>] --output <new-test>
+--dry-run` checks a frozen comparison plan. The live command records model and
+preprocessing hashes before reading the test array. Source columns are T, p, and
+mechanism-ordered Y, verified against named original fields during discovery.
+Draw 1024 cells uniformly without replacement plus up to 32 cells per fixed
+temperature bin. Save cell IDs and separate membership masks. Report uniform-cell
+metrics separately from the diagnostic temperature-balanced sample; do not pool
+them into a domain-average claim. Normalize only the small recorded mass closure
+error (at most 1e-4), never negative fractions. Keep excluded labels and reasons.
+An independent `scout.py` audit on this artifact must pass before test scoring.
+
+`evaluate_heldout.py <test> --audit <test-scout> --output <new-evaluation>` rechecks
+the frozen hashes and scores every listed model without tuning. It also evaluates
+the fixed paper-style policy: zero below 305 K, direct power from 305 to 1000 K,
+and transformed-state increments at or above 1000 K. The thresholds are not fit.
+This is an offline test on one 2D snapshot, not temporal rollout or coupled CFD
+validation. Test results cannot select further tuning on this same test set.
+
 ## Copied CFD restart
 
 `copy_case.py --source-case <original-1D-case> --mechanism <study.yaml> --output

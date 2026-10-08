@@ -68,6 +68,11 @@ non-argon accuracy and all-species conservation without modifying predictions.
 `train.py -> data/coordinates/metrics` requires that audit and exposes validation
 only. `verify.py -> saved models/coordinates/data` independently replays the
 matched-budget result. Held-out 2D evaluation and CFD deployment are later layers.
+`heldout.py -> frozen training artifacts/reserved snapshot/chemistry` prepares a
+separate labeled test. `scout.py -> saved test states` audits its references.
+`evaluate_heldout.py -> audited test/verify/metrics` checks frozen model hashes and
+scores uniform and temperature-balanced populations separately. Test evidence has
+no dependency back into training or checkpoint selection.
 `copy_case.py -> inspected original fields/mesh` prepares an allowlisted isolated
 restart and depends on the canonical case's inactive spray dictionary. Execution
 uses the existing image, outside the preparation command. It
