@@ -60,6 +60,10 @@ mechanism license. Do not redistribute the YAML in public Git, Pages, or an
 image until redistribution rights are established. Internal reuse of the
 user-provided asset must retain its hash and source path.
 
+The [bounded provenance follow-up](okafor-mechanism-provenance.md) confirms the
+paper attribution and current file identity. Publisher-package equivalence and
+mechanism redistribution rights remain unverified.
+
 ### Original labeling code
 
 Two inspected study scripts use `ct.Reactor(gas, energy='off')`, a 1e-6 s
