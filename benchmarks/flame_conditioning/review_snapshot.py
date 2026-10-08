@@ -10,6 +10,7 @@ import sys
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from benchmarks.flame_conditioning.extract import sha256
+from benchmarks.flame_conditioning.review_recovery import recovery_row
 
 
 def species_budget_scores(values):
@@ -85,6 +86,7 @@ def main():
     parser.add_argument("--historical-validation", type=Path)
     parser.add_argument("--heldout", type=Path)
     parser.add_argument("--heldout-audit", type=Path)
+    parser.add_argument("--reference-recovery", type=Path)
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
@@ -94,6 +96,8 @@ def main():
     args = parser.parse_args()
     if args.heldout_audit and not args.heldout:
         parser.error("A held-out audit must accompany its completed evaluation")
+    if args.reference_recovery and not args.heldout:
+        parser.error("A reference amendment must accompany its completed evaluation")
     rows = []
     for path in args.training:
         saved = json.loads(path.read_text())
@@ -234,6 +238,13 @@ def main():
             snapshot["queries"]["heldout_reference"] = {"rows": [reference_row(audit)],
                 "source": source([args.heldout_audit], [{"label": "Test reference agreement", "definition": "Selected reserved-snapshot states checked by tighter/step-limited CVODE and direct-increment Radau, before model scoring. Zero and unresolved nonzero references remain separate."}],
                                  ["Subset empirical agreement, not certification of all test labels or many significant digits."])}
+    if args.reference_recovery:
+        verified = json.loads(args.reference_recovery.read_text())
+        snapshot["queries"]["reference_recovery"] = {"rows": [recovery_row(verified, heldout)],
+            "source": source([args.reference_recovery, args.heldout], [{"label": "Reference-policy amendment",
+                "definition": "Original strict acceptance and independently checked recovery counts. Raw signed labels, source cells, and frozen model plan remain unchanged; only reference eligibility changes."}],
+                ["Post-reference, pre-score amendment, not the original strict protocol. Every recovered row has four fresh comparison solves.",
+                 "The negative endpoint floor is a numerical-noise screen, not rigorous positivity or accurate relative digits."])}
     if args.scaling:
         scaling = json.loads(args.scaling.read_text())
         if scaling["status"] != "verified":

@@ -51,6 +51,10 @@ in percentage formatting. Test-batch diagnostics do not become population rates.
 Label negative endpoint rates as species-component fractions, not cell fractions.
 Keep budget, heat-error, negative-component, and inverse-correction definitions
 with each new-model, historical-control, and reserved-test source query.
+When `reference_recovery` is present, show the strict rejection and amended
+eligibility counts before the test scores. State that raw signed labels remain
+unchanged and the amendment occurred after reference inspection but before model
+scoring. Never describe the amended test as the unchanged original protocol.
 The preselected species view shows NH3, CH4, NO, and OH, using each species'
 physical-budget p99. This selection is chemical-role based, not chosen from test
 errors. The offline balanced-population view is not a domain-average emissions

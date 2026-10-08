@@ -275,6 +275,11 @@ Report this as a post-reference/pre-score amendment, not the original strict
 protocol. Do not use it to silently reclassify old training data. The internal
 wall limit is 1800 seconds; partial recovery cannot be scored. Verify with
 `python -m pytest tests/test_flame_reference_recovery.py -q`.
+`verify_reference_recovery.py <strict-test> <recovered-test> --output <new.json>`
+independently checks the unchanged cells, frozen plan, signed increments, old
+acceptance mask, all per-row comparison records, and amended eligibility masks.
+Require its pass before the fresh subset audit and model scoring. It does not
+change either artifact. The report includes its compact, hash-bound evidence.
 
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
 It never reads the old pickle files or runs the old training scripts. Both controls
@@ -404,6 +409,9 @@ separate. It never publishes weights or raw mechanism files.
 must match the audit hash in the completed held-out evaluation. Keep numerical
 zero references separate from unresolved nonzero entries. Test sampling rows
 report selected, accepted, and excluded counts for each overlapping population.
+`--reference-recovery <verification.json>` adds the explicit amendment evidence.
+`review_recovery.py` requires its test hash to match the scored test and keeps
+strict and recovered counts separate; no raw private state is published.
 
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing
