@@ -57,6 +57,13 @@ def test_metrics_use_physical_budget_and_separate_relative_mask():
     assert result["relative_p99"] == 1.
 
 
+def test_review_escapes_table_content():
+    spec = importlib.util.spec_from_file_location("learning_review", MODULE / "review.py")
+    review = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(review)
+    assert "&lt;script&gt;" in review.table(["Name"], [["<script>"]])
+
+
 def load_trainer():
     pytest.importorskip("torch")
     pytest.importorskip("cantera")

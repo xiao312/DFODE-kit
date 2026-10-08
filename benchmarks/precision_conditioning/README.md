@@ -68,6 +68,8 @@ Pass `--reference-run <completed-run-directory>` to include checkpoint 02. This
 copies only its HTML, two figures, summary and analysis provenance. Raw intervals,
 environment details and large arrays are not public artifacts. Generate the report
 with `reference/report.py` first. The landing page then links both checkpoints.
+Pass `--learning-review <run>/review` to add checkpoint 03. Its allowlist contains
+HTML, three exported PNG figures and measured summary JSON, not weights or arrays.
 
 ```bash
 python benchmarks/precision_conditioning/publish_pages.py runs/precision-conditioning/audit.json --output runs/research-pages --dry-run

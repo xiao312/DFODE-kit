@@ -62,3 +62,14 @@ def test_pages_reference_allowlist(tmp_path):
     assert {p.name for p in (destination / "checkpoint-02").iterdir()} == allowed
     assert "Checkpoint 02 · ready" in (destination / "index.html").read_text(encoding="utf-8")
     assert (destination / "checkpoint-01/report.html").is_file()
+    learning = tmp_path / "learning"
+    learning.mkdir()
+    learning_files = {"report.html", "summary.json", "comparison.png", "learning-curves.png", "magnitude-errors.png"}
+    for name in learning_files:
+        (learning / name).write_text("placeholder")
+    (learning / "summary.json").write_text(json.dumps({"variants": [0] * 12}))
+    (learning / "weights.pt").write_text("not public")
+    result = run_script("publish_pages.py", source, "--output", destination, "--reference-run", reference, "--learning-review", learning)
+    assert result.returncode == 0, result.stderr
+    assert {p.name for p in (destination / "checkpoint-03").iterdir()} == learning_files
+    assert "Checkpoint 03 · ready" in (destination / "index.html").read_text(encoding="utf-8")
