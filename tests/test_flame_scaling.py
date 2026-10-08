@@ -41,3 +41,18 @@ def test_growth_configs_change_counts_not_the_scientific_contract():
     first.pop("selection")
     second.pop("selection")
     assert first == second
+
+
+def test_density_repeat_keeps_per_model_compute_and_changes_only_seed():
+    root = Path(__file__).resolve().parents[1] / "benchmarks" / "flame_conditioning"
+    primary = json.loads((root / "learning-source-longer.json").read_text())
+    repeated = json.loads((root / "learning-density-repeat.json").read_text())
+    assert primary.pop("seed") == 20261009
+    assert repeated.pop("seed") == 20261010
+    assert repeated.pop("targets") == ["state-boxcox"]
+    assert "state-boxcox" in primary.pop("targets")
+    assert repeated.pop("wall_seconds") == 1200
+    primary.pop("wall_seconds")
+    primary.pop("selection")
+    repeated.pop("selection")
+    assert primary == repeated

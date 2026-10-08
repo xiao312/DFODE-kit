@@ -212,6 +212,15 @@ checks and the 08:00 checkpoint. An unfinished larger run is partial evidence,
 not grounds to delay or relabel the completed comparisons. Keep the 2D test
 sealed until this pre-test decision and all included model identities are fixed.
 
+Before opening the test, `learning-density-repeat.json` repeats only the
+conventional 10k/50k density comparison with fixed training seed 20261010. It
+keeps architecture, update count, batch size, learning rates, and validation
+selection unchanged. This checks sensitivity to initialization/minibatch order;
+it is not a new four-target ranking, a seed search, or a reason to select the
+best seed. Keep both repeated fits in the frozen test list. The primary 200k
+comparison still uses seed 20261009. Run this bounded repeat only as the second
+half-CPU job beside label generation, not as an added third workload.
+
 ## Reserved 2D snapshot evaluation
 
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
