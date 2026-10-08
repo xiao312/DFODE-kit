@@ -133,11 +133,14 @@ def main():
             if key in previous:
                 snapshot[key] = previous[key]
         snapshot["buildStatus"] = "updating"
-    snapshot["queries"]["models"] = {"rows": rows, "source": source(args.training, [
+    physical_definitions = [
         {"label": "Species budget p99", "definition": "99th percentile over all non-argon species components of abs(predicted increment-reference increment)/(1e-12+1e-6*abs(initial mass fraction)). One is the budget boundary; lower is better."},
         {"label": "Heat-release relative RMS", "definition": "RMS predicted source error divided by RMS reference source; source is -rho/dt times the sum of species formation enthalpy times the species increment. Lower is better; 1 is the zero-increment baseline."},
-        {"label": "Negative endpoint fraction", "definition": "Fraction of non-argon species components for which initial Y plus predicted increment is negative. No post-hoc normalization or positivity repair except the separately counted Box-Cox inverse-domain correction."}
-    ], ["Validation snapshots come from the same 1D flame realization.", "The main four-target comparisons use one seed. A conventional-only fixed second-seed repeat, when present, is a sensitivity check, not a seed search or statistical ranking.", "The strict species budget is a research criterion, not a guarantee of CFD solver accuracy."])}
+        {"label": "Negative endpoint fraction", "definition": "Fraction of non-argon species components for which initial Y plus predicted increment is negative. The denominator is 58 times the accepted cell count, not the number of cells. No post-hoc normalization or positivity repair except the separately counted Box-Cox inverse-domain correction."},
+        {"label": "Inverse correction fraction", "definition": "Fraction of non-argon species components with a recorded inverse-domain correction. This counts performed corrections, not all raw inverse-domain violations; zero does not establish that the uncorrected inverse was valid."}
+    ]
+    snapshot["queries"]["models"] = {"rows": rows, "source": source(args.training, physical_definitions,
+        ["Validation snapshots come from the same 1D flame realization.", "The main four-target comparisons use one seed. A conventional-only fixed second-seed repeat, when present, is a sensitivity check, not a seed search or statistical ranking.", "The strict species budget is a research criterion, not a guarantee of CFD solver accuracy."])}
     snapshot["queries"]["reference"] = {"rows": reference, "source": source([args.audit], [
         {"label": "Reference agreement", "definition": "Maximum spread across stored CVODE, fresh tighter and step-limited CVODE, and two independent Radau increment integrations, divided by the species budget. This is empirical agreement, not a rigorous bound."},
         {"label": "Relative-resolution screen", "definition": "Absolute reference increment must exceed 100 times the larger of empirical solver disagreement and endpoint spacing. Zero reference increments and unresolved nonzero increments are reported separately; zero references are not claims of exact mathematical zero."}
@@ -184,7 +187,8 @@ def main():
              "inverseDomainViolationFraction": model.get("diagnostics", {}).get("inverse_domain_violation_fraction")}
             for model in historical["models"]],
             "source": source([args.historical_validation], [
-                {"label": "Historical-weight control", "definition": "Preselected existing FP32 weights, checked and converted to plain numerical arrays. Both original-style and stable reconstruction use the same weights; the hybrid uses fixed 305/1000 K thresholds."}
+                {"label": "Historical-weight control", "definition": "Preselected existing FP32 weights, checked and converted to plain numerical arrays. Both original-style and stable reconstruction use the same weights; the hybrid uses fixed 305/1000 K thresholds."},
+                *physical_definitions
             ], ["Historical training overlap with this domain is not excluded; this is not independent generalization evidence.",
                 "Historical training used far more data and updates. Do not interpret this as a matched-compute comparison.",
                 "Saved direct-power statistics retain FP32 only. Exact original FP64 preprocessing is unavailable."])}
@@ -203,7 +207,8 @@ def main():
                                   "batchProcessSeconds": timing.get("process_seconds"),
                                   "batchInverseDomainViolationFraction": model.get("diagnostics", {}).get("inverse_domain_violation_fraction")})
         snapshot["queries"]["heldout"] = {"rows": test_rows, "source": source([args.heldout], [
-            {"label": "Reserved 2D snapshot", "definition": "Offline predictions on a predeclared uniform-cell sample and a separate temperature-balanced diagnostic sample. Model hashes and thresholds were fixed before reading the snapshot. No post-test tuning."}
+            {"label": "Reserved 2D snapshot", "definition": "Offline predictions on a predeclared uniform-cell sample and a separate temperature-balanced diagnostic sample. Model hashes and thresholds were fixed before test sampling and scoring. Earlier source discovery checked the column layout only. No post-test tuning."},
+            *physical_definitions
         ], ["One snapshot is not a coupled CFD trajectory or a statistical generalization study.",
             "Uniform and temperature-balanced samples overlap; do not pool them or average their scores.",
             "Timing covers one combined offline batch, not each population separately or a CFD speedup.",

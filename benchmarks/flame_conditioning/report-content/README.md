@@ -48,6 +48,9 @@ comparisons. Verify with `node --test tests/flame_report_bins.test.mjs`.
 Historical raw inverse-domain violations are separate from performed corrections.
 Show absent diagnostics as not recorded, not zero. Preserve small nonzero rates
 in percentage formatting. Test-batch diagnostics do not become population rates.
+Label negative endpoint rates as species-component fractions, not cell fractions.
+Keep budget, heat-error, negative-component, and inverse-correction definitions
+with each new-model, historical-control, and reserved-test source query.
 The preselected species view shows NH3, CH4, NO, and OH, using each species'
 physical-budget p99. This selection is chemical-role based, not chosen from test
 errors. The offline balanced-population view is not a domain-average emissions

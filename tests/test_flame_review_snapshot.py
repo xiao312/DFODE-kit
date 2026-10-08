@@ -60,6 +60,11 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
     assert queries["heldout_reference"]["rows"][0]["zeroReferenceComponents"] == 1
     assert queries["heldout"]["rows"][0]["batchWallSeconds"] is None
     assert queries["cfd_tolerance"]["rows"][0]["finalStateBudgetP99"] == 5.7
+    model_definitions = queries["models"]["source"]["metricDefinitions"]
+    test_definitions = queries["heldout"]["source"]["metricDefinitions"]
+    assert test_definitions[1:] == model_definitions
+    assert "58 times the accepted cell count" in model_definitions[2]["definition"]
+    assert "performed corrections" in model_definitions[3]["definition"]
     assert str(tmp_path) not in text
     heldout["audit_summary_sha256"] = "wrong"
     heldout_path.write_text(json.dumps(heldout))
