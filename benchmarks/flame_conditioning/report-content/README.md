@@ -15,6 +15,11 @@ Input: the sanitized snapshot from `../review_snapshot.py`, with `models`,
 Output: the `ReportContent` React export used by a prepared report app.
 Stable report and component IDs must survive updates. Update the narrative when
 the experiment status changes; a data-only refresh is not sufficient.
+The reserved-snapshot tables use a pre-test display rule: show the largest
+completed matched 4x800/10k-update run, zero baseline, and historical source-formula
+controls. Keep uniform and temperature-balanced populations in separate tables.
+Retain every frozen model's scores in source data. Never select table rows by
+their test performance.
 
 ## Dependencies and dependents
 

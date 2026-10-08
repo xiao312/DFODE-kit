@@ -17,6 +17,16 @@ export function ReportContent() {
   const datasets = snapshot.queries.datasets?.rows;
   const expanded = snapshot.queries.expanded_reference?.rows;
   const filterAudit = snapshot.queries.filter_audit?.rows;
+  const heldout = snapshot.queries.heldout?.rows;
+  const testRuns = [...new Set((heldout || []).filter(row => row.name.startsWith("training-backbone-longer")).map(row => row.name.split("--")[0]))];
+  const testRunSize = name => Number(name.match(/longer(\d+)k/)?.[1] || 0);
+  const largestTestRun = testRuns.sort((a, b) => testRunSize(b) - testRunSize(a))[0];
+  const testSelection = (heldout || []).filter(row => row.name === "zero-baseline" || (largestTestRun && row.name.startsWith(largestTestRun + "--")) || (row.historical && row.name.endsWith("--source-formula")));
+  const testRows = population => testSelection.filter(row => row.population === population).map(row => ({
+    ...row,
+    targetName:row.name === "zero-baseline" ? "Zero change" : row.name.includes("fixed-hybrid") ? "Fixed temperature hybrid" : names[Object.keys(names).find(target => row.name.includes(target))] || row.name,
+    control:row.historical ? "Historical / unequal cost" : row.name === "zero-baseline" ? "Baseline" : `${integer(testRunSize(largestTestRun) * 1000)} candidates / matched updates`,
+  }));
   const gap = models.find(row=>row.target === "state-boxcox" && row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount < 11000);
   const backbone = models.filter(row => row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount > 40000 && row.trainingCount < 60000);
   const density = backbone.find(row => row.target === "state-boxcox");
@@ -25,6 +35,17 @@ export function ReportContent() {
   const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
   const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
   const prose = (id, title, queryId, rows, text) => visible(id) && <ReportSection id={id} title={title} queryId={queryId} sourceRows={rows} showHeading={false}><RichNarrative id={`${id}:body`} value={text} sourcePreviews={sourcePreviews} /></ReportSection>;
+  const testTable = (population, title) => {
+    const id = `flame-heldout-${population}`;
+    const rows = testRows(population);
+    return rows.length > 0 && visible(id) && <DataComponent id={id} queryId="heldout" kind="table" title={title} sourceRows={heldout.filter(row => row.population === population)} displayRows={rows}>
+      <DataTable rows={rows} label={title} compactNumbers={false} columns={[
+        {field:"control",label:"Control"}, {field:"targetName",label:"Target"}, {field:"samples",label:"Cells",renderCell:integer},
+        {field:"budgetP99",label:"Budget p99 ↓",renderCell:integer}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
+        {field:"negativeEndpointFraction",label:"Negative species",renderCell:percent}, {field:"inverseCorrectionFraction",label:"Inverse corrections",renderCell:percent},
+      ]} />
+    </DataComponent>;
+  };
   return <article className="report-content" aria-label="Flame chemistry research review">
     <header className="report-hero">
       <h1 data-data-app-title contentEditable={canEdit && mode === "edit"} suppressContentEditableWarning onBlur={canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined}>{appTitle}</h1>
@@ -68,6 +89,10 @@ export function ReportContent() {
     {filterAudit && visible("flame-filter-table") && <DataComponent id="flame-filter-table" queryId="filter_audit" kind="table" title="Read-only effect of the historical filter" sourceRows={filterAudit} displayRows={filterAudit}>
       <DataTable rows={filterAudit} label="Historical-filter sensitivity" columns={[{field:"trainingCount",label:"Dataset training states",renderCell:integer},{field:"split",label:"Split"},{field:"states",label:"Accepted labels",renderCell:integer},{field:"rejected",label:"Would reject",renderCell:integer},{field:"rejectedFraction",label:"Fraction",renderCell:percent}]} />
     </DataComponent>}
+    {heldout && prose("flame-heldout-context", "Reserved CFD snapshot", "heldout", heldout,
+      "## The separate 2D snapshot: two different questions\n\nAll model identities and the 305/1000 K switching thresholds were fixed before this snapshot was opened. No model was trained or selected from these test scores. The uniform sample asks how the model performs on randomly selected cells. The temperature-balanced sample gives cold, preheat, reaction, and burnt regions a separate diagnostic view.\n\nDo not combine the two populations. Their cells can overlap, and the balanced sample is not a domain-average estimate. The main tables show the largest completed matched-data run, the zero-change baseline, and the preselected historical source-formula controls. This display rule was fixed before scoring; all frozen scores remain in the source data.\n\nOnly the new models were kept from this snapshot during this work. Prior exposure of the historical weights cannot be excluded. One offline snapshot does not prove stable CFD or accurate flame speed.")}
+    {heldout && testTable("uniform", "Reserved 2D snapshot: uniform random cells")}
+    {heldout && testTable("balanced", "Reserved 2D snapshot: temperature-balanced diagnostic")}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
       `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)}
     {parity && prose("flame-runtime-parity", "Runtime version agreement", "runtime_parity", parity,
