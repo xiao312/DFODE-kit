@@ -1,0 +1,94 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkpoint 03: first learning comparison</title><style>
+body{font:16px/1.65 system-ui,sans-serif;color:#182b3e;background:#f4f6fa;max-width:1150px;margin:auto;padding:28px}
+section{background:white;padding:24px;margin:22px 0;border-radius:12px}h1,h2{line-height:1.2}a{color:#1d6094}
+img{width:100%;height:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d6dfe8}
+.scroll{overflow-x:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.notice{border-left:5px solid #b66b12;padding:15px;background:#fff4e3}
+</style></head><body><nav><a href="../index.html">Research home</a> · <a href="summary.json">Complete measured metrics</a> ·
+<a href="https://github.com/xiao312/DFODE-kit/issues/3">Review and decisions</a></nav>
+<h1>Can a different target representation make a small model more accurate?</h1>
+<p>This is our first chemistry learning test. All chemistry generation and model training ran on lh40902.
+It is a small interpolation test, not a chemistry-solver replacement.</p>
+<p class="notice"><strong>Main result:</strong> H2: signed-power has the lowest validation p99. Its test p99 is 7.4573e+05 budgets, a 15.54% reduction from predicting zero. CH4: signed-power has the lowest validation p99. Its test p99 is 83819 budgets, a 1.22% reduction from predicting zero. None of these models has test p99 within the physical budget.
+The largest relative difference in paired FP32/FP64 test p99 is 6.29e-07.
+At this short training budget, FP64 does not materially improve the physical errors. This does not prove that FP64 is never needed.</p>
+<section><h2>Step 1 — Make checked answers</h2>
+<p><strong>What we did:</strong> run eight H2 and eight CH4 reaction trajectories. Cantera/CVODES produced the starting states.
+One trajectory is a reaction history from one initial condition. An interval is a short integration from one selected state in that history.
+From each selected state, SciPy Radau integrated the temperature and species changes directly. It started the change at zero;
+it did not obtain the label by subtracting two nearly equal stored endpoints.</p>
+<p><strong>Why:</strong> the first pilot showed that endpoint subtraction can lose small changes. We compared the direct
+answer with a second Radau setting and tight CVODES settings. Both methods still share Cantera FP64 reaction rates.
+Agreement is evidence, not proof of exact answers.</p>
+<p>We checked 384 intervals with nine solves per interval. Data generation took 645.4 seconds.
+We excluded 18 whole intervals because a required solve failed or a temperature/species component did not meet
+the 1%-of-budget reference check. Excluded cases remain in the raw records.</p><div class="scroll"><table><thead><tr><th>Mechanism</th><th>Checked intervals</th><th>Train accepted</th><th>Validation accepted</th><th>Test accepted</th><th>Excluded</th></tr></thead><tbody><tr><td>H2</td><td>192</td><td>133</td><td>21</td><td>21</td><td>17</td></tr><tr><td>CH4</td><td>192</td><td>144</td><td>24</td><td>23</td><td>1</td></tr></tbody></table></div>
+<p><strong>Implication:</strong> the model results below apply to the accepted subset. Exclusion can remove difficult cases;
+it does not prove that the model will work on those cases.</p></section>
+<section><h2>Step 2 — Keep the test data separate</h2>
+<p>Training parents start at 900, 1000, 1100, 1250, 1400 and 1500 K. Validation starts at 1150 K.
+Testing starts at 1300 K. Each uses 1 atm and equivalence ratio 1. All intervals from one parent stay in one split.</p>
+<p>Training data fit the model and normalization scales. Validation data select the saved epoch.
+Test data measure the final result. No test score chooses an epoch or a transformation parameter.
+There is only one validation and one test parent per mechanism. We cannot yet claim broad generalization.</p></section>
+<section><h2>Step 3 — Change only the target coordinate</h2>
+<p>Budget-linear divides the physical change by its error budget. Signed-power compresses the magnitude range.
+Scaled asinh is nearly linear near zero and compresses larger values. We convert all predictions back to physical changes before scoring.</p>
+<p>All variants use two 64-unit tanh layers, Adam at 0.001, seed 20261008 and 200 epochs. Each sees identical batches
+and starts from identical numerical weights. Output channels that are always exactly zero in training are fixed to zero for all variants.
+Each coordinate gets one FP32 and one FP64 model per mechanism: 12 fits, with no hyperparameter search.</p>
+<p>FP32 here applies after FP64 input normalization. It is not the earlier test that rounded raw physical starting states.
+Target normalization and final reconstruction use FP64. Timing includes validation; inference timing uses repeated batches and includes decoding.</p></section>
+<section><h2>Step 4 — Compare physical errors</h2>
+<p>The species budget is <code>1e-12 + 1e-6 * abs(Y_initial)</code>. Divide the prediction error by this budget.
+A value below 1 is within budget. The reported p99 is the 99th percentile across accepted test species components;
+99% of those component errors are at or below this value.
+it is not a guarantee on every sample and is not the interval-maximum statistic from checkpoint 02.</p>
+<img src="comparison.png" alt="Test budget errors for all representations and precisions against the zero-change baseline">
+<div class="scroll"><table><thead><tr><th>Mechanism</th><th>Target</th><th>Precision</th><th>Saved epoch</th><th>Test budget p99</th><th>Above budget</th><th>Train seconds</th></tr></thead><tbody><tr><td>H2</td><td>budget-linear</td><td>float32</td><td>6</td><td>2.6085e+06</td><td>80.0%</td><td>0.97</td></tr><tr><td>H2</td><td>budget-linear</td><td>float64</td><td>6</td><td>2.6085e+06</td><td>80.0%</td><td>0.32</td></tr><tr><td>H2</td><td>signed-power</td><td>float32</td><td>145</td><td>7.4573e+05</td><td>62.4%</td><td>0.37</td></tr><tr><td>H2</td><td>signed-power</td><td>float64</td><td>145</td><td>7.4573e+05</td><td>62.4%</td><td>0.37</td></tr><tr><td>H2</td><td>scaled-asinh</td><td>float32</td><td>1</td><td>1.9778e+08</td><td>80.0%</td><td>0.33</td></tr><tr><td>H2</td><td>scaled-asinh</td><td>float64</td><td>1</td><td>1.9778e+08</td><td>80.0%</td><td>0.33</td></tr><tr><td>CH4</td><td>budget-linear</td><td>float32</td><td>7</td><td>3.777e+05</td><td>91.5%</td><td>0.37</td></tr><tr><td>CH4</td><td>budget-linear</td><td>float64</td><td>7</td><td>3.777e+05</td><td>91.5%</td><td>0.39</td></tr><tr><td>CH4</td><td>signed-power</td><td>float32</td><td>66</td><td>83819</td><td>26.0%</td><td>0.39</td></tr><tr><td>CH4</td><td>signed-power</td><td>float64</td><td>66</td><td>83819</td><td>26.0%</td><td>0.41</td></tr><tr><td>CH4</td><td>scaled-asinh</td><td>float32</td><td>155</td><td>5.8564e+05</td><td>54.3%</td><td>0.41</td></tr><tr><td>CH4</td><td>scaled-asinh</td><td>float64</td><td>155</td><td>5.8564e+05</td><td>54.3%</td><td>0.44</td></tr></tbody></table></div><p><strong>H2:</strong> validation selected signed-power, float64.
+Its test p99 is 7.4573e+05 budgets. Predicting zero gives 8.8295e+05 budgets.
+Selection used validation data, not this test comparison.</p><p><strong>CH4:</strong> validation selected signed-power, float32.
+Its test p99 is 83819 budgets. Predicting zero gives 84853 budgets.
+Selection used validation data, not this test comparison.</p>
+<p>The zero baseline always predicts no chemical change. It is a useful check because many intervals have very small changes.
+A model must improve on this baseline before we call it useful.</p>
+<div class="scroll"><table><thead><tr><th>Mechanism</th><th>Zero baseline above budget</th><th>Selected model above budget</th><th>Relative error p99</th><th>Relative-mask components / all</th><th>Predicted negative Y</th><th>Max abs(sum delta-Y)</th></tr></thead><tbody><tr><td>H2</td><td>58.57%</td><td>62.38%</td><td>1617.2</td><td>144 / 210</td><td>1.43%</td><td>0.068428</td></tr><tr><td>CH4</td><td>24.61%</td><td>26.00%</td><td>6.3562e+21</td><td>995 / 1219</td><td>1.39%</td><td>7.2101e-05</td></tr></tbody></table></div>
+<p>The selected models have a slightly better p99 than zero, but more components exceed the budget.
+Their relative-error tails and conservation errors remain large. A smaller value in one metric is not an overall accuracy improvement.
+The zero baseline has relative error 1 (100%) on every nonzero reference. Negative predicted mass fractions are not clipped.</p>
+<img src="magnitude-errors.png" alt="FP64 physical prediction errors grouped by reference increment magnitude">
+<p>Magnitude bins exclude exact zero estimates. Counts and separately masked relative errors are in the downloadable metrics.
+Relative errors use only components that passed the stricter reference-relative mask.</p><div class="scroll"><table><thead><tr><th>Mechanism</th><th>Species (validation-selected model)</th><th>Test budget p99</th></tr></thead><tbody><tr><td>H2</td><td>H2O</td><td>1.0369e+06</td></tr><tr><td>H2</td><td>O2</td><td>8.2689e+05</td></tr><tr><td>H2</td><td>H</td><td>6.518e+05</td></tr><tr><td>H2</td><td>H2O2</td><td>6.3817e+05</td></tr><tr><td>H2</td><td>O</td><td>6.2955e+05</td></tr><tr><td>CH4</td><td>HO2</td><td>5.2092e+05</td></tr><tr><td>CH4</td><td>CH3</td><td>3.551e+05</td></tr><tr><td>CH4</td><td>CO</td><td>1.2603e+05</td></tr><tr><td>CH4</td><td>H2O</td><td>1.2463e+05</td></tr><tr><td>CH4</td><td>C2H6</td><td>1.1746e+05</td></tr></tbody></table></div></section>
+<section><h2>Step 5 — Check what the training curves support</h2>
+<img src="learning-curves.png" alt="Validation budget errors during the fixed 200-epoch training runs">
+<p>FP32 and FP64 curves nearly overlap. Each panel has its own vertical range.
+Training-coordinate loss fell, but physical validation error often rose. Some best epochs were near the start.
+Thus, minimizing the current normalized loss did not reliably minimize the physical error we care about.</p>
+<p>A lower error in one run does not establish a universal winner. One seed cannot measure training variability.
+Different target coordinates and output scales also change the physical weighting of the training loss;
+this is a comparison of complete target pipelines, not an isolated proof about numerical storage.</p>
+<p class="notice">Do not infer an approximation ceiling from this single short training run. Before adding residual stages,
+check whether the baseline fits training data, whether validation still improves, and whether the result repeats across parents and seeds.
+No residual model or full-trajectory rollout has run in this checkpoint.</p></section>
+<section><h2>Reproduction</h2><p>Raw states, labels, exclusion lists, saved weights, scales and test predictions remain in
+<code>runs/representation/checkpoint03-20261008</code> under the server project. Runs use one CPU and no GPU.</p>
+<p><a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments/benchmarks/precision_conditioning/learning">Source and instructions</a> ·
+<a href="https://github.com/xiao312/DFODE-kit/pull/4">Draft PR</a></p><pre>{
+  &quot;data_source&quot;: {
+    &quot;commit&quot;: &quot;fb2595a9fee4fea98f187440b93d639c17dda0eb&quot;,
+    &quot;dirty&quot;: false
+  },
+  &quot;training_source&quot;: {
+    &quot;commit&quot;: &quot;30deff341009792e3c2e168dad0cd76374a9c79d&quot;,
+    &quot;dirty&quot;: false
+  },
+  &quot;raw_intervals_sha256&quot;: &quot;72e7c295e521e44a90b78b3ad5f435daa8f2bb4d213a7196778c9b70e3d82502&quot;,
+  &quot;versions&quot;: {
+    &quot;python&quot;: &quot;3.10.20&quot;,
+    &quot;cantera&quot;: &quot;3.2.0&quot;,
+    &quot;numpy&quot;: &quot;2.2.6&quot;,
+    &quot;scipy&quot;: &quot;1.15.3&quot;,
+    &quot;sundials&quot;: &quot;7.4.0&quot;
+  },
+  &quot;torch&quot;: &quot;2.5.1+cpu&quot;
+}</pre></section></body></html>
