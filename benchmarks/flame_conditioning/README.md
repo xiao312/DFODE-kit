@@ -227,6 +227,13 @@ It rechecks every allowlisted original file against its pre-copy hash. These
 checks establish startup/restart compatibility and preservation of the source,
 not a validated flame speed, mesh convergence, or neural-model accuracy.
 
+`review_snapshot.py --training <summary.json> [--training <summary.json>]
+--audit <augmented-audit.json> --cfd <cfd-review.json> --output <reviewed.json>`
+creates sanitized, source-backed rows for the GitHub Pages review. It reads small
+saved evidence only. It does not train, alter results, or include private host
+paths, raw chemistry states, model weights, or mechanism contents. The HTML report
+is a downstream presentation of this snapshot, with the source hashes retained.
+
 ```bash
 python -m pytest tests/test_flame_*.py -q
 ```
