@@ -30,6 +30,12 @@ Checkpoint 02 is isolated in `benchmarks/precision_conditioning/reference/`.
 Selected results flow to the existing GitHub review surfaces. Production labeling
 and training do not depend on this pilot. Its local README defines the run contract.
 
+The bounded learning comparison lives in `benchmarks/precision_conditioning/learning/`.
+`prepare.py -> reference.pilot/chemistry/analysis`; `train.py -> dataset.py and
+reference.targets -> PyTorch`; `review.py -> saved evidence -> static Pages and
+issue attachments`. It owns checked group splits and fixed model budgets. It does
+not change production preprocessing, model registries or training behavior.
+
 ## Current refactor themes
 
 
