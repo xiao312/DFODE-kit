@@ -37,8 +37,25 @@ def recompute(states, prediction, reference, mechanism, interval):
             error = np.abs(prediction[:, index] - reference[:, index])
             budget = 1e-12 + 1e-6 * np.abs(states[:, index + 2])
             species_budget_p99[name] = float(np.percentile(error / budget, 99))
+    temperature_bins = []
+    boundaries = [0, 305, 500, 1000, 1500, 2000, 3000]
+    for index in range(len(boundaries) - 1):
+        low, high = boundaries[index:index + 2]
+        mask = (states[:, 0] >= low) & (states[:, 0] < high)
+        values = (errors / budgets)[mask]
+        temperature_bins.append({"lower_K": low, "upper_K": high, "samples": int(mask.sum()),
+                                 "count": values.size, "p99": float(np.percentile(values, 99)) if values.size else None})
+    magnitude_bins = []
+    boundaries = [0, 1e-30, 1e-20, 1e-15, 1e-10, 1e-5, np.inf]
+    for index in range(len(boundaries) - 1):
+        low, high = boundaries[index:index + 2]
+        mask = (np.abs(reference[:, active]) >= low) & (np.abs(reference[:, active]) < high)
+        values = errors[mask]
+        magnitude_bins.append({"lower": low, "upper": high if np.isfinite(high) else None,
+                               "count": values.size, "p99": float(np.percentile(values, 99)) if values.size else None})
     return {"samples": len(states), "budget_p99": float(np.percentile(errors / budgets, 99)),
             "species_budget_p99": species_budget_p99,
+            "temperature_bins": temperature_bins, "magnitude_bins": magnitude_bins,
             "negative_endpoint_fraction": float(negative.sum() / negative.size),
             "mass_drift_p99": float(np.percentile(np.abs(np.sum(prediction, axis=1)), 99)),
             "heat_error_rms": float(np.linalg.norm(rate_error) / np.sqrt(len(states))),
@@ -57,6 +74,19 @@ def assert_scores(actual, recorded):
     for name, value in actual["species_budget_p99"].items():
         np.testing.assert_allclose(value, recorded["per_species"][name]["budget_error"]["p99"],
                                    rtol=2e-12, atol=1e-30, err_msg=f"Saved species p99 differs: {name}")
+    for kind, metric, identity in (("temperature_bins", "budget_error", ("lower_K", "upper_K", "samples")),
+                                   ("magnitude_bins", "absolute_error", ("lower", "upper"))):
+        if len(actual[kind]) != len(recorded[kind]):
+            raise AssertionError(f"Saved {kind} length differs")
+        for fresh, saved in zip(actual[kind], recorded[kind]):
+            if any(fresh[key] != saved[key] for key in identity) or fresh["count"] != saved[metric]["count"]:
+                raise AssertionError(f"Saved {kind} identities/counts differ")
+            if fresh["p99"] is None or saved[metric]["p99"] is None:
+                if fresh["p99"] is not saved[metric]["p99"]:
+                    raise AssertionError(f"Saved {kind} empty-bin metric differs")
+            else:
+                np.testing.assert_allclose(fresh["p99"], saved[metric]["p99"], rtol=2e-12, atol=0,
+                                           err_msg=f"Saved {kind} p99 differs")
 
 
 def main():

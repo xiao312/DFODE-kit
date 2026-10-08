@@ -91,6 +91,8 @@ fixed-T/V subset without importing the research training environment.
 data for the downstream HTML report. Presentation cannot alter source evidence.
 `flame_conditioning/report-content -> sanitized snapshot/shared Data app API`
 owns the review narrative and charts; the shared runtime compiles them for Pages.
+Its pure `policy-bins.mjs` helper presents fixed BC/PT/hybrid/zero policy columns
+from reviewed bin rows and rejects duplicate or unequal-population comparisons.
 The report has no dependency back into model training or reference generation.
 `checkpoint_conversion -> allowlisted historical checkpoint/patched isolated Torch`
 `historical -> checked numerical NPZ/Torch inference/coordinate reconstruction`

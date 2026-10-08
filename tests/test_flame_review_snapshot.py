@@ -4,7 +4,7 @@ import sys
 import pytest
 
 from benchmarks.flame_conditioning.extract import sha256
-from benchmarks.flame_conditioning.review_snapshot import main, reference_row, species_budget_scores
+from benchmarks.flame_conditioning.review_snapshot import main, reference_row, species_budget_scores, test_bin_rows as compile_bins
 
 
 def test_reference_report_separates_zero_and_unresolved_nonzero():
@@ -72,3 +72,15 @@ def test_species_view_does_not_turn_missing_metrics_into_zero():
     assert rows["NOBudgetP99"] == .25
     assert rows["NH3BudgetP99"] is None
     assert set(rows) == {"NH3BudgetP99", "CH4BudgetP99", "NOBudgetP99", "OHBudgetP99"}
+
+
+def test_test_bins_preserve_populations_counts_and_empty_values():
+    model = {"name": "zero-baseline", "populations": {
+        "uniform": {"temperature_bins": [{"lower_K": 0, "upper_K": 305, "samples": 0,
+                                             "budget_error": {"count": 0, "p99": None}}]},
+        "balanced": {"temperature_bins": [{"lower_K": 0, "upper_K": 305, "samples": 2,
+                                              "budget_error": {"count": 116, "p99": 3.0}}]}}}
+    rows = compile_bins([model], "temperature_bins")
+    assert rows[0]["p99"] is None and rows[0]["cells"] == 0
+    assert rows[1]["population"] == "balanced" and rows[1]["components"] == 116
+    assert rows[1]["p99"] == 3.0

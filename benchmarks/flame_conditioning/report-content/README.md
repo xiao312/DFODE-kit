@@ -33,6 +33,12 @@ The compact density table retains every completed primary-seed conventional
 not appear as zero. It does not select rows by validation or test performance.
 Training-only scales are refit at each size; this is a full-protocol data-size
 comparison, not an isolated fixed-scaler ablation.
+Predeclared bin tables show zero, conventional, direct-power, and fixed-hybrid
+policies from the largest completed primary run. Temperature bins use the balanced
+diagnostic population; magnitude bins use the uniform population. Other models
+and both populations remain in source rows. Never select these columns by scores.
+`policy-bins.mjs` preserves empty-bin nulls and rejects duplicate or unequal-count
+comparisons. Verify with `node --test tests/flame_report_bins.test.mjs`.
 Historical raw inverse-domain violations are separate from performed corrections.
 Show absent diagnostics as not recorded, not zero. Preserve small nonzero rates
 in percentage formatting. Test-batch diagnostics do not become population rates.

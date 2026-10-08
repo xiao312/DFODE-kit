@@ -333,6 +333,9 @@ their inputs and destination without writing an output artifact.
 predictions. It checks sample identities, budget p99, negative endpoints, mass
 drift, selected NH3/CH4/NO/OH species p99, and heat-source RMS using Cantera density rather than the training metric's
 density formula. It is read-only by default; `--output <new.json>` saves evidence.
+It also checks saved temperature-bin budget p99 and target-magnitude-bin absolute
+error p99, including exact counts and empty-bin nulls. These bins are fixed before
+test scoring. The report preserves both test populations separately.
 This does not replace saved-model replay or independent reference integration.
 `verify.py <dataset> <training> --training-metrics --output <new.json>` also
 replays all selected training states and independently checks their physical

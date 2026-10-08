@@ -22,6 +22,19 @@ def test_independent_density_and_physical_metric_reconciliation():
     actual = recompute(states, prediction, reference, "h2o2.yaml", 1e-6)
     assert actual["heat_error_rms"] > 0
     assert_scores(actual, recorded)
+    assert actual["temperature_bins"][0]["p99"] is None
+    recorded["temperature_bins"][0]["budget_error"]["p99"] = 0
+    with pytest.raises(AssertionError, match="empty-bin"):
+        assert_scores(actual, recorded)
+    recorded["temperature_bins"][0]["budget_error"]["p99"] = None
+    recorded["magnitude_bins"][0]["absolute_error"]["count"] += 1
+    with pytest.raises(AssertionError, match="identities/counts"):
+        assert_scores(actual, recorded)
+    recorded["magnitude_bins"][0]["absolute_error"]["count"] -= 1
+    recorded["temperature_bins"][3]["budget_error"]["p99"] *= 2
+    with pytest.raises(AssertionError, match="temperature_bins p99"):
+        assert_scores(actual, recorded)
+    recorded["temperature_bins"][3]["budget_error"]["p99"] /= 2
     assert actual["species_budget_p99"]["OH"] == 0.0
     recorded["per_species"]["OH"]["budget_error"]["p99"] = 1.0
     with pytest.raises(AssertionError, match="Saved species p99 differs: OH"):

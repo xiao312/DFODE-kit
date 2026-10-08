@@ -49,6 +49,21 @@ def reference_row(audit):
             "uncertaintyBudgetMax": max(record["uncertainty_budget_max"] for record in audit["records"])}
 
 
+def test_bin_rows(models, kind):
+    rows = []
+    temperature = kind == "temperature_bins"
+    for model in models:
+        for population, values in model["populations"].items():
+            for item in values.get(kind, []):
+                scores = item["budget_error" if temperature else "absolute_error"]
+                rows.append({"name": model["name"], "population": population,
+                             "lower": item["lower_K" if temperature else "lower"],
+                             "upper": item["upper_K" if temperature else "upper"],
+                             "cells": item.get("samples"), "components": scores["count"],
+                             "p99": scores["p99"]})
+    return rows
+
+
 def source(files, definitions, caveats):
     return {"provider": "DFODE-kit reproducible experiments", "name": "Saved experiment evidence",
             "files": [{"name": path.name, "sha256": sha256(path)} for path in files],
@@ -199,6 +214,13 @@ def main():
             for name, counts in heldout["sample_counts"].items()],
             "source": source([args.heldout], [{"label": "Test label acceptance", "definition": "Selected cell counts and accepted fixed-T/V labels, reported separately for the overlapping uniform and balanced populations."}],
                              ["Do not add the two population counts; some cells occur in both."])}
+        for query, kind, definition in (
+                ("heldout_temperature", "temperature_bins", "Non-argon species budget-error p99 in fixed initial-temperature bins, with cell and component counts."),
+                ("heldout_magnitude", "magnitude_bins", "Absolute mass-fraction increment-error p99 in fixed bins of absolute reference increment; argon excluded. The first bin includes numerical zeros, and null upper bound means no finite upper bound.")):
+            snapshot["queries"][query] = {"rows": test_bin_rows(heldout["models"], kind),
+                "source": source([args.heldout], [{"label": "Predeclared test bins", "definition": definition}],
+                    ["Uniform and balanced populations remain separate; do not pool percentiles.",
+                     "An empty bin has a null p99, not zero. Small absolute error alone is not evidence of accurate relative digits."])}
         if args.heldout_audit:
             audit = json.loads(args.heldout_audit.read_text())
             if (heldout["audit_summary_sha256"] != sha256(args.heldout_audit)

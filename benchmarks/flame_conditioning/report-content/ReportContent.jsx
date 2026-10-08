@@ -1,4 +1,5 @@
 import React from "react";
+import { policyBinTable } from "./policy-bins.mjs";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
 
 const paper = "https://arxiv.org/html/2507.08277v2";
@@ -52,6 +53,22 @@ export function ReportContent() {
         {field:"control",label:"Control"}, {field:"targetName",label:"Target"}, {field:"samples",label:"Cells",renderCell:integer},
         {field:"budgetP99",label:"Budget p99 ↓",renderCell:budgetNumber}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
         {field:"negativeEndpointFraction",label:"Negative species",renderCell:percent}, {field:"inverseCorrectionFraction",label:"Inverse corrections",renderCell:percent},
+      ]} />
+    </DataComponent>;
+  };
+  const binTable = (queryId, population, temperature) => {
+    const allRows = snapshot.queries[queryId]?.rows;
+    if (!allRows?.length) return null;
+    const {rows, sourceRows} = policyBinTable(allRows, population, largestTestRun, temperature);
+    const id = `flame-${queryId}`;
+    const title = temperature ? "Temperature regions: balanced-sample budget p99" : "Increment magnitudes: uniform-sample absolute error p99";
+    const format = value => value == null ? "Not observed" : temperature ? budgetNumber(value) : value.toExponential(2);
+    return visible(id) && <DataComponent id={id} queryId={queryId} kind="table" title={title} sourceRows={sourceRows} displayRows={rows}>
+      <DataTable rows={rows} label={title} searchable={false} compactNumbers={false} columns={[
+        {field:"range",label:temperature ? "Initial temperature" : "|Reference increment|"},
+        {field:"count",label:temperature ? "Cells" : "Species components",renderCell:integer},
+        {field:"zero",label:"Zero",renderCell:format}, {field:"boxcox",label:"Conventional",renderCell:format},
+        {field:"power",label:"Direct power",renderCell:format}, {field:"hybrid",label:"Fixed hybrid",renderCell:format},
       ]} />
     </DataComponent>;
   };
@@ -131,6 +148,10 @@ export function ReportContent() {
     {heldout && visible("flame-species-test") && <DataComponent id="flame-species-test" queryId="heldout" kind="table" title="Selected species: temperature-balanced 2D diagnostic" sourceRows={heldout.filter(row=>row.population === "balanced")} displayRows={testRows("balanced")}>
       <DataTable rows={testRows("balanced")} label="Selected species on the balanced test population" columns={[{field:"control",label:"Control"},{field:"targetName",label:"Target"},...speciesColumns]} />
     </DataComponent>}
+    {heldout && prose("flame-bin-context", "Read the fixed policy by region", "heldout", heldout,
+      "### Where does the temperature policy help?\n\nThe next tables retain the largest completed primary run's conventional, direct-power, and fixed-hybrid predictions, plus zero change. These columns and bin edges were fixed before scoring. The balanced temperature view gives each occupied region a diagnostic sample; it is not a domain average.\n\nThe magnitude view uses uniform random cells and counts species components, not cells. Its values are absolute increment errors, not budget or relative errors. The lowest bin includes numerical zeros. A small absolute error there does not establish many correct relative digits. Empty bins remain unobserved, not zero error. Other model scores and both populations remain in the source data.")}
+    {heldout && binTable("heldout_temperature", "balanced", true)}
+    {heldout && binTable("heldout_magnitude", "uniform", false)}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
       `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)}
     {tolerance && prose("flame-cfd-tolerance", "Numerical tolerance control", "cfd_tolerance", tolerance,
