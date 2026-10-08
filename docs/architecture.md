@@ -88,6 +88,9 @@ data for the downstream HTML report. Presentation cannot alter source evidence.
 `flame_conditioning/report-content -> sanitized snapshot/shared Data app API`
 owns the review narrative and charts; the shared runtime compiles them for Pages.
 The report has no dependency back into model training or reference generation.
+`checkpoint_conversion -> allowlisted historical checkpoint/patched isolated Torch`
+exports checked numerical arrays. Historical adapters must depend on this NPZ
+boundary, never on legacy pickle loading in the working solver environment.
 
 ## Current refactor themes
 

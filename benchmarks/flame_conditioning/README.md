@@ -117,6 +117,11 @@ one-hour external timeout. Audit selected augmented labels independently before
 training; the unperturbed scout alone does not certify augmented labels.
 The dataset runner reuses a parsed mechanism and reactor, but resets state, time
 and solver history for each row. Tests compare this path with fresh reactors.
+If a dataset reaches its wall limit, `--resume-source <stopped-dataset>` continues
+into a new output directory with identical source/configuration. It rechecks saved
+hashes, preserves completed rows and failure records, and records the prior run's
+manifest hash. The stopped artifact is never edited. The separate continuation
+has a 900-second limit by default (`--continuation-wall-seconds`, at most 3600).
 
 `audit_labels.py <dataset> --output <new-audit> --dry-run` selects 16 states per
 split by temperature alone. The live run compares stored labels against fresh

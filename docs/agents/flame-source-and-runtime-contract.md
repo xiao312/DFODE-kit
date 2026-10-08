@@ -382,3 +382,190 @@ Other saved scripts implement percentile scaling, asinh losses, shifted
 Box-Cox coordinates, and piecewise power/log transforms. They are distinct
 experiments, not interchangeable definitions of the paper baseline. The
 inspection does not prove which checkpoint generated each published figure.
+
+## Retained historical checkpoints: read-only inventory
+
+Checked on 2026-10-09. Both controls retain small checkpoints, so a historical
+model comparison does not require retraining the original eight-million-row
+dataset. This is a feasibility finding only. No checkpoint was deserialized,
+no inference was run, and the reserved 2D test was not opened for this check.
+
+### Files and checkpoint contracts
+
+The conventional run directory identified above contains `submission.pt`:
+
+- Size: 8,081,314 bytes.
+- SHA-256: `7938fc47584da9cad2b811e9607ed6413bf210d3ae4c20f3dca64807ae56abee`.
+- Format: PyTorch ZIP archive, 14 members, little-endian tensor storage.
+- Its 4732-byte `data.pkl` has keys `net`, `data_in_mean`, `data_in_std`,
+  `data_target_mean`, and `data_target_std`, matching the inspected save code.
+- The weights use FP32 storage. Normalization arrays use NumPy FP64 metadata.
+  The static global list includes NumPy array reconstruction and dtype types,
+  in addition to standard Torch tensor reconstruction and OrderedDict.
+
+The direct-power run `test_runs/test_250903_151713` retains
+`final_trained_model.pth`:
+
+- Size: 8,080,132 bytes.
+- SHA-256: `8ed4105be6eab440b57141072dc384a4df2454d7570df5a7647a10599a471089`.
+- Format: PyTorch ZIP archive, 18 members, little-endian tensor storage.
+- Its 1766-byte `data.pkl` has `model_state_dict` and `normalization_stats`.
+  The latter has `features_mean`, `features_std`, `labels_mean`, `labels_std`.
+- The weights and normalization statistics use FP32 tensor storage. The
+  four statistics arrays have storage lengths consistent with 61, 61, 58,
+  and 58 elements. The static global list contains only OrderedDict, Torch
+  FloatStorage, and Torch tensor reconstruction.
+- Separate best-training-loss, best-training-error, best-validation-loss,
+  and best-validation-error checkpoint files also exist, each about 8 MB.
+
+The original log selects epoch 2000 for both validation criteria and for
+training physical error; only minimum training normalized loss selects epoch
+1999. All 14 tensor-storage byte hashes in `final_trained_model.pth` match
+`best_val_model.pth`, `best_val_error_model.pth`, and
+`best_train_error_model.pth`. The archive file hashes differ because their
+member prefixes differ. This permits fixing the epoch-2000 final model as
+the historical control without examining our reserved test. The epoch-1999
+best-training-loss file has different weight bytes and should not be selected
+after examining new test performance.
+
+In both archives the ten weight/bias storage lengths agree with the
+`61 -> 800 -> 800 -> 800 -> 800 -> 58` architecture. This does not verify
+tensor values or model quality. Inspection used ZIP member metadata and
+`pickletools.genops` to read opcodes; it did not execute pickle operations.
+The ZIP metadata members were bounded to less than 1 MB before inspection.
+
+Use the contracts in the training section: T in K, p in Pa, mechanism-order
+mass fractions, Box-Cox input coordinates with lambda 0.1, and 58 non-argon
+outputs. The conventional model predicts normalized transformed-state
+differences; the direct-power model predicts normalized signed-power physical
+increments. Both map a 1e-6 s chemistry operation. Species identities, units,
+mechanism hash, and transform definitions are external to these checkpoint
+payloads. Bind them explicitly in a new comparison manifest.
+
+### Loading boundary
+
+The existing project environment has Torch 2.5.1+cpu; the solver image has
+Torch 2.4.1+cu121. Do not describe `weights_only=True` on these installations
+as a safe checkpoint boundary. The upstream advisory CVE-2025-32434 affects
+versions through 2.5.1, and the later CVE-2026-24747 affects versions through
+2.9.1. The latter lists 2.10.0 and later as patched for that issue.
+[2025 advisory](https://github.com/pytorch/pytorch/security/advisories/GHSA-53q9-r3pm-6pq6),
+[2026 advisory](https://github.com/pytorch/pytorch/security/advisories/GHSA-63cw-57p8-fm3p)
+
+The power checkpoint appears compatible with a patched restricted loader
+because its payload uses ordinary tensors and dictionaries. This has not
+been tested. The conventional checkpoint additionally requires reviewed NumPy
+array/dtype support or a non-executing conversion. Static global inspection
+does not list every dynamically constructed type. Restricted loading also
+does not eliminate denial-of-service or all memory-corruption risks.
+[PyTorch serialization documentation](https://docs.pytorch.org/docs/stable/notes/serialization)
+
+The official Torch 2.10.0 package metadata requires Python 3.10 or later.
+Thus, the existing solver's Python 3.8 environment is not a candidate for
+this conversion. Use a separate Python 3.10-or-later environment with a
+reviewed, pinned Torch release patched for the cited advisories, not an
+in-place environment update.
+[Official package metadata](https://pypi.org/pypi/torch/2.10.0/json)
+
+The proposed next step is an isolated, resource-limited conversion using a
+separate patched environment, read-only source mounts, no network, and no
+credentials. Do not upgrade the working CFD image, execute old training or
+inference scripts, or fall back to unrestricted pickle loading. Validate
+expected tensor names, shapes, finite values, normalization lengths, and
+positive scales before exporting a non-pickle artifact for comparison.
+For the power model, the four normalization arrays can be exported with the
+ten weight/bias arrays to NPZ as ordinary numerical arrays. Reject object
+arrays, record the source hash, and load the export with `allow_pickle=False`.
+
+These historical models saw random-row splits of augmented source data, not
+our new source-group split. A comparison on related 1D states is a historical
+control, not an independent generalization result. Historical logs and nearby
+scripts do not establish which saved checkpoint produced a published figure,
+nor whether every stored model was evaluated during the original 2D work.
+
+### Independent historical adapter: exact arithmetic contract
+
+Static checkpoint metadata lists these ten parameter keys in both models:
+
+```text
+net.linear_layer_0.weight    (800, 61)
+net.linear_layer_0.bias      (800,)
+net.linear_layer_1.weight    (800, 800)
+net.linear_layer_1.bias      (800,)
+net.linear_layer_2.weight    (800, 800)
+net.linear_layer_2.bias      (800,)
+net.linear_layer_3.weight    (800, 800)
+net.linear_layer_3.bias      (800,)
+net.linear_layer_4.weight    (58, 800)
+net.linear_layer_4.bias      (58,)
+```
+
+The shapes follow the saved architecture and agree with archive storage
+lengths. Conversion must still check the actual tensor shapes. GELU uses the
+default `torch.nn.GELU()` mode, not an explicitly selected tanh approximation.
+
+For the conventional control, the saved training script applies `abs` to
+the entire `[T,p,Y]` input and to endpoint species. There is no positive floor
+and no upper clipping. Its NumPy transform is `(Y**0.1 - 1)/0.1`; zero maps
+to -10. Feature and target normalization happen in NumPy FP64 before the
+normalized arrays are converted to FP32. The saved normalization arrays
+retain FP64. The training script's diagnostic reconstruction instead uses
+FP32 copies of these statistics and FP32 network inputs/outputs:
+
+```text
+B_initial = normalized_input_species * input_std32 + input_mean32
+delta_B = network_output * target_std32 + target_mean32
+Y_initial_reconstructed = (0.1 * B_initial + 1)**10
+Y_final = (0.1 * (B_initial + delta_B) + 1)**10
+delta_Y = Y_final - Y_initial_reconstructed
+```
+
+All conventional normalization denominators are the raw saved standard
+deviations, with no added epsilon. The lines that would replace zero input
+or target standard deviations by one are commented out in the saved script.
+Validation reuses the same already-normalized arrays. The inspected old CFD
+wrapper also divides by the raw saved input standard deviations. A converter
+can preserve zero values for inspection, but an evaluator must not silently
+invent a new epsilon or zero-scale replacement and call that exact replay.
+
+The script does not normalize the reconstructed endpoint species sum in
+that diagnostic. It also does not test inverse-Box-Cox domain validity before
+the integer power. A new adapter should report negative inverse bases as
+invalid, rather than hiding them through an even power or silent clipping.
+
+For the direct-power control, the saved training script clips input and
+endpoint species to `[0,1]`, but does not apply `abs` to T and p. Input BCT
+has no positive floor. The adjacent DFODE-kit `utils.py` rejects negative
+inputs and implements the same formula; its current hash is
+`3a82663682d7c5349c2b82af32598b1ace261e12051dd4080fae77cbdc9b303b`.
+This adjacent source is supporting evidence, not a version-pinned proof of
+the module imported during the historical run.
+
+Power features and labels were standardized in NumPy FP64, then converted
+to FP32. However, this checkpoint stores only FP32 copies of the statistics.
+The original full-precision normalization constants are not retained in its
+checkpoint. Replaying with those saved constants is well defined, but is not
+guaranteed bit-identical to the original training input preprocessing.
+Its physical-error diagnostic uses FP32 denormalization and
+`sign(z) * abs(z)**10`, directly producing delta Y without endpoint addition.
+Power standard deviations use `ddof=0`. Exact zeros in both feature and label
+standard deviations are replaced by one before normalization and saving;
+there is no epsilon addition. Validation uses the same pre-normalized arrays.
+The power physical-error diagnostic does not enforce endpoint positivity or
+renormalize species.
+
+Keep these distinctions explicit in the adapter:
+
+- **Training-coordinate replay**: match transforms and saved normalization;
+  use FP32 model weights and activations. Report the statistics-precision
+  qualification for the power model.
+- **FP64 reconstruction variant**: promoting output arithmetic or using a
+  cancellation-resistant inverse can isolate reconstruction error, but it is
+  a declared numerical variant, not exact replay of FP32 training diagnostics.
+- **Old CFD wrapper**: separate policy layer. The inspected wrapper forces
+  pressure to 101325 Pa, takes absolute inputs, applies a temperature cutoff,
+  preserves argon, and renormalizes non-argon endpoints. None of those repairs
+  should be silently included in an a-priori representation comparison.
+
+No new adapter was executed for this contract check. The original assets and
+reserved 2D test remain unchanged.

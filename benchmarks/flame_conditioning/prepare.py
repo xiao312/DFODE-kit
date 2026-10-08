@@ -24,9 +24,13 @@ def main():
     parser.add_argument("--config", type=Path, default=Path(__file__).with_name("dataset.json"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--resume-source", type=Path)
+    parser.add_argument("--continuation-wall-seconds", type=int, default=900)
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output exists; choose a new run directory")
+    if not 1 <= args.continuation_wall_seconds <= 3600:
+        parser.error("Continuation wall limit must be between 1 and 3600 seconds")
     config = json.loads(args.config.read_text())
     source = np.load(args.source / "source-states.npz", allow_pickle=False)
     source_manifest = json.loads((args.source / "manifest.json").read_text())
@@ -34,12 +38,27 @@ def main():
     mechanism = args.source / "mechanism.yaml"
     if sha256(mechanism) != source_manifest["mechanism_sha256"] or sha256(args.source / "source-states.npz") != source_manifest["states_sha256"]:
         raise ValueError("Source artifact checksum mismatch")
+    previous = None
+    if args.resume_source:
+        previous = json.loads((args.resume_source / "manifest.json").read_text())
+        if (previous["status"] != "time_limit" or previous["config"] != config
+                or previous["source_manifest"] != source_manifest):
+            raise ValueError("Resume requires a time-limited run with identical source and configuration")
+        if sha256(args.resume_source / "mechanism.yaml") != source_manifest["mechanism_sha256"]:
+            raise ValueError("Stopped mechanism checksum mismatch")
+        for split, report in previous["splits"].items():
+            for name in ("inputs", "labels"):
+                if sha256(args.resume_source / split / f"{name}.npz") != report[f"{name}_sha256"]:
+                    raise ValueError("Stopped dataset artifact checksum mismatch")
     print(json.dumps({"config": config, "source": source_manifest["states_sha256"],
                       "test_policy": "No 2D test states are read by this command"}), flush=True)
     if args.dry_run:
         return
-    args.output.mkdir(parents=True, exist_ok=False)
-    shutil.copyfile(mechanism, args.output / "mechanism.yaml")
+    if args.resume_source:
+        shutil.copytree(args.resume_source, args.output)
+    else:
+        args.output.mkdir(parents=True, exist_ok=False)
+        shutil.copyfile(mechanism, args.output / "mechanism.yaml")
     started = time.monotonic()
     manifest = {
         "status": "running", "source": source_revision(), "config": config,
@@ -50,24 +69,44 @@ def main():
                                   "No heat-release rejection filter; negative heat release is not universally invalid",
                                   "Independent species exponent draws and explicit non-argon normalization"],
     }
+    previous_elapsed = 0
+    execution_limit = config["wall_seconds"]
+    if previous is not None:
+        manifest = previous
+        previous_elapsed = previous["elapsed_seconds"]
+        manifest.setdefault("continuations", []).append({
+            "previous_manifest_sha256": sha256(args.resume_source / "manifest.json"),
+            "previous_source": previous["source"], "previous_elapsed_seconds": previous_elapsed,
+            "wall_seconds": args.continuation_wall_seconds})
+        manifest.update(status="running", source=source_revision())
+        execution_limit = args.continuation_wall_seconds
 
     def save():
-        manifest["elapsed_seconds"] = time.monotonic() - started
+        manifest["elapsed_seconds"] = previous_elapsed + time.monotonic() - started
         (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2, allow_nan=False))
 
     save()
     integrator = EndpointIntegrator(mechanism, config["cvode_rtol"], config["cvode_atol"])
     for split in ("train", "validation"):
-        states, lineage, sampling = sample_split(source, source_manifest["species_names"], config, split)
         destination = args.output / split
-        destination.mkdir()
-        np.savez_compressed(destination / "inputs.npz", states=states, **lineage)
-        delta = np.full((len(states), states.shape[1] - 2), np.nan)
-        accepted = np.zeros(len(states), dtype=bool)
-        report = {"sampling": sampling, "labels_completed": 0, "labels_accepted": 0, "failures": []}
-        manifest["splits"][split] = report
-        for index, row in enumerate(states):
-            if time.monotonic() - started >= config["wall_seconds"]:
+        if destination.exists():
+            states = np.load(destination / "inputs.npz", allow_pickle=False)["states"]
+            labels = np.load(destination / "labels.npz", allow_pickle=False)
+            delta, accepted = labels["delta"].copy(), labels["accepted"].copy()
+            report = manifest["splits"][split]
+            if report["labels_accepted"] != int(accepted.sum()) or report["labels_completed"] > len(states):
+                raise ValueError("Stopped label counters are inconsistent")
+        else:
+            states, lineage, sampling = sample_split(source, source_manifest["species_names"], config, split)
+            destination.mkdir()
+            np.savez_compressed(destination / "inputs.npz", states=states, **lineage)
+            delta = np.full((len(states), states.shape[1] - 2), np.nan)
+            accepted = np.zeros(len(states), dtype=bool)
+            report = {"sampling": sampling, "labels_completed": 0, "labels_accepted": 0, "failures": []}
+            manifest["splits"][split] = report
+        for index in range(report["labels_completed"], len(states)):
+            row = states[index]
+            if time.monotonic() - started >= execution_limit:
                 manifest["status"] = "time_limit"
                 break
             state = {"T": float(row[0]), "P": float(row[1]), "Y": row[2:].tolist()}
