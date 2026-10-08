@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-08T18:09:00+00:00",
+  "generated_at": "2026-10-08T19:10:15+00:00",
   "benchmark": "flame_conditioning",
   "report_path": "flame-conditioning/",
-  "source_revision": "348f204",
-  "scope": "32 completed new fits and six historical controls; verified 50k improvement; 200k labels running; 2D test sealed",
+  "source_revision": "dbcf8f5",
+  "scope": "34 completed new fits and six historical controls; 10k/50k conventional improvement in two fixed seeds; 200k labels running; 2D test sealed",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
