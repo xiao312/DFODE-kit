@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-08T21:41:00+00:00",
+  "generated_at": "2026-10-08T22:42:00+00:00",
   "benchmark": "flame_conditioning",
   "report_path": "flame-conditioning/",
-  "source_revision": "a1ea79b",
-  "scope": "35 completed new fits and six historical controls; completed and audited 200k data; verified fixed second-seed 200k fit; primary 200k comparison running; 2D test sealed",
+  "source_revision": "2bdb321",
+  "scope": "39 verified new fits, six historical controls, and 55 frozen models/policies scored on two separate 2D populations; explicit reference-policy amendment and post-score input-support diagnosis; no learned CFD deployment",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
