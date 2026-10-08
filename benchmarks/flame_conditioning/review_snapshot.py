@@ -28,6 +28,7 @@ def main():
     parser.add_argument("--training", type=Path, action="append", required=True)
     parser.add_argument("--audit", type=Path, required=True)
     parser.add_argument("--cfd", type=Path, required=True)
+    parser.add_argument("--parity", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     rows = []
@@ -79,6 +80,19 @@ def main():
     snapshot["queries"]["cfd"] = {"rows": [{**state, "steps": cfd["steps"], "originalFilesUnchanged": cfd["original_files_rechecked"]} for state in cfd["states"]],
         "source": source([args.cfd], [{"label": "Copied CFD restart", "definition": "Read-only review of 500-cell initial/final scalar fields, completed solver log, mesh check, and all 73 original allowlisted file hashes."}],
                          ["CVODE-only run with neural chemistry disabled. No learned model was deployed.", "Installed CFD uses Cantera 2.6.0; research labels use 3.2.0. Existing runtime was not upgraded."])}
+    if args.parity:
+        parity = json.loads(args.parity.read_text())
+        if parity["status"] != "complete":
+            raise ValueError("Runtime parity evidence is incomplete")
+        snapshot["queries"]["runtime_parity"] = {"rows": [{"states": len(parity["records"]),
+            "runtimeCantera": parity["plan"]["runtime_cantera"], "researchCantera": parity["plan"]["research_cantera"],
+            "maxDifferenceBudget": parity["max_difference_budget"], "budgetFitFraction": parity["budget_fit_fraction"]}],
+            "source": source([args.parity], [{"label": "Version/interface parity", "definition": "Difference between fixed-T/V tight Cantera 2.6 Reactor increments and saved Cantera 3.2 IdealGasReactor labels, divided by the species budget."}],
+                             ["Selected validation subset only; not a guarantee across every state or all solver settings."])}
+    if cfd.get("profiles"):
+        snapshot["queries"]["flame_profile"] = {"rows": cfd["profiles"], "source": source([args.cfd], [
+            {"label": "Temperature profile", "definition": "Initial and final cell temperature versus actual cell-centre x position. Nonuniform mesh coordinates are checked against the original geometry-vector field; the mesh is not assumed uniform."}
+        ], ["The 0.1 ms CVODE-only restart is a compatibility check, not a flame-speed or steady-state validation."])}
     args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
     print(json.dumps({"output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))
 

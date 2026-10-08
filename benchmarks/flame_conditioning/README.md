@@ -226,6 +226,9 @@ checks completion, finite scalar fields, mass closure and the final temperature.
 It rechecks every allowlisted original file against its pre-copy hash. These
 checks establish startup/restart compatibility and preservation of the source,
 not a validated flame speed, mesh convergence, or neural-model accuracy.
+The temperature profile uses actual nonuniform mesh coordinates, checked against
+the old geometry-vector `0/C`. That file is read as geometry only and is never
+copied into the carbon-species field of a new case.
 
 `runtime_parity.py <dataset> --output <new.json> --dry-run` checks a bounded
 32-state validation subset in the installed CFD Python/Cantera environment.
@@ -241,6 +244,8 @@ creates sanitized, source-backed rows for the GitHub Pages review. It reads smal
 saved evidence only. It does not train, alter results, or include private host
 paths, raw chemistry states, model weights, or mechanism contents. The HTML report
 is a downstream presentation of this snapshot, with the source hashes retained.
+`--parity <runtime-parity.json>` includes the unchanged-runtime comparison.
+When refreshing an existing app snapshot, preserve its stable ID and title.
 
 ```bash
 python -m pytest tests/test_flame_*.py -q

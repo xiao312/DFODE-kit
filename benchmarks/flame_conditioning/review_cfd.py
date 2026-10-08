@@ -31,6 +31,32 @@ def scalar_field(path, count):
     return values
 
 
+def x_cell_centres(case, original, count):
+    """Validate the old coordinate-vector C against this nonuniform 1D mesh.
+
+    Read C only as geometry. Never copy it to a species-field destination.
+    """
+    centre_file = Path(original) / "0/C"
+    text = centre_file.read_text()
+    if not re.search(r"\bclass\s+volVectorField\s*;", text):
+        raise ValueError("The inspected geometry C must be a vector field, not carbon")
+    match = re.search(r"internalField\s+nonuniform\s+List<vector>\s+(\d+)\s*\((.*?)\n\)\s*;", text, re.S)
+    if match is None or int(match[1]) != count:
+        raise ValueError("Coordinate field shape mismatch")
+    centres = np.fromstring(re.sub(r"[()]", " ", match[2]), sep=" ").reshape(count, 3)
+    points = (Path(case) / "constant/polyMesh/points").read_text()
+    vectors = re.findall(r"\(\s*([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s*\)", points)
+    points = np.asarray(vectors, dtype=float)
+    interfaces = np.unique(points[:, 0])
+    if len(interfaces) != count + 1 or len(points) != 4 * (count + 1):
+        raise ValueError("Only the inspected single-row hexahedral mesh is supported")
+    expected = .5 * (interfaces[:-1] + interfaces[1:])
+    np.testing.assert_allclose(centres[:, 0], expected, rtol=5e-6, atol=1e-9)
+    if not np.allclose(centres[:, 1:], centres[0, 1:]):
+        raise ValueError("Expected a one-dimensional row of cell centres")
+    return expected, centre_file
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("case", type=Path)
@@ -56,11 +82,13 @@ def main():
     if "Mesh OK" not in mesh:
         raise ValueError("Mesh check did not pass")
     gas = ct.Solution(str(args.case / "mechanism.yaml"))
+    centres, centre_file = x_cell_centres(args.case, args.original, 500)
     result = {"source": source_revision(), "status": "complete", "steps": len(times),
               "start_time_s": prep["start_time_s"], "final_time_s": final, "cells": 500,
               "mesh_check": "passed", "original_files_rechecked": len(prep["original_sha256"]),
               "original_files_unchanged": True, "solver_log_sha256": sha256(args.case / "log.solver"),
-              "mechanism_sha256": prep["mechanism_sha256"], "states": [],
+              "mechanism_sha256": prep["mechanism_sha256"], "states": [], "profiles": [],
+              "geometry_coordinate_sha256": sha256(centre_file),
               "scope": "CVODE-only restart compatibility, not coupled neural-model validation"}
     for time_name in ("0.0025", times[-1]):
         fields = np.column_stack([scalar_field(args.case / time_name / name, 500) for name in ["T", "p"] + gas.species_names])
@@ -72,6 +100,9 @@ def main():
                                  "pressure_max_Pa": float(fields[:, 1].max()), "species_min": float(fractions.min()),
                                  "negative_species_components": int(np.sum(fractions < 0)),
                                  "mass_closure_max": float(np.max(np.abs(fractions.sum(axis=1) - 1)))})
+        result["profiles"].extend({"cell": index, "position_mm": float(position * 1000),
+                                    "time_ms": float(time_name) * 1000, "temperature_K": float(fields[index, 0])}
+                                   for index, position in enumerate(centres))
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False))
     print(json.dumps(result, indent=2))
 
