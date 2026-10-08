@@ -430,6 +430,25 @@ The review compiler accepts `--input-support <summary.json>` only when its
 training and test hashes match the other reviewed evidence. Keep the diagnostic
 separate from the predeclared comparison and from any claim of causal repair.
 
+`pressure_diagnostic.py <test> --audit <passing-test-audit> --training <primary-run>
+--output <new-run> --dry-run` fixes a post-score pressure-only diagnostic. Use
+the audit's existing 32 states, not score-selected cells. Copy those states and
+change only pressure to the frozen training mean. Generate new, physically
+consistent fixed-T/V CVODE labels for the changed states; check step-limited
+CVODE and two Radau settings under the existing agreement/noise screens. Do not
+compare changed-pressure predictions with old-pressure labels. If references fail,
+do not score models or change the diagnostic pressure to obtain a pass.
+
+Compare all four frozen primary models, their unchanged temperature hybrid, and
+zero change on both pressure conditions. Save paired arrays, independent physical
+metric checks, and model/source hashes. No fitting, scaling repair, model selection,
+CFD deployment, or overwrite of the original test occurs. This diagnostic measures
+pressure sensitivity on an already-inspected, temperature-spanning subset; it is
+not new validation or a random-cell population estimate. The only writable path
+is its new result directory. It uses the existing chemistry, model loader, metric,
+and verification modules, with a 300-second internal limit. Verify with
+`python -m pytest tests/test_flame_pressure_diagnostic.py -q`.
+
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing
 data: keep `sum(hf_298 * delta_Y) <= 200 J/kg`. This is not a universal validity
