@@ -73,6 +73,8 @@ separate labeled test. `scout.py -> saved test states` audits its references.
 `evaluate_heldout.py -> audited test/verify/metrics` checks frozen model hashes and
 scores uniform and temperature-balanced populations separately. Test evidence has
 no dependency back into training or checkpoint selection.
+`verify_heldout.py -> frozen plan/saved test predictions/verify_physical`
+independently reconciles both test populations and the complete model list.
 `verify_scaling.py -> completed dataset artifacts/data` checks the nested training
 and identical validation contract before comparing dataset sizes.
 `copy_case.py -> inspected original fields/mesh` prepares an allowlisted isolated

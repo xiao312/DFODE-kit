@@ -45,6 +45,7 @@ def main():
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
+    parser.add_argument("--filter-audit", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -165,6 +166,22 @@ def main():
         snapshot["queries"]["datasets"] = {"rows": dataset_rows, "source": source(args.dataset_manifest, [
             {"label": "Accepted chemistry labels", "definition": "Candidates with finite, nonnegative endpoints and passing fixed-temperature/volume, mass and elemental checks. Failed rows remain in the private artifact but are excluded from fitting."}
         ], ["The larger generation run reached its first wall limit and finished in a new continuation directory; its elapsed time is the sum of both segments."])}
+    if args.filter_audit:
+        filter_rows = []
+        for path in args.filter_audit:
+            audit = json.loads(path.read_text())
+            if audit.get("status") != "complete":
+                raise ValueError("Historical-filter audit is incomplete")
+            for split, counts in audit["splits"].items():
+                filter_rows.append({"trainingCount": audit["splits"]["train"]["states"],
+                                    "split": split, "states": counts["states"],
+                                    "kept": counts["kept"], "rejected": counts["rejected"],
+                                    "rejectedFraction": counts["rejected_fraction"],
+                                    "rule": audit["rule"]})
+        snapshot["queries"]["filter_audit"] = {"rows": filter_rows, "source": source(args.filter_audit, [
+            {"label": "Historical heat-release filter", "definition": "Keep sum(hf_298 * delta_Y) <= 200 J/kg. Positive sums mean endothermic change. This rejects sufficiently endothermic states, not all negative heat release."}
+        ], ["Read-only diagnostic: current labels and fitting data are unchanged.",
+            "Removing validation rows is not equivalent to retraining on filtered data."])}
     if not args.dry_run:
         args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
     print(json.dumps({"dry_run": args.dry_run, "output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))

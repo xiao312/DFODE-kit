@@ -110,7 +110,7 @@ without random perturbation. No heat-release filter is applied. These explicit
 choices differ from an exact paper reproduction. Save lineage and acceptance rates.
 Use tight fixed-T/V CVODE labels. Reject nonfinite/negative endpoints or failed
 conservation/constraint checks, with row-specific reasons. Save partial arrays
-every 100 rows and never substitute zero for missing labels. Validation snapshots
+every 100–1000 rows and never substitute zero for missing labels. Validation snapshots
 are correlated parts of the same flame; a separate 2D test is still required.
 This runner never reads test states. Its default 2400-second limit fits a
 one-hour external timeout. Audit selected augmented labels independently before
@@ -252,6 +252,12 @@ the fixed paper-style policy: zero below 305 K, direct power from 305 to 1000 K,
 and transformed-state increments at or above 1000 K. The thresholds are not fit.
 This is an offline test on one 2D snapshot, not temporal rollout or coupled CFD
 validation. Test results cannot select further tuning on this same test set.
+`verify_heldout.py <test> <evaluation>` is a read-only reconciliation of the saved
+cell IDs, population masks, prediction arrays, and main physical scores. It checks
+that all frozen model and hybrid identities are present, with no extra models.
+It uses the independent Cantera-density calculation from `verify_physical.py`.
+`--output <new.json>` saves the verification record. This is a metric check, not
+an additional reference-accuracy or coupled-CFD claim.
 
 ## Copied CFD restart
 
@@ -310,7 +316,9 @@ replays all selected training states and independently checks their physical
 scores. Use it before interpreting a training/validation gap. Without the flag,
 the faster existing validation replay remains unchanged.
 The report compiler also accepts `--historical-validation`, `--heldout`,
-`--scaling`, and `--expanded-audit` completed JSON evidence. Historical controls
+`--scaling`, `--expanded-audit`, and repeated `--filter-audit` completed JSON
+evidence. Filter rows retain split counts and the exact rule; they do not modify
+the dataset or introduce a new model-selection rule. Historical controls
 remain separate from equal-budget new fits, and the two test populations remain
 separate. It never publishes weights or raw mechanism files.
 
