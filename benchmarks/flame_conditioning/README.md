@@ -106,6 +106,8 @@ are correlated parts of the same flame; a separate 2D test is still required.
 This runner never reads test states. Its default 2400-second limit fits a
 one-hour external timeout. Audit selected augmented labels independently before
 training; the unperturbed scout alone does not certify augmented labels.
+The dataset runner reuses a parsed mechanism and reactor, but resets state, time
+and solver history for each row. Tests compare this path with fresh reactors.
 
 ```bash
 python -m pytest tests/test_flame_chemistry.py tests/test_flame_extraction.py -q

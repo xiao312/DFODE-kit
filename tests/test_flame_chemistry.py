@@ -7,7 +7,7 @@ ct = pytest.importorskip("cantera")
 pytest.importorskip("scipy")
 
 from benchmarks.flame_conditioning.chemistry import (
-    direct_increment, direct_rhs, element_matrix, endpoint, set_state, validate_state,
+    EndpointIntegrator, direct_increment, direct_rhs, element_matrix, endpoint, set_state, validate_state,
 )
 
 
@@ -74,6 +74,17 @@ def test_direct_deadline():
     _, state = initial()
     with pytest.raises(TimeoutError):
         direct_increment("h2o2.yaml", state, deadline=time.monotonic() - 1)
+
+
+def test_reused_integrator_matches_fresh_reactor_and_resets_time():
+    gas, state = initial()
+    reusable = EndpointIntegrator("h2o2.yaml")
+    for temperature in (1400, 300, 2200, 1400):
+        state["T"] = temperature
+        fresh = endpoint("h2o2.yaml", state, atol=1e-21)
+        reused = reusable.advance(state)
+        np.testing.assert_allclose(reused["delta"], fresh["delta"], rtol=1e-9, atol=1e-20)
+        assert reused["diagnostics"]["temperature_change_K"] == 0
 
 
 @pytest.mark.parametrize("kwargs", [{"interval": 0}, {"rtol": -1}, {"max_step": 0}])

@@ -14,7 +14,7 @@ import numpy as np
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from benchmarks.flame_conditioning.augmentation import sample_split, validate_config
-from benchmarks.flame_conditioning.chemistry import endpoint
+from benchmarks.flame_conditioning.chemistry import EndpointIntegrator
 from benchmarks.flame_conditioning.extract import sha256, source_revision
 
 
@@ -56,6 +56,7 @@ def main():
         (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2, allow_nan=False))
 
     save()
+    integrator = EndpointIntegrator(mechanism, config["cvode_rtol"], config["cvode_atol"])
     for split in ("train", "validation"):
         states, lineage, sampling = sample_split(source, source_manifest["species_names"], config, split)
         destination = args.output / split
@@ -72,7 +73,7 @@ def main():
             state = {"T": float(row[0]), "P": float(row[1]), "Y": row[2:].tolist()}
             record = {"row": index}
             try:
-                result = endpoint(mechanism, state, config["interval_s"], config["cvode_rtol"], config["cvode_atol"])
+                result = integrator.advance(state, config["interval_s"])
                 delta[index] = result.pop("delta")
                 record.update(result)
                 physical = result["diagnostics"]

@@ -80,6 +80,32 @@ def endpoint(mechanism, state, interval=1e-6, rtol=1e-12, atol=1e-18,
     }
 
 
+class EndpointIntegrator:
+    """Reuse mechanism parsing, but reset the reactor and solver for each row."""
+
+    def __init__(self, mechanism, rtol=1e-12, atol=1e-21):
+        validate_solve(1e-6, rtol, atol)
+        self.gas = ct.Solution(str(mechanism))
+        self.reactor = ct.IdealGasReactor(self.gas, energy="off", clone=False)
+        self.network = ct.ReactorNet([self.reactor])
+        self.network.rtol, self.network.atol = rtol, atol
+        self.network.max_steps = 100000
+
+    def advance(self, state, interval=1e-6):
+        validate_solve(interval, self.network.rtol, self.network.atol)
+        started = time.perf_counter()
+        set_state(self.gas, state)
+        density_initial = self.gas.density
+        self.reactor.syncState()
+        self.network.initial_time = 0.0
+        self.network.reinitialize()
+        self.network.advance(interval)
+        delta = self.reactor.phase.Y - np.asarray(state["Y"])
+        return {"delta": delta.tolist(), "seconds": time.perf_counter() - started,
+                "stats": dict(self.network.solver_stats),
+                "diagnostics": diagnostics(self.reactor.phase, state, delta, density_initial)}
+
+
 def direct_rhs(gas, state, scale, deadline=None):
     set_state(gas, state)
     density_initial = float(gas.density)
