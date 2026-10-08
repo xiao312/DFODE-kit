@@ -8,6 +8,7 @@ import pytest
 pytest.importorskip("cantera")
 torch = pytest.importorskip("torch")
 from benchmarks.flame_conditioning.train import fit_variant, network, validate_config
+from benchmarks.flame_conditioning.verify import load_predictor
 
 
 def settings():
@@ -54,3 +55,8 @@ def test_tiny_training_saves_replayable_evidence(tmp_path, target):
     model = network(5, 3, [8], config["seed"], torch.float64)
     model.load_state_dict(weights)
     assert (tmp_path / target / "validation-predictions.npz").is_file()
+    predict, _ = load_predictor(tmp_path / target, config)
+    recovered, mask = predict(validation["states"])
+    saved = np.load(tmp_path / target / "validation-predictions.npz")
+    np.testing.assert_array_equal(recovered, saved["prediction"])
+    np.testing.assert_array_equal(mask, saved["correction"])

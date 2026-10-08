@@ -151,6 +151,13 @@ feasibility model, not the paper's four-by-800 network or matched paper compute.
 The runner checks that the passing augmented audit references the exact dataset
 manifest hash; a stale or failed audit cannot authorize this comparison.
 
+`verify.py <dataset> <training-run>` is read-only. It checks all planned fits,
+dataset hashes, nested training indices, matched initialization, complete update
+budgets, replayed validation predictions and independently recomputed budget p99.
+Expected: 16 verified models for the default plan. Verification of saved evidence
+is not a scientific accuracy pass. `load_predictor` exposes the same explicit
+decode/correction interface for later held-out and copied-case evaluation.
+
 ```bash
 python -m pytest tests/test_flame_*.py -q
 ```

@@ -64,6 +64,10 @@ subset. The fixed-T/V numerical module does not reuse the adiabatic RHS.
 adds stable transformed-state differences. `data.py -> checked dataset/chemistry`
 validates hashes and lineage. `metrics.py -> saved physical predictions` evaluates
 non-argon accuracy and all-species conservation without modifying predictions.
+`audit_labels.py -> data/chemistry/scout` checks augmented labels;
+`train.py -> data/coordinates/metrics` requires that audit and exposes validation
+only. `verify.py -> saved models/coordinates/data` independently replays the
+matched-budget result. Held-out 2D evaluation and CFD deployment are later layers.
 
 ## Current refactor themes
 
