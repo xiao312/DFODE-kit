@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Precision conditioning — first numerical audit</title>
+<style>
+body{max-width:1100px;margin:40px auto;padding:0 20px;font:16px/1.6 system-ui;color:#223}
+h1,h2{line-height:1.2}table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:10px;border-bottom:1px solid #ccd;text-align:left}td:not(:first-child){font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}.note{background:#eef3fa;padding:18px;border-radius:8px}
+pre{white-space:pre-wrap;background:#f4f4f4;padding:16px}code{background:#f4f4f4}
+</style>
+<h1>Precision conditioning: first review checkpoint</h1>
+<p>Synthetic representation audit, 1169 state/increment pairs.
+No chemistry solver or neural network was evaluated.</p>
+<div class="note"><strong>First finding:</strong> 362
+known nonzero increments disappear when added to their initial state in FP64.
+Preserving a tiny increment separately and recovering it from stored endpoints are different tasks.</div>
+<h2>Coordinate and storage comparisons</h2>
+<p>Quantized coordinate experiments encode to the indicated dtype and decode in FP64.
+Relative error is measured only for nonzero reference increments. Budget error uses
+<code>atol + rtol × |initial state|</code>. These are diagnostic weights.</p>
+<div class="scroll"><table><thead><tr><th>Path</th><th>Lost nonzero increments</th>
+<th>99th percentile relative error</th><th>Maximum budget error</th><th>Within budget</th>
+</tr></thead><tbody><tr><td>endpoint-subtraction-fp64</td><td>362</td><td>1.000e+00</td><td>1.059e-10</td><td>100.00%</td></tr>
+<tr><td>endpoint-storage-fp32-subtract-fp64</td><td>638</td><td>1.000e+00</td><td>2.245e+02</td><td>96.83%</td></tr>
+<tr><td>naive-boxcox-endpoint-increment-fp64</td><td>0</td><td>1.820e+15</td><td>1.214e-05</td><td>100.00%</td></tr>
+<tr><td>budget-linear-encode-float32-decode-fp64</td><td>0</td><td>5.384e-08</td><td>2.400e+02</td><td>97.78%</td></tr>
+<tr><td>budget-asinh-encode-float32-decode-fp64</td><td>0</td><td>7.345e-07</td><td>8.448e+03</td><td>95.38%</td></tr>
+<tr><td>signed-power-encode-float32-decode-fp64</td><td>0</td><td>5.582e-07</td><td>3.258e+03</td><td>95.47%</td></tr>
+<tr><td>budget-linear-encode-float64-decode-fp64</td><td>0</td><td>1.454e-16</td><td>1.355e-08</td><td>100.00%</td></tr>
+<tr><td>budget-asinh-encode-float64-decode-fp64</td><td>0</td><td>1.219e-15</td><td>1.388e-05</td><td>100.00%</td></tr>
+<tr><td>signed-power-encode-float64-decode-fp64</td><td>0</td><td>5.105e-15</td><td>1.735e-06</td><td>100.00%</td></tr></tbody></table></div>
+<h2>Interpretation for the next experiment</h2>
+<p>All direct coordinate paths retain nonzero targets on this grid. Asinh is not automatically
+the most accurate quantization scheme: it compresses large budget-normalized increments,
+and its inverse amplifies coordinate rounding. Its possible learning advantage must be
+tested on chemistry data under a controlled architecture and compute budget.</p>
+<p>The naive Box–Cox endpoint path also introduces spurious tiny changes from reconstruction
+rounding. Very large relative errors near zero can coexist with small state-budget errors.
+Neither metric alone establishes scientific accuracy.</p>
+<h2>Next review decision</h2>
+<p>Select the chemistry reference mechanism, reactor constraints, timestep range and tolerance
+ladder. A small H2 mechanism is the provisional smoke test; the selected NH3/CH4 mechanism
+is the scientific target. Audit label uncertainty before training.</p>
+<h2>Reproduction metadata</h2><pre>{
+  &quot;versions&quot;: {
+    &quot;python&quot;: &quot;3.14.6&quot;,
+    &quot;numpy&quot;: &quot;2.5.3&quot;
+  },
+  &quot;budget&quot;: {
+    &quot;atol&quot;: 1e-12,
+    &quot;rtol&quot;: 1e-06,
+    &quot;weight_state&quot;: &quot;initial&quot;
+  },
+  &quot;scope&quot;: &quot;synthetic representation only; no chemistry or training&quot;
+}</pre>
+<p>Full per-magnitude results and synthetic inputs are in <a href="audit.json">audit.json</a>.
+The table and explanation are embedded in this document and work offline.</p></html>
