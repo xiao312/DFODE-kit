@@ -77,7 +77,7 @@ no dependency back into training or checkpoint selection.
 restart and depends on the canonical case's inactive spray dictionary. Execution
 uses the existing image, outside the preparation command. It
 neither calls the original case scripts nor modifies source cases or installations.
-`review_cfd.py -> copied fields/logs/preparation manifest` checks completion and
+`review_cfd.py -> copied fields/logs/mesh/original geometry/preparation manifest` checks completion and
 rehashes the allowlisted original files through a read-only mount.
 `runtime_parity.py -> validation artifacts/installed Cantera 2.6` checks a bounded
 fixed-T/V subset without importing the research training environment.

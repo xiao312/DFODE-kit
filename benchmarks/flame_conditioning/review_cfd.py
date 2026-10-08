@@ -104,7 +104,7 @@ def main():
                                     "time_ms": float(time_name) * 1000, "temperature_K": float(fields[index, 0])}
                                    for index, position in enumerate(centres))
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False))
-    print(json.dumps(result, indent=2))
+    print(json.dumps({key: value for key, value in result.items() if key != "profiles"}, indent=2))
 
 
 if __name__ == "__main__":
