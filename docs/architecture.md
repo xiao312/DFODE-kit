@@ -46,6 +46,17 @@ multi-seed optimization with an all-component stop/save gate. `verify_polish.py`
 replays selected models; `polish_review.py -> saved results -> static Pages` is
 the one-way report dependency. No held-out data enter this training-fit stage.
 
+## Flame-conditioned research
+
+`benchmarks/flame_conditioning/` owns the application-aligned comparison separately
+from the homogeneous-reactor audit. Its one-way dependency is `read-only original
+cases -> extracted state/lineage files -> fixed-temperature, fixed-volume chemistry
+labels -> target comparison -> offline/coupled evaluation -> static review`.
+`chemistry.py` depends on pinned Cantera/NumPy/SciPy. It does not alter production
+labeling, solver installations, or the earlier reference formulation. The local
+README defines the provenance, split, compute and secret boundaries. No production
+module depends on these experimental tools.
+
 ## Current refactor themes
 
 
