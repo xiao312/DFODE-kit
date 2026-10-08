@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#ffffff">
-<meta name="data-app-snapshot-sha256" content="aef86e28aa048cd9ee9d7d3465886fe001aee3705a54ba0e7bc74eb43495ca37">
+<meta name="data-app-snapshot-sha256" content="c11b10f8c8eace71349a0475d4a27f6296c84c67c72980af47d6f1ef49b7c39e">
 <meta name="data-app-runtime-sha256" content="9e3ede84b28aded3c7379b6e6a5611f0d95b9977eb0f781e279ceefabfcbd27e">
 <meta name="data-app-bootstrap" content="deferred-content-v1">
 <meta name="data-app-build-layout" content="separate-data-v1">
-<meta name="data-app-local-snapshot" content="snapshot.aef86e28aa048cd9ee9d7d3465886fe001aee3705a54ba0e7bc74eb43495ca37.json">
+<meta name="data-app-local-snapshot" content="snapshot.c11b10f8c8eace71349a0475d4a27f6296c84c67c72980af47d6f1ef49b7c39e.json">
 <meta name="data-app-local-thread" content="01a0c393-dd16-70c1-82b4-b303b15c29ad">
 <title>Flame tests now use the CFD chemistry problem</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuMDMxMjUgOUMyLjAzMTI1IDcuODk1NDMgMi45MjY2OCA3IDQuMDMxMjUgN0g4LjY1NDNWMjEuOTAwNEg0LjAzMTI1QzIuOTI2NjggMjEuOTAwNCAyLjAzMTI1IDIxLjAwNSAyLjAzMTI1IDE5LjkwMDRWOVoiIGZpbGw9IiMwMjg1RkYiLz4KPHBhdGggZD0iTTguNjU0MyA0LjA5OTYxQzguNjU0MyAyLjk5NTA0IDkuNTQ5NzMgMi4wOTk2MSAxMC42NTQzIDIuMDk5NjFIMTMuMjc3M0MxNC4zODE5IDIuMDk5NjEgMTUuMjc3MyAyLjk5NTA0IDE1LjI3NzMgNC4wOTk2MVYyMS45MDA0SDguNjU0M1Y0LjA5OTYxWiIgZmlsbD0iIzAyODVGRiIgZmlsbC1vcGFjaXR5PSIwLjciLz4KPHBhdGggZD0iTTE1LjI3NzMgMTEuMDk5NkgxOS45MDA0QzIxLjAwNSAxMS4wOTk2IDIxLjkwMDQgMTEuOTk1IDIxLjkwMDQgMTMuMDk5NlYxOS45MDA0QzIxLjkwMDQgMjEuMDA1IDIxLjAwNSAyMS45MDA0IDE5LjkwMDQgMjEuOTAwNEgxNS4yNzczVjExLjA5OTZaIiBmaWxsPSIjMDI4NUZGIiBmaWxsLW9wYWNpdHk9IjAuNCIvPgo8L3N2Zz4K">
@@ -135,6 +135,8 @@ function ReportContent() {
   const testReference = snapshot.queries.heldout_reference?.rows;
   const recovery = snapshot.queries.reference_recovery?.rows;
   const support = snapshot.queries.input_support?.rows;
+  const pressure = snapshot.queries.pressure_diagnostic?.rows;
+  const pressureRows = pressure?.map(row => ({...row, targetName:names[row.target] || (row.target === "fixed-hybrid" ? "Fixed hybrid" : "Zero change")}));
   const supportRows = (support || []).filter(row => ["P_Pa", "H2O"].includes(row.feature)).map(row => ({...row,
     trainingRange: row.feature === "P_Pa" ? `${integer(row.trainingMin)}–${integer(row.trainingMax)}` : `${row.trainingMin.toExponential(2)}–${row.trainingMax.toExponential(2)}`,
     observedRange: row.feature === "P_Pa" ? `${integer(row.observedMin)}–${integer(row.observedMax)}` : `${row.observedMin.toExponential(2)}–${row.observedMax.toExponential(2)}`,
@@ -281,6 +283,16 @@ function ReportContent() {
         {field:"feature",label:"Feature"}, {field:"population",label:"Population"}, {field:"trainingRange",label:"Raw training range"},
         {field:"observedRange",label:"Raw observed range"}, {field:"outsideTrainingRangeFraction",label:"Outside training range",renderCell:percent},
         {field:"absoluteStandardizedMax",label:"Max |encoded distance / scale|",renderCell:value=>value.toFixed(2)},
+      ],} )
+    })
+    , pressure && prose("flame-pressure-diagnosis", "Pressure-only diagnostic", "pressure_diagnostic", pressure,
+      `### A small physical pressure change can cause a large model change\n\nWe checked the same 32 states used in the reference audit. We copied each state and changed only pressure to the frozen training mean, ${pressure[0].pressurePa.toFixed(2)} Pa. We then generated new CVODE labels for these changed states and checked them with step-limited CVODE and two Radau solves. We did not compare new-pressure predictions with old-pressure answers.\n\nThe reference heat source changed by ${percent(pressure[0].referenceHeatResponse)} of its original RMS. Some model predictions changed much more. For the fixed hybrid, heat relative RMS fell from ${pressure.find(row=>row.target === "fixed-hybrid").originalHeatRelativeRms.toFixed(2)} to ${pressure.find(row=>row.target === "fixed-hybrid").changedHeatRelativeRms.toFixed(3)}. But its species-budget p99 remained ${integer(pressure.find(row=>row.target === "fixed-hybrid").changedBudgetP99)}, far above 1. The linear model's heat error became worse even though its species p99 improved.\n\nThis supports pressure sensitivity as a contributor to the failure, not its only cause. It does not prove that a new scaler alone will solve the problem. All six frozen policies are shown. No model was refitted or selected. This is a post-score diagnosis on an inspected subset, not a domain-average score, a new test, or a repair. The original 2D scores above remain unchanged.`)
+    , pressure && visible("flame-pressure-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "flame-pressure-table", queryId: "pressure_diagnostic", kind: "table", title: "32 paired states: original pressure versus training-mean pressure"       , sourceRows: pressure, displayRows: pressureRows, children: 
+      jsxRuntime.jsx(dataApp.DataTable, { rows: pressureRows, label: "Post-score pressure sensitivity"  , searchable: false, compactNumbers: false, columns: [
+        {field:"targetName",label:"Frozen policy"}, {field:"originalBudgetP99",label:"Original p99 ↓",renderCell:budgetNumber},
+        {field:"changedBudgetP99",label:"Changed-pressure p99 ↓",renderCell:budgetNumber},
+        {field:"originalHeatRelativeRms",label:"Original heat RMS ↓",renderCell:value=>value.toFixed(3)},
+        {field:"changedHeatRelativeRms",label:"Changed-pressure heat RMS ↓",renderCell:value=>value.toFixed(3)},
       ],} )
     })
     , prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
