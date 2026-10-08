@@ -5,6 +5,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import time
 
 import cantera as ct
 import numpy as np
@@ -28,6 +29,16 @@ def hybrid_prediction(states, boxcox, power):
         if selected.any():
             prediction[selected], correction[selected] = predict(states[selected])
     return prediction, correction
+
+
+def timed_prediction(predict, states):
+    """Time a single batch call; exclude loading and downstream metric work."""
+    wall_started, cpu_started = time.perf_counter(), time.process_time()
+    predicted, corrected = predict(states)
+    return predicted, corrected, {
+        "states": len(states), "wall_seconds": time.perf_counter() - wall_started,
+        "process_seconds": time.process_time() - cpu_started,
+        "scope": "One offline batch, including adapter and decode; not a CFD speedup"}
 
 
 def main():
@@ -91,8 +102,9 @@ def main():
               "sample_counts": {name: {"selected": int(source[name].sum()), "accepted": int(mask.sum())}
                                 for name, mask in masks.items()}}
 
-    def score(name, predicted, corrected, diagnostics=None):
-        entry = {"name": name, "populations": {}, "diagnostics": diagnostics or {}}
+    def score(name, predicted, corrected, diagnostics=None, timing=None):
+        entry = {"name": name, "populations": {}, "diagnostics": diagnostics or {},
+                 "prediction_timing": timing}
         for population, mask in masks.items():
             if mask.any():
                 entry["populations"][population] = physical_scores(predicted[mask], delta[mask], states[mask], corrected[mask], **physics)
@@ -112,25 +124,31 @@ def main():
         for variant in training["variants"]:
             predict, _ = load_predictor(directory / variant["name"], config)
             predictors[variant["name"]] = predict
-            score(f'{run_name}--{variant["name"]}', *predict(states))
+            predicted, corrected, timing = timed_prediction(predict, states)
+            score(f'{run_name}--{variant["name"]}', predicted, corrected, timing=timing)
         for name, boxcox in predictors.items():
             if name.endswith("-state-boxcox"):
                 prefix = name.removesuffix("state-boxcox")
                 power = predictors.get(prefix + "signed-power")
                 if power is not None:
-                    score(f"{run_name}--{prefix}fixed-hybrid", *hybrid_prediction(states, boxcox, power))
+                    predict_hybrid = lambda rows: hybrid_prediction(rows, boxcox, power)
+                    predicted, corrected, timing = timed_prediction(predict_hybrid, states)
+                    score(f"{run_name}--{prefix}fixed-hybrid", predicted, corrected, timing=timing)
     historical_predictors = {}
     for control in plan.get("historical", []):
         for mode in control["modes"]:
             predict, _ = load_historical(control["directory"], gas.species_names, mode)
             historical_predictors[(control["kind"], mode)] = predict
-            predicted, corrected = predict(states)
-            score(f'historical--{control["kind"]}--{mode}', predicted, corrected, dict(predict.diagnostics))
+            predicted, corrected, timing = timed_prediction(predict, states)
+            score(f'historical--{control["kind"]}--{mode}', predicted, corrected,
+                  dict(predict.diagnostics), timing=timing)
     for mode in ("source-formula", "stable-adapter"):
         boxcox = historical_predictors.get(("state-boxcox", mode))
         power = historical_predictors.get(("signed-power", mode))
         if boxcox is not None and power is not None:
-            score(f"historical--fixed-hybrid--{mode}", *hybrid_prediction(states, boxcox, power),
+            predict_hybrid = lambda rows: hybrid_prediction(rows, boxcox, power)
+            predicted, corrected, timing = timed_prediction(predict_hybrid, states)
+            score(f"historical--fixed-hybrid--{mode}", predicted, corrected, timing=timing,
                   diagnostics={"historical_training_overlap_not_excluded": True,
                                "reconstruction": mode, "thresholds_K": [305, 1000]})
     result["status"] = "complete"

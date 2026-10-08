@@ -252,6 +252,10 @@ the fixed paper-style policy: zero below 305 K, direct power from 305 to 1000 K,
 and transformed-state increments at or above 1000 K. The thresholds are not fit.
 This is an offline test on one 2D snapshot, not temporal rollout or coupled CFD
 validation. Test results cannot select further tuning on this same test set.
+Record wall and process time for one offline batch prediction per model, excluding
+model loading, reference generation, and metric calculation. These timings include
+the adapter and reconstruction. They are not CFD speedups: host contention, CPU
+quota, batch size, communication, and solver coupling can change deployment cost.
 `verify_heldout.py <test> <evaluation>` is a read-only reconciliation of the saved
 cell IDs, population masks, prediction arrays, and main physical scores. It checks
 that all frozen model and hybrid identities are present, with no extra models.

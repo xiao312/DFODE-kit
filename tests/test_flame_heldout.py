@@ -36,3 +36,20 @@ def test_hybrid_uses_fixed_thresholds_and_cold_zero():
     predicted, corrected = hybrid_prediction(states, boxcox, power)
     np.testing.assert_array_equal(predicted[:, 0], [0, 1, 1, 2])
     np.testing.assert_array_equal(corrected[:, 0], [False, False, False, True])
+
+
+def test_timed_prediction_calls_once_and_preserves_arrays():
+    pytest.importorskip("torch")
+    from benchmarks.flame_conditioning.evaluate_heldout import timed_prediction
+    states = np.zeros((3, 4))
+    prediction = np.ones((3, 2))
+    correction = np.zeros_like(prediction, dtype=bool)
+    calls = []
+    def predict(rows):
+        calls.append(rows)
+        return prediction, correction
+    actual, corrected, timing = timed_prediction(predict, states)
+    assert actual is prediction and corrected is correction
+    assert len(calls) == 1 and calls[0] is states
+    assert timing["states"] == 3
+    assert timing["wall_seconds"] >= 0 and timing["process_seconds"] >= 0

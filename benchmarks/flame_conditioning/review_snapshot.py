@@ -128,13 +128,18 @@ def main():
             raise ValueError("Reserved-snapshot scoring is incomplete")
         test_rows = []
         for model in heldout["models"]:
+            timing = model.get("prediction_timing") or {}
             for population, values in model["populations"].items():
                 test_rows.append({**score_row(model["name"], values), "population": population,
-                                  "historical": model["name"].startswith("historical--")})
+                                  "historical": model["name"].startswith("historical--"),
+                                  "batchStates": timing.get("states"),
+                                  "batchWallSeconds": timing.get("wall_seconds"),
+                                  "batchProcessSeconds": timing.get("process_seconds")})
         snapshot["queries"]["heldout"] = {"rows": test_rows, "source": source([args.heldout], [
             {"label": "Reserved 2D snapshot", "definition": "Offline predictions on a predeclared uniform-cell sample and a separate temperature-balanced diagnostic sample. Model hashes and thresholds were fixed before reading the snapshot. No post-test tuning."}
         ], ["One snapshot is not a coupled CFD trajectory or a statistical generalization study.",
             "Uniform and temperature-balanced samples overlap; do not pool them or average their scores.",
+            "Timing covers one combined offline batch, not each population separately or a CFD speedup.",
             "Historical models may have prior training/evaluation exposure; only newly trained controls were kept from this snapshot."])}
     if args.scaling:
         scaling = json.loads(args.scaling.read_text())
