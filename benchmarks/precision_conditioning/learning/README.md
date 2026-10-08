@@ -129,8 +129,6 @@ The first run found transient species fits followed by accuracy loss, not proof
 that Adam can never fit a single example. The diagnostic does not change or repair
 the original models; its failed scientific thresholds remain part of the evidence.
 
-## Verification commands
-
 ## Repeatable fit and optimizer polishing
 
 `polish.py <checkpoint-03-run> --output <new-run> --dry-run` reads the saved
@@ -180,6 +178,7 @@ ignored `runs/`; no secrets or network operations occur in these modules.
 python benchmarks/precision_conditioning/learning/polish.py runs/representation/checkpoint03-20261008 --output runs/representation/polish-001 --dry-run
 python benchmarks/precision_conditioning/learning/polish.py runs/representation/checkpoint03-20261008 --output runs/representation/polish-001
 python benchmarks/precision_conditioning/learning/verify_polish.py runs/representation/polish-001
+python benchmarks/precision_conditioning/learning/polish_review.py runs/representation/polish-001
 python -m pytest tests/test_precision_polish.py -q
 ```
 

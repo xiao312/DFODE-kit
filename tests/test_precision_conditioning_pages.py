@@ -87,3 +87,17 @@ def test_pages_reference_allowlist(tmp_path):
     assert result.returncode == 0, result.stderr
     assert {p.name for p in (destination / "checkpoint-03-fit").iterdir()} == fit_files
     assert "fit diagnosis" in (destination / "index.html").read_text(encoding="utf-8")
+    polish = tmp_path / "polish"
+    polish.mkdir()
+    polish_files = {"report.html", "summary.json", "polish-results.png"}
+    for name in polish_files:
+        (polish / name).write_text("placeholder")
+    (polish / "summary.json").write_text(json.dumps({"status": "complete"}))
+    (polish / "weights.pt").write_text("not public")
+    result = run_script("publish_pages.py", source, "--output", destination, "--polish-review", polish, "--dry-run")
+    assert result.returncode == 0, result.stderr
+    assert not (destination / "checkpoint-03-polish").exists()
+    result = run_script("publish_pages.py", source, "--output", destination, "--polish-review", polish)
+    assert result.returncode == 0, result.stderr
+    assert {p.name for p in (destination / "checkpoint-03-polish").iterdir()} == polish_files
+    assert "optimizer polishing" in (destination / "index.html").read_text(encoding="utf-8")

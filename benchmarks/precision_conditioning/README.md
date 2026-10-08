@@ -73,6 +73,9 @@ HTML, three exported PNG figures and measured summary JSON, not weights or array
 Pass `--fit-review <fit-run>/review` to include the checkpoint 03 training-fit
 follow-up. Its allowlist is HTML, summary JSON and two figures. It is not checkpoint
 04 (residual learning). The fit report depends only on saved diagnostic results.
+Pass `--polish-review <polish-run>/review` to publish the multi-seed stop/save
+follow-up. The allowlist is HTML, a compact measured summary and one PNG. Complete
+per-update histories and weights remain in run storage, not the public site.
 
 ```bash
 python benchmarks/precision_conditioning/publish_pages.py runs/precision-conditioning/audit.json --output runs/research-pages --dry-run
