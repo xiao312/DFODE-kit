@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#ffffff">
-<meta name="data-app-snapshot-sha256" content="771ecef1a68f216a48d84d6d13670ae8391a2b5c3546362f66a90f1ef314dca0">
+<meta name="data-app-snapshot-sha256" content="8f33eba0fc1a89097401cc6c4ab9e8242f1072256b6291eac216b41d6e5a4e89">
 <meta name="data-app-runtime-sha256" content="9e3ede84b28aded3c7379b6e6a5611f0d95b9977eb0f781e279ceefabfcbd27e">
 <meta name="data-app-bootstrap" content="deferred-content-v1">
 <meta name="data-app-build-layout" content="separate-data-v1">
-<meta name="data-app-local-snapshot" content="snapshot.771ecef1a68f216a48d84d6d13670ae8391a2b5c3546362f66a90f1ef314dca0.json">
+<meta name="data-app-local-snapshot" content="snapshot.8f33eba0fc1a89097401cc6c4ab9e8242f1072256b6291eac216b41d6e5a4e89.json">
 <meta name="data-app-local-thread" content="01a0c393-dd16-70c1-82b4-b303b15c29ad">
 <title>Flame tests now use the CFD chemistry problem</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuMDMxMjUgOUMyLjAzMTI1IDcuODk1NDMgMi45MjY2OCA3IDQuMDMxMjUgN0g4LjY1NDNWMjEuOTAwNEg0LjAzMTI1QzIuOTI2NjggMjEuOTAwNCAyLjAzMTI1IDIxLjAwNSAyLjAzMTI1IDE5LjkwMDRWOVoiIGZpbGw9IiMwMjg1RkYiLz4KPHBhdGggZD0iTTguNjU0MyA0LjA5OTYxQzguNjU0MyAyLjk5NTA0IDkuNTQ5NzMgMi4wOTk2MSAxMC42NTQzIDIuMDk5NjFIMTMuMjc3M0MxNC4zODE5IDIuMDk5NjEgMTUuMjc3MyAyLjk5NTA0IDE1LjI3NzMgNC4wOTk2MVYyMS45MDA0SDguNjU0M1Y0LjA5OTYxWiIgZmlsbD0iIzAyODVGRiIgZmlsbC1vcGFjaXR5PSIwLjciLz4KPHBhdGggZD0iTTE1LjI3NzMgMTEuMDk5NkgxOS45MDA0QzIxLjAwNSAxMS4wOTk2IDIxLjkwMDQgMTEuOTk1IDIxLjkwMDQgMTMuMDk5NlYxOS45MDA0QzIxLjkwMDQgMjEuMDA1IDIxLjAwNSAyMS45MDA0IDE5LjkwMDQgMjEuOTAwNEgxNS4yNzczVjExLjA5OTZaIiBmaWxsPSIjMDI4NUZGIiBmaWxsLW9wYWNpdHk9IjAuNCIvPgo8L3N2Zz4K">
@@ -77,6 +77,16 @@ function ReportContent() {
   const datasets = snapshot.queries.datasets?.rows;
   const expanded = snapshot.queries.expanded_reference?.rows;
   const filterAudit = snapshot.queries.filter_audit?.rows;
+  const heldout = snapshot.queries.heldout?.rows;
+  const testRuns = [...new Set((heldout || []).filter(row => row.name.startsWith("training-backbone-longer")).map(row => row.name.split("--")[0]))];
+  const testRunSize = name => Number(name.match(/longer(\d+)k/)?.[1] || 0);
+  const largestTestRun = testRuns.sort((a, b) => testRunSize(b) - testRunSize(a))[0];
+  const testSelection = (heldout || []).filter(row => row.name === "zero-baseline" || (largestTestRun && row.name.startsWith(largestTestRun + "--")) || (row.historical && row.name.endsWith("--source-formula")));
+  const testRows = population => testSelection.filter(row => row.population === population).map(row => ({
+    ...row,
+    targetName:row.name === "zero-baseline" ? "Zero change" : row.name.includes("fixed-hybrid") ? "Fixed temperature hybrid" : names[Object.keys(names).find(target => row.name.includes(target))] || row.name,
+    control:row.historical ? "Historical / unequal cost" : row.name === "zero-baseline" ? "Baseline" : `${integer(testRunSize(largestTestRun) * 1000)} candidates / matched updates`,
+  }));
   const gap = models.find(row=>row.target === "state-boxcox" && row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount < 11000);
   const backbone = models.filter(row => row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount > 40000 && row.trainingCount < 60000);
   const density = backbone.find(row => row.target === "state-boxcox");
@@ -85,6 +95,17 @@ function ReportContent() {
   const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
   const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
   const prose = (id, title, queryId, rows, text) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, title: title, queryId: queryId, sourceRows: rows, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: text, sourcePreviews: sourcePreviews,} )});
+  const testTable = (population, title) => {
+    const id = `flame-heldout-${population}`;
+    const rows = testRows(population);
+    return rows.length > 0 && visible(id) && jsxRuntime.jsx(dataApp.DataComponent, { id: id, queryId: "heldout", kind: "table", title: title, sourceRows: heldout.filter(row => row.population === population), displayRows: rows, children: 
+      jsxRuntime.jsx(dataApp.DataTable, { rows: rows, label: title, compactNumbers: false, columns: [
+        {field:"control",label:"Control"}, {field:"targetName",label:"Target"}, {field:"samples",label:"Cells",renderCell:integer},
+        {field:"budgetP99",label:"Budget p99 ↓",renderCell:integer}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
+        {field:"negativeEndpointFraction",label:"Negative species",renderCell:percent}, {field:"inverseCorrectionFraction",label:"Inverse corrections",renderCell:percent},
+      ],} )
+    });
+  };
   return jsxRuntime.jsxs('article', { className: "report-content", 'aria-label': "Flame chemistry research review"   , children: [
     jsxRuntime.jsxs('header', { className: "report-hero", children: [
       jsxRuntime.jsx('h1', { 'data-data-app-title': true, contentEditable: canEdit && mode === "edit", suppressContentEditableWarning: true, onBlur: canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined, children: appTitle})
@@ -97,7 +118,7 @@ function ReportContent() {
     , profile && visible("flame-profile-chart") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "flame-profile-chart", queryId: "flame_profile", title: "The copied NH₃/CH₄ flame: temperature before and after the short restart"          , rows: profile, sourceRows: profile,
       spec: {type:"line",x:"position_mm",y:"temperature_K",series:"time_ms",stackable:false,valueDecimals:2,xLabel:"Position (mm)",yLabel:"Temperature (K)"}, height: 360,} )
     , prose("flame-labels", "Reference accuracy", "reference", reference,
-      `## 2. Check the answers before judging the models\n\nCVODE generates the reference labels. Radau checks a selected subset by integrating the increments directly. This avoids relying only on subtraction of two endpoint values. Both methods still use Cantera's chemical rates; this is not an independent mechanism check.\n\nFor ${reference[0].states} augmented states, all ${integer(reference[0].speciesComponents)} species components passed the reference agreement check. The largest disagreement was ${reference[0].uncertaintyBudgetMax.toExponential(2)} times the chosen species error budget.\n\nThis is strong agreement on the checked subset, not a proof for every label. Only ${percent(reference[0].relativeFitFraction)} of those components passed the separate relative-resolution screen. That screen requires an increment more than 100 times the larger of solver disagreement and endpoint spacing. It is roughly a 1% resolution screen, not evidence of twelve correct digits. A tiny absolute increment is not automatically known to many significant digits.\n\nThe initial dataset kept 9,995 training states and 1,019 validation states. Five labels in each split failed the endpoint checks. Their records were retained and excluded, not replaced by zero.`)
+      `## 2. Check the answers before judging the models\n\nCVODE generates the reference labels. Radau checks a selected subset by integrating the increments directly. This avoids relying only on subtraction of two endpoint values. Both methods still use Cantera's chemical rates; this is not an independent mechanism check.\n\nFor ${reference[0].states} augmented states, all ${integer(reference[0].speciesComponents)} species components passed the reference agreement check. The largest disagreement was ${reference[0].uncertaintyBudgetMax.toExponential(2)} times the chosen species error budget.\n\nThe separate relative-resolution screen passed ${integer(reference[0].resolvedNonzeroComponents)} of ${integer(reference[0].nonzeroReferenceComponents)} nonzero reference increments. There were ${integer(reference[0].unresolvedNonzeroComponents)} unresolved nonzero entries and ${integer(reference[0].zeroReferenceComponents)} zero reference entries. Report zeros separately: relative error at zero is undefined. A zero numerical reference alone is not proof of exact mathematical zero.\n\nThe screen requires an increment more than 100 times the larger of solver disagreement and endpoint spacing. It is roughly a 1% resolution screen, not evidence of twelve correct digits. These results apply to the checked subset, not every label.\n\nThe initial dataset kept 9,995 training states and 1,019 validation states. Five labels in each split failed the endpoint checks. Their records were retained and excluded, not replaced by zero.`)
     , prose("flame-comparison", "Controlled comparison", "models", models,
       "## 3. Change how the target is represented\n\nWe compared four targets: transformed-state increments, direct signed-power increments, budget-linear increments, and scaled asinh increments. Within each comparison, the model, seed, data split, and update budget are the same.\n\nFirst, a small 128 × 128 × 128 tanh model used squared loss. FP32 and FP64 gave nearly the same result. More updates improved several results. Thus, arithmetic precision alone is not the main limit in this test.\n\nNext, we used the study's four 800-unit GELU layers and L1 loss. This changes both model capacity and training loss; it is not an isolated activation test. Our batch size and total training are still far below the original study. All normalization statistics use training data only.")
     , visible("flame-results-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "flame-results-table", queryId: "models", kind: "table", title: "Completed FP32 comparisons on the same validation states"       , sourceRows: selected, displayRows: tableRows, children: 
@@ -128,6 +149,10 @@ function ReportContent() {
     , filterAudit && visible("flame-filter-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "flame-filter-table", queryId: "filter_audit", kind: "table", title: "Read-only effect of the historical filter"     , sourceRows: filterAudit, displayRows: filterAudit, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: filterAudit, label: "Historical-filter sensitivity" , columns: [{field:"trainingCount",label:"Dataset training states",renderCell:integer},{field:"split",label:"Split"},{field:"states",label:"Accepted labels",renderCell:integer},{field:"rejected",label:"Would reject",renderCell:integer},{field:"rejectedFraction",label:"Fraction",renderCell:percent}],} )
     })
+    , heldout && prose("flame-heldout-context", "Reserved CFD snapshot", "heldout", heldout,
+      "## The separate 2D snapshot: two different questions\n\nAll model identities and the 305/1000 K switching thresholds were fixed before this snapshot was opened. No model was trained or selected from these test scores. The uniform sample asks how the model performs on randomly selected cells. The temperature-balanced sample gives cold, preheat, reaction, and burnt regions a separate diagnostic view.\n\nDo not combine the two populations. Their cells can overlap, and the balanced sample is not a domain-average estimate. The main tables show the largest completed matched-data run, the zero-change baseline, and the preselected historical source-formula controls. This display rule was fixed before scoring; all frozen scores remain in the source data.\n\nOnly the new models were kept from this snapshot during this work. Prior exposure of the historical weights cannot be excluded. One offline snapshot does not prove stable CFD or accurate flame speed.")
+    , heldout && testTable("uniform", "Reserved 2D snapshot: uniform random cells")
+    , heldout && testTable("balanced", "Reserved 2D snapshot: temperature-balanced diagnostic")
     , prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
       `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)
     , parity && prose("flame-runtime-parity", "Runtime version agreement", "runtime_parity", parity,
