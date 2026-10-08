@@ -181,6 +181,11 @@ The sampling seed makes the original 10k raw states a prefix of the 50k set and
 keeps validation states identical. Verify these facts before comparing results.
 Audit the expanded training labels separately. The 2D test remains sealed until
 these predeclared comparisons finish; do not tune from its later scores.
+`verify_scaling.py <small-dataset> <large-dataset>` is read-only by default. It
+checks source/config identity, the raw training prefix, identical validation
+states and accepted masks, and label differences against the same error budget.
+`--output <new.json>` saves those checks for the review. Require a pass before
+treating the two training runs as a controlled data-size comparison.
 
 ## Reserved 2D snapshot evaluation
 
@@ -244,6 +249,7 @@ creates sanitized, source-backed rows for the GitHub Pages review. It reads smal
 saved evidence only. It does not train, alter results, or include private host
 paths, raw chemistry states, model weights, or mechanism contents. The HTML report
 is a downstream presentation of this snapshot, with the source hashes retained.
+The authored report source and its runtime boundary are in `report-content/`.
 `--parity <runtime-parity.json>` includes the unchanged-runtime comparison.
 When refreshing an existing app snapshot, preserve its stable ID and title.
 The held-out evaluator and both review commands accept `--dry-run` to validate

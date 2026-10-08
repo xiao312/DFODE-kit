@@ -73,6 +73,8 @@ separate labeled test. `scout.py -> saved test states` audits its references.
 `evaluate_heldout.py -> audited test/verify/metrics` checks frozen model hashes and
 scores uniform and temperature-balanced populations separately. Test evidence has
 no dependency back into training or checkpoint selection.
+`verify_scaling.py -> completed dataset artifacts/data` checks the nested training
+and identical validation contract before comparing dataset sizes.
 `copy_case.py -> inspected original fields/mesh` prepares an allowlisted isolated
 restart and depends on the canonical case's inactive spray dictionary. Execution
 uses the existing image, outside the preparation command. It
@@ -83,6 +85,9 @@ rehashes the allowlisted original files through a read-only mount.
 fixed-T/V subset without importing the research training environment.
 `review_snapshot.py -> small saved model/audit/CFD JSON` emits sanitized reviewed
 data for the downstream HTML report. Presentation cannot alter source evidence.
+`flame_conditioning/report-content -> sanitized snapshot/shared Data app API`
+owns the review narrative and charts; the shared runtime compiles them for Pages.
+The report has no dependency back into model training or reference generation.
 
 ## Current refactor themes
 
