@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T10:16:25.067196+00:00",
+  "generated_at": "2026-10-08T10:26:00.315599+00:00",
   "benchmark": "precision_conditioning",
   "versions": {
     "python": "3.14.6",
