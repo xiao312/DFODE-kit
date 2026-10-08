@@ -56,3 +56,14 @@ def test_density_repeat_keeps_per_model_compute_and_changes_only_seed():
     primary.pop("selection")
     repeated.pop("selection")
     assert primary == repeated
+
+
+def test_200k_density_repeat_changes_only_size_and_description():
+    root = Path(__file__).resolve().parents[1] / "benchmarks" / "flame_conditioning"
+    previous = json.loads((root / "learning-density-repeat.json").read_text())
+    extended = json.loads((root / "learning-density-repeat200k.json").read_text())
+    assert previous.pop("training_sizes") == [50000]
+    assert extended.pop("training_sizes") == [200000]
+    previous.pop("selection")
+    extended.pop("selection")
+    assert previous == extended

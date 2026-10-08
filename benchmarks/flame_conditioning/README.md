@@ -221,6 +221,16 @@ best seed. Keep both repeated fits in the frozen test list. The primary 200k
 comparison still uses seed 20261009. Run this bounded repeat only as the second
 half-CPU job beside label generation, not as an added third workload.
 
+Before either 200k model result or the reserved test is available, extend the
+same conventional-only seed check with `learning-density-repeat200k.json`.
+It changes only requested training count and the descriptive selection text.
+Require the completed 200k dataset's prefix check and passing reference audit.
+Keep seed 20261010, model, batch size, updates, learning rates, and selection rule
+unchanged. This is one additional fit, not a seed search. Start it only before
+06:30 China time and within the two-job/half-CPU-per-job limit. Retain its result
+even if it disagrees with the primary seed, and freeze it with the other models
+before opening the 2D source. Report partial work explicitly if it cannot finish.
+
 ## Reserved 2D snapshot evaluation
 
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
