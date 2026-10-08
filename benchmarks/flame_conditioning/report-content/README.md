@@ -23,6 +23,9 @@ their test performance.
 Reference rows distinguish zero numerical increments from unresolved nonzero
 increments. A relative-resolution fraction over all species must not be described
 as the unresolved-label fraction; inert-species zeros have no relative error.
+Model rows expose the training seed. Primary four-target charts retain seed
+20261009; the conventional-only 20261010 repeat has its own explanatory block.
+Do not merge repeated fits into a best-seed summary.
 
 ## Dependencies and dependents
 

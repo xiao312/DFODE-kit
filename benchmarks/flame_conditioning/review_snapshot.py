@@ -81,6 +81,7 @@ def main():
             values = model["validation"]
             rows.append({"run": path.parent.name if path.name == "summary.json" else path.stem,
                          "target": model["target"], "precision": model["precision"],
+                         "seed": config["seed"],
                          "architecture": architecture, "activation": config.get("activation", "tanh"),
                          "loss": config.get("loss", "mse"), "trainingCount": model["training_count"],
                          "updates": model["updates_completed"], "selectedStep": model["selected_step"],
@@ -111,7 +112,7 @@ def main():
         {"label": "Species budget p99", "definition": "99th percentile over all non-argon species components of abs(predicted increment-reference increment)/(1e-12+1e-6*abs(initial mass fraction)). One is the budget boundary; lower is better."},
         {"label": "Heat-release relative RMS", "definition": "RMS predicted source error divided by RMS reference source; source is -rho/dt times the sum of species formation enthalpy times the species increment. Lower is better; 1 is the zero-increment baseline."},
         {"label": "Negative endpoint fraction", "definition": "Fraction of non-argon species components for which initial Y plus predicted increment is negative. No post-hoc normalization or positivity repair except the separately counted Box-Cox inverse-domain correction."}
-    ], ["Validation snapshots come from the same 1D flame realization.", "One seed; this is not a statistical ranking or exact paper reproduction.", "The strict species budget is a research criterion, not a guarantee of CFD solver accuracy."])}
+    ], ["Validation snapshots come from the same 1D flame realization.", "The main four-target comparisons use one seed. A conventional-only fixed second-seed repeat, when present, is a sensitivity check, not a seed search or statistical ranking.", "The strict species budget is a research criterion, not a guarantee of CFD solver accuracy."])}
     snapshot["queries"]["reference"] = {"rows": reference, "source": source([args.audit], [
         {"label": "Reference agreement", "definition": "Maximum spread across stored CVODE, fresh tighter and step-limited CVODE, and two independent Radau increment integrations, divided by the species budget. This is empirical agreement, not a rigorous bound."},
         {"label": "Relative-resolution screen", "definition": "Absolute reference increment must exceed 100 times the larger of empirical solver disagreement and endpoint spacing. Zero reference increments and unresolved nonzero increments are reported separately; zero references are not claims of exact mathematical zero."}

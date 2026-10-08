@@ -27,7 +27,7 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
               "negative_endpoint_row_fraction": 0.0, "inverse_domain_correction_fraction": 0.0,
               "mass_increment_drift": {"p99": 0.0}, "heat_release_reference_rms_W_m3": 2.0,
               "heat_release_error_rms_W_m3": 1.0, "budget_exceedance": {}}
-    training = {"status": "complete", "plan": {"config": {"hidden_widths": [2]}}, "variants": [
+    training = {"status": "complete", "plan": {"config": {"hidden_widths": [2], "seed": 20261009}}, "variants": [
         {"target": "state-boxcox", "precision": "float32", "training_count": 1,
          "updates_completed": 1, "selected_step": 1, "elapsed_seconds": .1,
          "training": values, "validation": values}]}
