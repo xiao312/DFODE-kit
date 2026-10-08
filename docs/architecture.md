@@ -79,6 +79,8 @@ uses the existing image, outside the preparation command. It
 neither calls the original case scripts nor modifies source cases or installations.
 `review_cfd.py -> copied fields/logs/preparation manifest` checks completion and
 rehashes the allowlisted original files through a read-only mount.
+`runtime_parity.py -> validation artifacts/installed Cantera 2.6` checks a bounded
+fixed-T/V subset without importing the research training environment.
 `review_snapshot.py -> small saved model/audit/CFD JSON` emits sanitized reviewed
 data for the downstream HTML report. Presentation cannot alter source evidence.
 

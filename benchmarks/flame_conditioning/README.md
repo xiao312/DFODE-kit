@@ -227,6 +227,14 @@ It rechecks every allowlisted original file against its pre-copy hash. These
 checks establish startup/restart compatibility and preservation of the source,
 not a validated flame speed, mesh convergence, or neural-model accuracy.
 
+`runtime_parity.py <dataset> --output <new.json> --dry-run` checks a bounded
+32-state validation subset in the installed CFD Python/Cantera environment.
+Omit `--dry-run` to compare tight fixed-T/V increments with the saved research
+labels. This Python 3.8-compatible runner does not import training code, install
+packages, or load checkpoints. It tests version/interface agreement, not all
+states or a rigorous reference bound. Keep version differences visible before
+any model is considered for the older CFD runtime.
+
 `review_snapshot.py --training <summary.json> [--training <summary.json>]
 --audit <augmented-audit.json> --cfd <cfd-review.json> --output <reviewed.json>`
 creates sanitized, source-backed rows for the GitHub Pages review. It reads small
