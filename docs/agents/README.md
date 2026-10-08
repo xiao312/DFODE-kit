@@ -20,6 +20,7 @@ Use this docs tree for information that is too detailed or too volatile for `AGE
 - `precision-conditioning-research.md`: original precision-audit stages and review workflow
 - `cantera-tolerance-sources.md`: read before changing the numerical tolerance ladder
 - `fuel-mechanism-source.md`: initial mechanism identification and provenance gate
+- `okafor-mechanism-provenance.md`: read before claiming original-release equivalence or publishing the recovered mechanism
 - `fuel-cfd-benchmark-alignment.md`: approved shift from reactor diagnostics to flame-based evaluation
 - `flame-source-and-runtime-contract.md`: read before reusing study assets or preparing a copied CFD case
 
