@@ -8,6 +8,14 @@ pytest.importorskip("cantera")
 from benchmarks.flame_conditioning import prepare
 
 
+def test_checkpoint_spacing_is_bounded_and_does_not_grow_per_label_cost():
+    assert prepare.checkpoint_stride(3) == 100
+    assert prepare.checkpoint_stride(10000) == 100
+    assert prepare.checkpoint_stride(50000) == 250
+    assert prepare.checkpoint_stride(200000) == 1000
+    assert prepare.checkpoint_stride(1000000) == 1000
+
+
 def test_resume_copies_stopped_run_and_preserves_completed_labels(tmp_path, monkeypatch):
     source = tmp_path / "source"
     source.mkdir()

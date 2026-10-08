@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "seed": 20261009,
+  "hidden_widths": [800, 800, 800, 800],
+  "activation": "gelu",
+  "loss": "l1",
+  "updates": 10000,
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "final_learning_rate": 0.00001,
+  "validation_every": 500,
+  "targets": ["state-boxcox", "signed-power", "budget-linear", "scaled-asinh"],
+  "precisions": ["float32"],
+  "training_sizes": [200000],
+  "wall_seconds": 3500,
+  "maximum_variant_seconds": 850,
+  "selection": "validation species budget p99; fixed-compute extension of the 10k/50k comparison"
+}

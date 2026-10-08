@@ -18,6 +18,11 @@ from benchmarks.flame_conditioning.chemistry import EndpointIntegrator
 from benchmarks.flame_conditioning.extract import sha256, source_revision
 
 
+def checkpoint_stride(row_count):
+    """Bound full-array compression cost, with at most 1000 rows between saves."""
+    return min(1000, max(100, row_count // 200))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source", type=Path)
@@ -104,6 +109,7 @@ def main():
             accepted = np.zeros(len(states), dtype=bool)
             report = {"sampling": sampling, "labels_completed": 0, "labels_accepted": 0, "failures": []}
             manifest["splits"][split] = report
+        report["checkpoint_rows"] = checkpoint_stride(len(states))
         for index in range(report["labels_completed"], len(states)):
             row = states[index]
             if time.monotonic() - started >= execution_limit:
@@ -130,9 +136,10 @@ def main():
                 handle.write(json.dumps(record, allow_nan=False) + "\n")
             report["labels_completed"] = index + 1
             report["labels_accepted"] = int(accepted.sum())
-            if index % 100 == 0:
+            if index % report["checkpoint_rows"] == 0:
                 np.savez_compressed(destination / "labels.npz", delta=delta, accepted=accepted)
                 save()
+            if index % 100 == 0:
                 print(json.dumps({"split": split, "completed": index + 1, "accepted": int(accepted.sum())}), flush=True)
         np.savez_compressed(destination / "labels.npz", delta=delta, accepted=accepted)
         report["inputs_sha256"] = sha256(destination / "inputs.npz")

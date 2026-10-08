@@ -569,3 +569,118 @@ Keep these distinctions explicit in the adapter:
 
 No new adapter was executed for this contract check. The original assets and
 reserved 2D test remain unchanged.
+
+## Source-coverage expansion and the original heat-release filter
+
+Follow-up checked on 2026-10-09. This was a bounded, read-only check of case
+directories, text scripts, field headers, and file hashes. It did not run a
+solver, load a checkpoint, or read the reserved 2D numerical data.
+
+### What additional source states exist?
+
+| Source below `${WORKSPACE}` | Observed coverage | Use and limit |
+| --- | --- | --- |
+| `active_work/1d_flames/1d_flame_60nh3.ULFS.cvode` | Torch is off. There are 501 reconstructed times from 0 through 0.0025 s, at 5e-6 s intervals. Configured CFD timestep is 1e-6 s. | Same-condition source expansion. The 5–95 microsecond snapshots precede the first existing main-case sampled time. This is not an independent trajectory by default. |
+| `previous_work/new_attempts.20250101/1d_flame_60nh3` | Torch is off. There are 136 paired XY sample times from 5e-8 through 6.8e-6 s, spaced by 5e-8 s. Configured timestep is 1e-8 s. Only time 0 is reconstructed. | Candidate short startup trajectory with 5 m/s initial velocity. Its physical usefulness and overlap with historical training need a separate check. It is not yet a qualified held-out dataset. |
+| `previous_work/sample_exp/1d_flame_60nh3.{ULFS.copy,U2.5,U5}` | Each inspected case retains time 0, but no sampled time series was found. `0/U.orig` specifies about 0.1700384, 2.5, and 5 m/s respectively. | Case inputs, not ready trajectories. An existing combination script names historical training arrays from all three cases. Do not call these conditions unseen by historical models. |
+| `scripts.orig/templates/1d_flames/14_1DFlame_NH3{02CH408,040CH4060,060CH4040}_eqr1000` | Three CVODE templates: 20/80, 40/60, and 60/40 NH3/CH4 molar fuel blends. No evolved trajectories were found in these templates. | Candidates for later, explicitly authorized solver runs. They are not an existing larger dataset. |
+
+The first CVODE case has the same initial-state dictionary as the main case.
+At time 0.0025, 44 of 62 required field files are byte-identical between the
+two cases, including T, p, and U. Eighteen species files differ: H2, H, O, C,
+CH, CH2OH, C2H, HCCO, N, NH, NH2, NNH, CN, HCN, HCNN, HOCN, NCO, and AR.
+The common T-file SHA-256 is
+`606f5990f665487acb88f3477911a56e3fcf435eed1aad9a1ba184e295a60ebc`.
+This is evidence of closely related data, not evidence of an independent
+test. Check source lineage and duplicates before any new split.
+
+For the short 5 m/s case, both `0/U.orig` and `processor0/0/U` identify the
+velocity; it is not inferred only from a directory name. The paired XY
+files have 33 and 30 columns, respectively. Together they provide coordinate,
+T, p, and the 59 ordered species, with the coordinate repeated in each file.
+The planned end time is 0.00283 s, but the observed sample series stops at
+6.8e-6 s. A planned end time is not proof that a simulation reached it.
+
+The three blend templates set fresh-gas temperature to 300 K and name
+`Okafor2018_s59r356.yaml`. Their fuel mass fractions are:
+
+| Fuel blend, NH3/CH4 molar | NH3 mass fraction | CH4 mass fraction | `system/setFieldsDict` SHA-256 |
+| --- | ---: | ---: | --- |
+| 20/80 | 0.0132711193 | 0.0500049481 | `bf0a793d66ef9c372bff9f9dd587c01993143ae0c5eeff19573e66bb8bea0c0f` |
+| 40/60 | 0.0306155741 | 0.0432592616 | `bee7f7014758f80574c98465974c60da4df41bc47da12fe5629f3522a2cdbdf7` |
+| 60/40 | 0.0542487011 | 0.0340677553 | `7e8bb1f6a4cc5cd49083b65ba8c53fe53a27ab9c616f32c457e95cfb0603a555` |
+
+These ratios follow the configured mass fractions and molecular weights.
+The mechanism filename does not replace a per-case mechanism hash check.
+The existing main, extra-CVODE, short-transient, and velocity-variant cases
+instead share initial-state dictionary hash
+`c025b9c4c44ec15543a1a82297626e1f7e6a4af4aec7908c36251e4abda10f92`.
+
+Other folders do not supply an immediate reference set. The sibling
+`.dnn.with_cvode.interpolate` and `.dnn.with_cvode.raw` cases have Torch on;
+their field outputs are not automatically independent CVODE references.
+`previous_work/c.counterflow_sample` names `Okafor26.yaml`, has only time 0,
+and is not the same verified 59-species mechanism. A folder named
+`attempt_1022_multipleEQR` does not establish that multiple-equivalence-ratio
+trajectories exist.
+
+Historical overlap evidence is in `previous_work/sample_exp/combine.py`,
+lines 5–9 and 22–37. It names U5, U2.5, and ULFS.copy arrays, selects up to
+2,000,000 rows per array, concatenates them, and shuffles the result. Its
+SHA-256 is
+`beb77ce0051622ff0b447f55b4957e662e83507d5454cd2e9a603fd7c7d3f38d`.
+The paths in that script refer to an older layout. This proves the intended
+combination, not which checkpoint consumed the result.
+
+### Exact filter rule and units
+
+Primary source: `${ONE_D_CASE}/heat_release_filter.py`, lines 5–8, 28–37,
+43–59. SHA-256:
+`d8578e63169c65901dee48df350b738b42d0ec55d128c2fb348febeea8a961de`.
+The script operates on the already-labeled, 240-column perturbation dataset.
+For each row, it computes:
+
+```text
+h0_i = partial_molar_enthalpy_i(298.15 K, 1 atm) / molecular_weight_i
+S = sum_i h0_i * (Y_final_i - Y_initial_i)
+keep = (S <= 200)
+```
+
+Here `h0_i` has units J/kg of species, and `S` has units J/kg of mixture.
+Despite its name in the script, `heat_release` is an increase in formation
+enthalpy over the label interval, not a positive heat-release rate. For the
+same enthalpy convention, specific heat-release rate is `-S / dt` and
+volumetric heat-release rate is `-rho * S / dt`. At `dt = 1e-6 s`, the
+filter allows specific rates down to -2e8 W/kg. It does not require positive
+heat release. There is no density or timestep division in the filter itself.
+`T_initial` is read but not used in the rule.
+
+After filtering, the script selects at most 8,000,000 retained rows without
+replacement. It does not set a random seed. The neighboring
+`active_work/scripts/heat_release_filter.py` has the same numerical rule,
+but its active input path names a 61-column, unlabeled `_mod.npy` array while
+the code still slices the labeled schema. Do not execute that copy as-is.
+Its SHA-256 is
+`039d6c8eaf8fe5603804c174ecd891ade0650284fa885561f61db203e33aadfd`.
+Script contents alone do not prove the exact filter lineage of every saved
+historical dataset or model.
+
+### Recommended next coverage test
+
+Keep the existing late-time validation and the reserved 2D test separate.
+Do not move late validation states into training after observing their error.
+First increase the number and physical range of source snapshots inside the
+declared training window. Preserve case, time, cell, and augmentation-parent
+identities. More perturbations of the same parents increase sampling density;
+they do not demonstrate wider physical coverage.
+
+Treat the additional early CVODE snapshots as same-condition training
+candidates, subject to lineage checks. Qualify the short 5 m/s transient
+before designating a new held-out set. The different-blend templates are a
+later source-generation option, not a reason to start a broad sweep now.
+
+Test the historical filter as a declared, training-only ablation on the same
+candidate pool. Report rejection counts by source group, temperature, and
+increment magnitude. Keep the validation population fixed. This separates
+the effect of excluding augmentation artifacts from a change in model
+architecture or dataset size; filtering validation could hide a failure.

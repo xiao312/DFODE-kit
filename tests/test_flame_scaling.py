@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+import json
+from pathlib import Path
 
 pytest.importorskip("cantera")
 from benchmarks.flame_conditioning.verify_scaling import compare_arrays
@@ -23,3 +25,19 @@ def test_scaling_checks_raw_prefix_and_label_mask(tmp_path):
         second["delta"][0, 0] += 1e-4
         with pytest.raises(ValueError):
             compare_arrays(small, large, first, second)
+
+
+def test_growth_configs_change_counts_not_the_scientific_contract():
+    root = Path(__file__).resolve().parents[1] / "benchmarks" / "flame_conditioning"
+    small = json.loads((root / "dataset-50k.json").read_text())
+    large = json.loads((root / "dataset-200k.json").read_text())
+    assert small.pop("train_count") == 50000
+    assert large.pop("train_count") == 200000
+    assert small == large
+    first = json.loads((root / "learning-source-longer.json").read_text())
+    second = json.loads((root / "learning-source-longer200k.json").read_text())
+    assert first.pop("training_sizes") == [50000]
+    assert second.pop("training_sizes") == [200000]
+    first.pop("selection")
+    second.pop("selection")
+    assert first == second

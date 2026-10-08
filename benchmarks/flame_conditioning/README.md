@@ -192,6 +192,26 @@ states and accepted masks, and label differences against the same error budget.
 `--output <new.json>` saves those checks for the review. Require a pass before
 treating the two training runs as a controlled data-size comparison.
 
+The next optional density step is `dataset-200k.json` with
+`learning-source-longer200k.json`. Start it only after the full 50k comparison
+passes replay and its conventional baseline improves both validation budget p99
+and heat-release RMS over the matched 10k run. Keep source snapshots, validation,
+seed, architecture, updates, batch size and learning-rate schedule unchanged.
+This tests data density, not broader flame coverage. Equal updates imply fewer
+average presentations per state in the larger set. Use the tested new-output
+continuation path if labeling reaches its one-hour segment limit. Preserve all
+segments; never extend a live limit or overwrite a stopped run. Check prefix and
+validation identity, and independently audit the final data before fitting.
+Full-array compression uses 100–1000-row checkpoints, recorded per split, while
+progress still prints every 100 rows. This bounds repeated serialization cost
+without changing sampling, chemistry, acceptance, or final saved arrays. A
+graceful wall stop always writes the final checkpoint. Resume accepts only such
+a completed time-limit checkpoint with verified hashes, not an arbitrary crash.
+Do not launch a final fit after 06:30 China time on 2026-10-09; leave time for
+checks and the 08:00 checkpoint. An unfinished larger run is partial evidence,
+not grounds to delay or relabel the completed comparisons. Keep the 2D test
+sealed until this pre-test decision and all included model identities are fixed.
+
 ## Reserved 2D snapshot evaluation
 
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
