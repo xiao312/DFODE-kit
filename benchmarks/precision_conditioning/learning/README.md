@@ -131,6 +131,83 @@ the original models; its failed scientific thresholds remain part of the evidenc
 
 ## Verification commands
 
+## Repeatable fit and optimizer polishing
+
+`polish.py <checkpoint-03-run> --output <new-run> --dry-run` reads the saved
+training arrays and prints the pinned `polish_experiment.json` plan. Without
+`--dry-run`, it runs three seeds, two mechanisms, three subsets (one/eight/all
+existing training rows), and three methods: 54 bounded fits. The all-row subset
+is a bridge to data scaling, not a new acceptance requirement for the narrow gate.
+It does not generate chemistry, use held-out rows, or change production training.
+
+Each method starts from the same seed and at most 200 full-batch Adam updates at
+1e-3. All use budget-linear targets, the existing training-only normalization,
+FP64, 64/64 tanh layers and coordinate MSE. Only the refinement changes:
+
+- Adam decay: retain warm-up moments; decrease 1e-3 to 1e-7 geometrically over
+  at most 5000 further accepted updates.
+- L-BFGS: start new optimizer state; at most 1000 steps, history 50, learning rate
+  1, strong-Wolfe line search and zero gradient/change stopping tolerances. Record
+  closure evaluations separately; these are not equal-compute methods.
+- Linear-head control: freeze the warmed-up hidden features and solve the output
+  layer once by SVD least squares. Record feature rank and condition number. This
+  remains an interpolation control, not proof of a scalable training recipe.
+
+Check the maximum physical error across ALL temperature/species components after
+each accepted update (not line-search trial points). Stop immediately at <=0.5
+budgets, save that model, and require <=1 on independent replay. The margin is a
+predeclared safeguard, not a changed evaluation budget. Save the lowest-maximum
+model if no step passes. Record both its selected step and the final attempted
+step. No held-out selection is involved. Store compact all-component histories,
+full selected metrics, row IDs, source/input hashes, weights and preprocessing.
+Reject nonfinite values. Each fit has a 60-second wall limit; the entire run has
+900 seconds, within the external one-hour/one-CPU/4-GB/no-network limit. Timeouts
+retain completed evidence and do not count as successful fits.
+
+The narrow milestone requires one method to pass independent replay on both the
+one/eight-row subsets, both mechanisms and all three seeds (12/12). Report
+iterative-optimizer and linear-head-control gates separately. A control-only pass
+does not justify a large dataset. `verify_polish.py <run> --require-narrow <method>`
+is read-only and exits nonzero if that scientific gate fails.
+
+Dependencies: `polish -> polish_core -> train.preprocessing/network` and
+`fit_diagnostic.training_data/subsets/physical_scores`; NumPy/PyTorch only at fit
+time, with the existing Cantera import dependency. `polish_review.py` consumes only
+saved results for the existing static report and figures. All state stays in
+ignored `runs/`; no secrets or network operations occur in these modules.
+
+```bash
+python benchmarks/precision_conditioning/learning/polish.py runs/representation/checkpoint03-20261008 --output runs/representation/polish-001 --dry-run
+python benchmarks/precision_conditioning/learning/polish.py runs/representation/checkpoint03-20261008 --output runs/representation/polish-001
+python benchmarks/precision_conditioning/learning/verify_polish.py runs/representation/polish-001
+python -m pytest tests/test_precision_polish.py -q
+```
+
+### Dataset expansion gates
+
+Do not spend indefinitely on eight-point memorization. After this bounded test:
+
+1. Check repeatable narrow fitting, then inspect the existing 133 H2 / 144 CH4
+   training rows. A control-only pass requires a small generalization feasibility
+   test, not immediate large-scale labeling.
+2. Freeze the candidate recipe and split new independent parents before deriving
+   intervals. Run a modest generalization pilot. Require finite predictions,
+   measured physical errors, no unexplained conservation/positivity failure, and
+   useful improvement over zero-change in BOTH p99 and exceedance across parents.
+   This is a gate for studying scaling, not a solver-replacement acceptance test.
+3. Propose approximately 1k -> 4k -> 16k checked intervals per mechanism, with a
+   fixed validation set and a sealed new test set. Increase independent parents
+   and targeted coverage, not only adjacent anchors. These are planning sizes,
+   not authorized launches or guaranteed accepted counts. Use learning curves
+   and measured data-generation/training costs to choose the next step.
+4. Continue if more independent data improves held-out errors at practical cost.
+   If training remains poor, address fit/capacity. If training is good but held-out
+   error is poor, test coverage. If more data does not help, stop blind expansion.
+   Full-budget accuracy across the entire chemistry domain is NOT required before
+   studying data scaling. Slurm/approved compute placement is required for scale.
+
+## Original comparison verification
+
 ```bash
 python benchmarks/precision_conditioning/learning/prepare.py --dry-run
 python -m pytest tests/test_precision_learning.py -q

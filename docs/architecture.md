@@ -41,6 +41,10 @@ is a read-only scientific fit check. It does not score the held-out test set.
 reuses only training rows for a bounded loss/update/subset diagnosis.
 `fit_review.py -> saved fit evidence -> static Pages`; `verify_fit.py` independently
 replays the saved diagnostic models. No production module depends on these tools.
+`learning/polish.py -> polish_core.py -> train and fit_diagnostic` adds bounded
+multi-seed optimization with an all-component stop/save gate. `verify_polish.py`
+replays selected models; `polish_review.py -> saved results -> static Pages` is
+the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Current refactor themes
 
