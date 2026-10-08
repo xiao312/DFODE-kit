@@ -33,6 +33,12 @@ The compact density table retains every completed primary-seed conventional
 not appear as zero. It does not select rows by validation or test performance.
 Training-only scales are refit at each size; this is a full-protocol data-size
 comparison, not an isolated fixed-scaler ablation.
+`validation-selection.mjs` selects the largest completed primary-seed four-target
+comparison for the main validation chart and species table. It uses training
+count, never error values. It requires the fixed FP32/4x800/GELU/L1/10k-update
+recipe and rejects missing or duplicate targets. Earlier sizes remain in the
+full results and density tables. Verify with
+`node --test tests/flame_report_selection.test.mjs`.
 Predeclared bin tables show zero, conventional, direct-power, and fixed-hybrid
 policies from the largest completed primary run. Temperature bins use the balanced
 diagnostic population; magnitude bins use the uniform population. Other models

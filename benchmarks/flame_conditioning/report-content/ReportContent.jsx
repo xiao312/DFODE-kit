@@ -1,5 +1,6 @@
 import React from "react";
 import { policyBinTable } from "./policy-bins.mjs";
+import { largestPrimaryComparison } from "./validation-selection.mjs";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
 
 const paper = "https://arxiv.org/html/2507.08277v2";
@@ -40,7 +41,9 @@ export function ReportContent() {
   const seedRepeats = models.filter(row => row.seed === 20261010 && row.target === "state-boxcox");
   const repeatSmall = seedRepeats.find(row => row.trainingCount < 11000);
   const repeatLarge = seedRepeats.find(row => row.trainingCount > 40000 && row.trainingCount < 60000);
-  const chartRows = backbone.map(row => ({...row, targetName:names[row.target]}));
+  const chartComparison = largestPrimaryComparison(models);
+  const chartCount = chartComparison[0]?.trainingCount;
+  const chartRows = chartComparison.map(row => ({...row, targetName:names[row.target]}));
   const selected = models.filter(row => row.precision === "float32" && row.trainingCount > 9000);
   const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
   const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
@@ -113,8 +116,8 @@ export function ReportContent() {
       "The table keeps all completed primary-seed conventional fits, not only the best result. Each fit uses the same 4×800 model and 10,000-update budget. The validation rule can select different saved updates. Input and target scales are fitted again on each training set. Thus, this compares the full training protocol at each size; it does not isolate data count with fixed normalization. A larger fit enters only after completion and verification.")}
     {repeatSmall && repeatLarge && prose("flame-seed-repeat", "Fixed second-seed check", "models", seedRepeats,
       `### Repeat the density question with another initialization\n\nThe conventional-only repeat uses fixed seed 20261010. The source data, model, 10,000 updates, batch size, and selection rule stay the same. At 10k candidates, validation species p99 was ${integer(repeatSmall.budgetP99)} and heat relative RMS was ${repeatSmall.heatRelativeRms.toFixed(3)}. At 50k candidates, these values were ${integer(repeatLarge.budgetP99)} and ${repeatLarge.heatRelativeRms.toFixed(3)}.\n\nBoth fits remain in the frozen test list. We did not choose the better seed. This checks one part of sensitivity to training randomness; it is not a repeated four-target ranking or a confidence interval.`)}
-    {visible("flame-heat-chart") && <EvidenceChart id="flame-heat-chart" queryId="models" title="Heat-release error: 50,000 candidates, 10,000 matched updates, primary seed" rows={chartRows} sourceRows={backbone} spec={{type:"horizontalBar",x:"targetName",y:"heatRelativeRms",stackable:false,valueDecimals:3,xLabel:"Target",yLabel:"RMS error / reference RMS"}} height={340} />}
-    {visible("flame-species-validation") && <DataComponent id="flame-species-validation" queryId="models" kind="table" title="Selected species: 50k primary-seed validation comparison" sourceRows={backbone} displayRows={chartRows}>
+    {chartRows.length > 0 && visible("flame-heat-chart") && <EvidenceChart id="flame-heat-chart" queryId="models" title={`Heat-release error: ${integer(chartCount)} accepted states, 10,000 matched updates, primary seed`} rows={chartRows} sourceRows={chartComparison} spec={{type:"horizontalBar",x:"targetName",y:"heatRelativeRms",stackable:false,valueDecimals:3,xLabel:"Target",yLabel:"RMS error / reference RMS"}} height={340} />}
+    {chartRows.length > 0 && visible("flame-species-validation") && <DataComponent id="flame-species-validation" queryId="models" kind="table" title={`Selected species: ${integer(chartCount)}-state primary-seed validation comparison`} sourceRows={chartComparison} displayRows={chartRows}>
       <DataTable rows={chartRows} label="Fuel, NO, and radical increment errors" columns={[{field:"targetName",label:"Target"},...speciesColumns]} />
     </DataComponent>}
     {prose("flame-species-limit", "What the species view means", "models", backbone,
