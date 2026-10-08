@@ -60,6 +60,10 @@ module depends on these experimental tools.
 `prepare.py -> augmentation.py/chemistry.py` preserves snapshot splits and writes
 bounded label arrays. `scout.py -> chemistry.py` independently checks a selected
 subset. The fixed-T/V numerical module does not reuse the adiabatic RHS.
+`coordinates.py -> reference.targets` reuses signed-power/asinh primitives and
+adds stable transformed-state differences. `data.py -> checked dataset/chemistry`
+validates hashes and lineage. `metrics.py -> saved physical predictions` evaluates
+non-argon accuracy and all-species conservation without modifying predictions.
 
 ## Current refactor themes
 

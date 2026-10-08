@@ -56,6 +56,15 @@ redistribute its contents until its license and source are established.
 
 ## Dependencies and dependents
 
+`coordinates.py` implements the four targets. The transformed-state baseline uses
+stable `log1p`/`expm1` differences and inverses so avoidable subtraction error is not
+mistaken for a learning defect. Inputs use `Y**0.1`, affine-equivalent to Box-Cox
+after standardization, with linear T and p. Training data alone set means/scales.
+A predicted negative Box-Cox power base has no valid inverse: set that endpoint
+to zero and report the correction mask separately. Do not silently call corrected
+predictions unconstrained. Other coordinates do not impose positivity. Keep raw
+negative endpoint and conservation metrics for all models before any CFD repair.
+
 Dependency graph: `case extraction -> saved states -> chemistry -> checked labels
 -> representation training -> independent evaluation -> static review`.
 Numerical dependencies are pinned by `../precision_conditioning/reference/requirements.txt`.
@@ -109,8 +118,41 @@ training; the unperturbed scout alone does not certify augmented labels.
 The dataset runner reuses a parsed mechanism and reactor, but resets state, time
 and solver history for each row. Tests compare this path with fresh reactors.
 
+`audit_labels.py <dataset> --output <new-audit> --dry-run` selects 16 states per
+split by temperature alone. The live run compares stored labels against fresh
+CVODE, step-limited CVODE and two direct Radau calculations. It records cancellation
+and the original-study tolerance comparison. Training requires this selected subset
+to pass the empirical 1%-of-budget agreement check. This is not certification of
+all rows. The audit has a 900-second internal deadline and never opens the 2D test.
+
+`data.py` refuses incomplete artifacts, checksum/species/split mismatches and more
+than 10% excluded labels. It exposes training/validation data only. `metrics.py`
+reports non-argon component errors, small-target retention at 1e-15, temperature
+and magnitude bins, per-species errors, inverse-domain corrections, negative
+endpoints, mass/element drift and source heat-release errors. Relative errors on
+ordinary labels are explicitly nominal, not individually solver-certified.
+The heat-release calculation follows `-rho/interval * sum(hf298_i * delta_Y_i)`;
+it is not a learned temperature endpoint or full CFD energy solution.
+
+`train.py <dataset> --audit <passing-audit> --output <new-training-run> --dry-run` validates the dataset
+and `learning.json`. After an augmented reference audit, omit `--dry-run` for
+16 fits: four coordinates, FP32/FP64, and nested 2k/10k requested training sizes.
+Excluded labels reduce the larger actual size; record both counts. Use identical
+128/128/128 tanh networks, initialization and minibatch sampling order. Each fit
+has 2000 Adam updates, batch 256, cosine learning-rate decay from 1e-3 to 1e-5,
+and a 600-second per-variant limit inside a 3000-second run limit. A timed-out fit
+is explicitly incomplete and not a matched-budget result. Validation every 100
+updates selects the lowest non-argon physical-budget p99. Correction and physical
+failure rates remain visible; selection alone is not a deployment decision.
+Argon is fixed, not learned. Train-only means/standard deviations and asinh scales
+are saved with model weights, selected training indices, validation predictions,
+curves and source hashes. No 2D test is read. This smaller network is a bounded
+feasibility model, not the paper's four-by-800 network or matched paper compute.
+The runner checks that the passing augmented audit references the exact dataset
+manifest hash; a stale or failed audit cannot authorize this comparison.
+
 ```bash
-python -m pytest tests/test_flame_chemistry.py tests/test_flame_extraction.py -q
+python -m pytest tests/test_flame_*.py -q
 ```
 
 Expected: valid states are preserved; invalid states fail; fixed temperature and
