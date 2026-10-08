@@ -413,6 +413,20 @@ report selected, accepted, and excluded counts for each overlapping population.
 `review_recovery.py` requires its test hash to match the scored test and keeps
 strict and recovered counts separate; no raw private state is published.
 
+## Post-score input-support diagnosis
+
+`input_support.py <training-dataset> <completed-primary-run> <test-dataset>
+--output <new.json> --dry-run` checks provenance and the common input scaler of
+the four primary models. The live path reports raw training ranges, encoded
+feature scales, and validation/uniform-test/balanced-test ranges and standardized
+distances. These populations remain separate. It does not load weights, rerun
+predictions, change preprocessing, or train a model. All inputs are read-only;
+the only output is a new small JSON file. Dependencies are the existing dataset
+reader and coordinate implementation. A diagnostic range violation is not a
+causal attribution or proof of multivariate support. This analysis occurs after
+test scoring; any later model repair needs fresh test evidence. Verify with
+`python -m pytest tests/test_flame_input_support.py -q`.
+
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing
 data: keep `sum(hf_298 * delta_Y) <= 200 J/kg`. This is not a universal validity
