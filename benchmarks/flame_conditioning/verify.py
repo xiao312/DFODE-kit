@@ -24,7 +24,7 @@ def load_predictor(directory, config):
     preprocessing = dict(np.load(directory / "preprocessing.npz", allow_pickle=False))
     dtype = getattr(torch, result["precision"])
     model = network(len(preprocessing["x_scale"]), len(preprocessing["y_scale"]),
-                    config["hidden_widths"], config["seed"], dtype)
+                    config["hidden_widths"], config["seed"], dtype, config.get("activation", "tanh"))
     model.load_state_dict(torch.load(directory / "weights.pt", map_location="cpu", weights_only=True))
     model.eval()
 
@@ -76,7 +76,7 @@ def main():
         if result["updates_completed"] != config["updates"] or result["status"] != "complete":
             raise ValueError("Variant has an unequal update budget")
         initial = network(validation["states"].shape[1], validation["delta"].shape[1],
-                          config["hidden_widths"], config["seed"], getattr(torch, result["precision"]))
+                          config["hidden_widths"], config["seed"], getattr(torch, result["precision"]), config.get("activation", "tanh"))
         initial_hash = hashlib.sha256(b"".join(parameter.detach().double().numpy().tobytes() for parameter in initial.parameters())).hexdigest()
         if initial_hash != result["initial_weights_sha256"]:
             raise ValueError("Initialization hash mismatch")

@@ -35,10 +35,11 @@ def test_config_rejects_unknown_target_and_unbounded_job():
 
 
 @pytest.mark.parametrize("target", ["state-boxcox", "signed-power", "budget-linear", "scaled-asinh"])
-def test_tiny_training_saves_replayable_evidence(tmp_path, target):
+@pytest.mark.parametrize("activation,loss", [("tanh", "mse"), ("gelu", "l1")])
+def test_tiny_training_saves_replayable_evidence(tmp_path, target, activation, loss):
     torch.set_num_threads(1)
     config = settings()
-    config.update(updates=2, validation_every=1, hidden_widths=[8], batch_size=4)
+    config.update(updates=2, validation_every=1, hidden_widths=[8], batch_size=4, activation=activation, loss=loss)
     fractions = np.linspace(.1, .2, 12)
     states = np.column_stack([np.linspace(300, 1500, 12), np.full(12, 101325), fractions, .9-fractions, np.full(12, .1)])
     change = fractions * .01
@@ -52,7 +53,7 @@ def test_tiny_training_saves_replayable_evidence(tmp_path, target):
     assert result["status"] == "complete"
     assert result["inactive_species"] == ["AR"]
     weights = torch.load(tmp_path / target / "weights.pt", weights_only=True)
-    model = network(5, 3, [8], config["seed"], torch.float64)
+    model = network(5, 3, [8], config["seed"], torch.float64, activation)
     model.load_state_dict(weights)
     assert (tmp_path / target / "validation-predictions.npz").is_file()
     predict, _ = load_predictor(tmp_path / target, config)

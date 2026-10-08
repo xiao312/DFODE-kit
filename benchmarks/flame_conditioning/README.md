@@ -165,6 +165,13 @@ cadence (500 updates), and keeps FP32/the full accepted 10k candidate set. It
 repeats all four targets with the same 128/128/128 model. This is an optimization
 budget check, not proof that data size is irrelevant or a broad parameter search.
 
+`learning-source-backbone.json` checks the inspected study's four 800-unit GELU
+layers and normalized L1 objective. It uses our grouped splits and train-only
+statistics. Its 2000 updates and 256-row batches are much smaller than historical
+training. This is a backbone/loss control, not an exact paper reproduction or an
+isolated activation ablation. Optional `activation` and `loss` fields default to
+`tanh` and `mse`, preserving previous configurations and saved-model replay.
+
 ## Copied CFD restart
 
 `copy_case.py --source-case <original-1D-case> --mechanism <study.yaml> --output
@@ -178,6 +185,10 @@ step; `--steps 100` gives the separately bounded 100-step compatibility run.
 Keep original CVODE tolerances 1e-6/1e-10 for this first runtime check. The installed
 Cantera is 2.6.0, unlike labeling 3.2.0; do not upgrade it. A copied restart smoke
 test is neither an ignition reproduction nor a learned-model CFD validation.
+The installed solver also constructs a spray cloud. The copy uses the repository's
+inactive `sprayCloudProperties` dictionary, records its hash, and rejects a template
+that does not explicitly disable both spray activity and coupling. The original
+study case has no such file. A failed first startup is retained as evidence.
 
 ```bash
 python -m pytest tests/test_flame_*.py -q

@@ -310,3 +310,75 @@ startup, runtime for this 59-species case, and the effect of source-state
 rounding and the Cantera version difference. A 100-step restart can establish
 that a copied CFD case runs and produces bounded fields. It cannot establish
 grid convergence, long-time flame stability, or learned-model reliability.
+
+## Original training controls: text-only inspection
+
+The original run scripts support a concrete backbone control rather than
+another arbitrary small-network change. Both inspected controls use
+`61 -> 800 -> 800 -> 800 -> 800 -> 58`, GELU hidden activations, a linear
+output, FP32 training, and no active batch normalization. This architecture
+has 2,018,458 trainable parameters, including biases. Inputs are T, p, and
+59 species; outputs exclude argon. These observations are from saved scripts
+beside historical logs. No existing model pickle was loaded or executed.
+
+### Transformed-state-increment control
+
+The inspected script is
+`${WORKSPACE}/active_work/training/train_800_800_800_800_loss1_dataset_1Dflame_1d_flame_60nh3.ULFS_0.0-2.5ms_interpolate_perturbated_heat_release_filtered/singleMLPTrainingCV.asinh_loss.py`.
+Its SHA-256 is
+`b85a0e704e314a95e792583f01be8c79d8229c4e20cadff7f49a76b32a04d0d8`.
+
+- Inputs: Box-Cox species coordinates with lambda 0.1, then feature mean and
+  sample-standard-deviation normalization. T and p are standardized but not
+  Box-Cox transformed.
+- Targets: `B(Y_after) - B(Y_before)` for 58 species, normalized by their
+  mean and sample standard deviation.
+- Optimizer: Adam, initial learning rate 1e-3, batch size 20,000,
+  1500 epochs, seed 555. At zero-indexed epochs 500 and 1000, the code reduces
+  learning rate tenfold and constructs a new Adam optimizer.
+- Training objective: mean absolute error in normalized target coordinates.
+  Despite its filename, this run does not train with the computed asinh loss.
+  Mass-sum and formation-enthalpy diagnostics are also computed, but the
+  backward pass uses `loss1` alone.
+
+The historical log records 8,000,000 rows, with 400,000 held out by row
+position. This gives 380 optimizer updates per epoch and 570,000 total
+updates, or 11.4 billion training-row presentations. The last logged
+normalized training/validation losses are 0.0036790 and 0.0037121. These are
+historical records, not independently replayed results and not our physical
+error-budget metric.
+
+### Direct-power-increment control
+
+The separate existing `dfode_project` workspace has the saved run
+`test_runs/test_250903_151713/train_mlp_dev_target_transform_power.py`.
+Its SHA-256 is
+`05ec1ff438531b4338c3fedf315905cf924dd7d81bd37a62b808769ff64ab7f6`.
+
+This run uses the same network and Box-Cox input features. Its target is
+`sign(delta_Y) * abs(delta_Y)**0.1`, with zero output mean and per-component
+population standard deviation. The missing factor `1/0.1` compared with the
+paper's written formula cancels under this standard-deviation scaling in
+exact arithmetic. It uses Adam at 1e-3, batches of 20,000, 2000 epochs,
+`StepLR(step_size=500, gamma=0.1)`, and normalized L1 loss. The split is a
+95/5 random row split. The log reaches epoch 2000 and reports validation
+normalized L1 0.0071416 and mean absolute physical increment error
+1.4820e-7. Those means do not establish tail accuracy or CFD reliability.
+
+### What to reuse, and what not to copy
+
+Use a bounded 4-by-800 GELU, FP32, normalized-L1 control to test whether our
+small-network results are dominated by model size, activation, loss, or
+training budget. Declare reduced batch size, update count, dataset size, and
+any other change. Do not label such a bounded control a full reproduction.
+
+Retain the new workflow's train-only normalization and source-group split.
+The historical scripts compute normalization before their validation split;
+copying that order would leak validation information. Some also take absolute
+values or clip states before training. Do not adopt those policies silently.
+Keep common physical-space evaluation and invalid-prediction reporting.
+
+Other saved scripts implement percentile scaling, asinh losses, shifted
+Box-Cox coordinates, and piecewise power/log transforms. They are distinct
+experiments, not interchangeable definitions of the paper baseline. The
+inspection does not prove which checkpoint generated each published figure.

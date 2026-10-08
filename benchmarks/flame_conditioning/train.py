@@ -20,17 +20,22 @@ from benchmarks.flame_conditioning.extract import sha256, source_revision
 from benchmarks.flame_conditioning.metrics import physical_scores
 
 
-def network(inputs, outputs, widths, seed, dtype):
+def network(inputs, outputs, widths, seed, dtype, activation="tanh"):
+    activations = {"tanh": torch.nn.Tanh, "gelu": torch.nn.GELU}
+    if activation not in activations:
+        raise ValueError("Unsupported activation")
     torch.manual_seed(seed)
     layers = []
     for width in widths:
-        layers.extend([torch.nn.Linear(inputs, width), torch.nn.Tanh()])
+        layers.extend([torch.nn.Linear(inputs, width), activations[activation]()])
         inputs = width
     layers.append(torch.nn.Linear(inputs, outputs))
     return torch.nn.Sequential(*layers).to(dtype=dtype)
 
 
 def validate_config(config):
+    if config.get("activation", "tanh") not in ("tanh", "gelu") or config.get("loss", "mse") not in ("mse", "l1"):
+        raise ValueError("Unsupported activation or loss")
     if config["schema_version"] != 1 or not set(config["targets"]) <= set(KINDS):
         raise ValueError("Unsupported training schema or target")
     if not config["targets"] or len(set(config["targets"])) != len(config["targets"]):
@@ -67,7 +72,7 @@ def fit_variant(training, validation, physics, config, target, precision, destin
     x_val = torch.as_tensor((input_features(validation["states"]) - x_offset) / x_scale, dtype=dtype)
     y_train = torch.as_tensor((transformed - y_offset) / y_scale, dtype=dtype)
     active_tensor = torch.as_tensor(active)
-    model = network(x_train.shape[1], delta.shape[1], config["hidden_widths"], config["seed"], dtype)
+    model = network(x_train.shape[1], delta.shape[1], config["hidden_widths"], config["seed"], dtype, config.get("activation", "tanh"))
     initial_hash = hashlib.sha256(b"".join(p.detach().double().numpy().tobytes() for p in model.parameters())).hexdigest()
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
     rng = np.random.default_rng(config["seed"])
@@ -92,7 +97,8 @@ def fit_variant(training, validation, physics, config, target, precision, destin
         optimizer.param_groups[0]["lr"] = rate
         indices = rng.integers(0, len(states), size=config["batch_size"])
         optimizer.zero_grad(set_to_none=True)
-        loss = ((model(x_train[indices])[:, active_tensor] - y_train[indices][:, active_tensor]) ** 2).mean()
+        difference = model(x_train[indices])[:, active_tensor] - y_train[indices][:, active_tensor]
+        loss = difference.abs().mean() if config.get("loss", "mse") == "l1" else difference.square().mean()
         if not torch.isfinite(loss):
             raise ValueError("Nonfinite training loss")
         loss.backward()

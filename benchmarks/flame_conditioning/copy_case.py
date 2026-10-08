@@ -17,6 +17,18 @@ from benchmarks.flame_conditioning.extract import sha256, source_revision
 MECHANISM_SHA256 = "26a27fb3c19c6000ed46d70947faeaf4813b6161ca7186fb6cc9ad55ede294f0"
 MESH_FILES = ("points", "faces", "owner", "neighbour", "boundary")
 CONSTANT_FILES = ("g", "thermophysicalProperties", "turbulenceProperties", "combustionProperties")
+SPRAY_TEMPLATE = Path(__file__).resolve().parents[2] / "canonical_cases/oneD_freely_propagating_flame/constant/sprayCloudProperties"
+
+
+def inactive_spray_dictionary():
+    text = SPRAY_TEMPLATE.read_text()
+    for setting in ("active", "coupled"):
+        values = re.findall(rf"\b{setting}\s+(\w+)\s*;", text)
+        if values != ["false"]:
+            raise ValueError(f"Spray template must explicitly disable {setting}")
+    if "#" in text or re.search(r"\bcoded\w*", text):
+        raise ValueError("Spray template must not include executable directives")
+    return text
 
 
 def header(name, location):
@@ -126,6 +138,7 @@ def main():
     if output.exists() or source == output or source in output.parents:
         parser.error("Output must be new and outside the original case")
     control = control_dictionary(args.steps)
+    spray = inactive_spray_dictionary()
     if sha256(args.mechanism) != MECHANISM_SHA256:
         raise ValueError("This compatibility case requires the inspected study mechanism hash")
     gas = ct.Solution(str(args.mechanism))
@@ -133,6 +146,7 @@ def main():
     plan = {"source_case": str(source), "output_case": str(output), "source": source_revision(),
             "steps": args.steps, "start_time_s": .0025, "interval_s": 1e-6,
             "mechanism_sha256": MECHANISM_SHA256, "copied_files": [str(path) for path in files],
+            "inactive_spray_template_sha256": sha256(SPRAY_TEMPLATE),
             "original_sha256": {str(path): sha256(source / path) for path in files},
             "changes": ["h/hs energy solver patterns", "literal bounded control dictionary",
                         "ANN/GPU/load balancing/functions disabled", "17-digit new output"],
@@ -149,6 +163,7 @@ def main():
     solution = output / "system/fvSolution"
     solution.write_text(adapt_energy_solvers(solution.read_text()))
     (output / "system/controlDict").write_text(control)
+    (output / "constant/sprayCloudProperties").write_text(spray)
     (output / "constant/CanteraTorchProperties").write_text(chemistry_dictionary(output / "mechanism.yaml"))
     plan["prepared_sha256"] = {str(path.relative_to(output)): sha256(path) for path in output.rglob("*") if path.is_file()}
     (output / "preparation.json").write_text(json.dumps(plan, indent=2, allow_nan=False))
