@@ -29,6 +29,10 @@ Do not merge repeated fits into a best-seed summary.
 Historical raw inverse-domain violations are separate from performed corrections.
 Show absent diagnostics as not recorded, not zero. Preserve small nonzero rates
 in percentage formatting. Test-batch diagnostics do not become population rates.
+The preselected species view shows NH3, CH4, NO, and OH, using each species'
+physical-budget p99. This selection is chemical-role based, not chosen from test
+errors. The offline balanced-population view is not a domain-average emissions
+or flame-speed result. Missing species metrics remain null, never zero.
 
 ## Dependencies and dependents
 

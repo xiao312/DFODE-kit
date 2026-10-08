@@ -5,6 +5,8 @@ const paper = "https://arxiv.org/html/2507.08277v2";
 const names = {"state-boxcox":"Transformed state (Box–Cox)", "signed-power":"Direct signed power", "budget-linear":"Budget-linear", "scaled-asinh":"Scaled asinh"};
 const percent = value => `${value !== 0 && Math.abs(value) < 0.0001 ? (100 * value).toPrecision(3) : (100 * value).toFixed(2)}%`;
 const integer = value => Math.round(value).toLocaleString("en-US");
+const budgetNumber = value => value == null ? "Not recorded" : value !== 0 && Math.abs(value) < 100 ? value.toPrecision(3) : integer(value);
+const speciesColumns = ["NH3", "CH4", "NO", "OH"].map(name => ({field:`${name}BudgetP99`,label:`${name} budget p99 ↓`,renderCell:budgetNumber}));
 
 export function ReportContent() {
   const { snapshot, visible, appTitle, canEdit, mode, setAppTitle } = useDataApp();
@@ -46,7 +48,7 @@ export function ReportContent() {
     return rows.length > 0 && visible(id) && <DataComponent id={id} queryId="heldout" kind="table" title={title} sourceRows={heldout.filter(row => row.population === population)} displayRows={rows}>
       <DataTable rows={rows} label={title} compactNumbers={false} columns={[
         {field:"control",label:"Control"}, {field:"targetName",label:"Target"}, {field:"samples",label:"Cells",renderCell:integer},
-        {field:"budgetP99",label:"Budget p99 ↓",renderCell:integer}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
+        {field:"budgetP99",label:"Budget p99 ↓",renderCell:budgetNumber}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
         {field:"negativeEndpointFraction",label:"Negative species",renderCell:percent}, {field:"inverseCorrectionFraction",label:"Inverse corrections",renderCell:percent},
       ]} />
     </DataComponent>;
@@ -83,6 +85,11 @@ export function ReportContent() {
     {repeatSmall && repeatLarge && prose("flame-seed-repeat", "Fixed second-seed check", "models", seedRepeats,
       `### Repeat the density question with another initialization\n\nThe conventional-only repeat uses fixed seed 20261010. The source data, model, 10,000 updates, batch size, and selection rule stay the same. At 10k candidates, validation species p99 was ${integer(repeatSmall.budgetP99)} and heat relative RMS was ${repeatSmall.heatRelativeRms.toFixed(3)}. At 50k candidates, these values were ${integer(repeatLarge.budgetP99)} and ${repeatLarge.heatRelativeRms.toFixed(3)}.\n\nBoth fits remain in the frozen test list. We did not choose the better seed. This checks one part of sensitivity to training randomness; it is not a repeated four-target ranking or a confidence interval.`)}
     {visible("flame-heat-chart") && <EvidenceChart id="flame-heat-chart" queryId="models" title="Heat-release error: 50,000 candidates, 10,000 matched updates, primary seed" rows={chartRows} sourceRows={backbone} spec={{type:"horizontalBar",x:"targetName",y:"heatRelativeRms",stackable:false,valueDecimals:3,xLabel:"Target",yLabel:"RMS error / reference RMS"}} height={340} />}
+    {visible("flame-species-validation") && <DataComponent id="flame-species-validation" queryId="models" kind="table" title="Selected species: 50k primary-seed validation comparison" sourceRows={backbone} displayRows={chartRows}>
+      <DataTable rows={chartRows} label="Fuel, NO, and radical increment errors" columns={[{field:"targetName",label:"Target"},...speciesColumns]} />
+    </DataComponent>}
+    {prose("flame-species-limit", "What the species view means", "models", backbone,
+      "NH₃ and CH₄ are the fuels in this case. NO and OH give separate views of a pollutant species and a radical. These four species were selected by chemical role, not by their test scores. Each value is the p99 of that species' increment error divided by its chosen state budget. It is not final NO emissions, a species concentration profile, or flame speed.")}
     {datasets && visible("flame-dataset-table") && <DataComponent id="flame-dataset-table" queryId="datasets" kind="table" title="Completed label generation" sourceRows={datasets} displayRows={datasets}>
       <DataTable rows={datasets} label="Dataset counts" columns={[{field:"candidates",label:"Training candidates",renderCell:integer},{field:"trainingAccepted",label:"Accepted training states",renderCell:integer},{field:"validationAccepted",label:"Accepted validation states",renderCell:integer},{field:"generationSeconds",label:"Generation time (seconds)",renderCell:integer}]} />
     </DataComponent>}
@@ -109,6 +116,9 @@ export function ReportContent() {
       `### Check the test answers too\n\nThe independent test audit checked ${testReference[0].states} states and ${integer(testReference[0].speciesComponents)} species components. All passed the empirical budget-agreement check. Maximum disagreement was ${testReference[0].uncertaintyBudgetMax.toExponential(2)} times the budget.\n\nOf ${integer(testReference[0].nonzeroReferenceComponents)} nonzero numerical references, ${integer(testReference[0].resolvedNonzeroComponents)} passed the separate relative-resolution screen and ${integer(testReference[0].unresolvedNonzeroComponents)} did not. Another ${integer(testReference[0].zeroReferenceComponents)} references were zero. These are separate counts, not a claim that every tiny test increment has many correct digits.`)}
     {heldout && testTable("uniform", "Reserved 2D snapshot: uniform random cells")}
     {heldout && testTable("balanced", "Reserved 2D snapshot: temperature-balanced diagnostic")}
+    {heldout && visible("flame-species-test") && <DataComponent id="flame-species-test" queryId="heldout" kind="table" title="Selected species: temperature-balanced 2D diagnostic" sourceRows={heldout.filter(row=>row.population === "balanced")} displayRows={testRows("balanced")}>
+      <DataTable rows={testRows("balanced")} label="Selected species on the balanced test population" columns={[{field:"control",label:"Control"},{field:"targetName",label:"Target"},...speciesColumns]} />
+    </DataComponent>}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
       `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)}
     {parity && prose("flame-runtime-parity", "Runtime version agreement", "runtime_parity", parity,

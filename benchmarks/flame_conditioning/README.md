@@ -321,7 +321,7 @@ their inputs and destination without writing an output artifact.
 `verify_physical.py <dataset> --training <run> [--training <run>] [--historical
 <validation-run>]` independently recomputes the main validation claims from saved
 predictions. It checks sample identities, budget p99, negative endpoints, mass
-drift, and heat-source RMS using Cantera density rather than the training metric's
+drift, selected NH3/CH4/NO/OH species p99, and heat-source RMS using Cantera density rather than the training metric's
 density formula. It is read-only by default; `--output <new.json>` saves evidence.
 This does not replace saved-model replay or independent reference integration.
 `verify.py <dataset> <training> --training-metrics --output <new.json>` also

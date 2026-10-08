@@ -30,7 +30,15 @@ def recompute(states, prediction, reference, mechanism, interval):
     errors = np.abs(prediction[:, active] - reference[:, active])
     budgets = 1e-12 + 1e-6 * np.abs(states[:, 2:][:, active])
     negative = (states[:, 2:] + prediction)[:, active] < 0
+    species_budget_p99 = {}
+    for name in ("NH3", "CH4", "NO", "OH"):
+        if name in gas.species_names:
+            index = gas.species_index(name)
+            error = np.abs(prediction[:, index] - reference[:, index])
+            budget = 1e-12 + 1e-6 * np.abs(states[:, index + 2])
+            species_budget_p99[name] = float(np.percentile(error / budget, 99))
     return {"samples": len(states), "budget_p99": float(np.percentile(errors / budgets, 99)),
+            "species_budget_p99": species_budget_p99,
             "negative_endpoint_fraction": float(negative.sum() / negative.size),
             "mass_drift_p99": float(np.percentile(np.abs(np.sum(prediction, axis=1)), 99)),
             "heat_error_rms": float(np.linalg.norm(rate_error) / np.sqrt(len(states))),
@@ -46,6 +54,9 @@ def assert_scores(actual, recorded):
     for key in expected:
         np.testing.assert_allclose(actual[key], expected[key], rtol=2e-12, atol=1e-30,
                                    err_msg=f"Saved physical metric differs: {key}")
+    for name, value in actual["species_budget_p99"].items():
+        np.testing.assert_allclose(value, recorded["per_species"][name]["budget_error"]["p99"],
+                                   rtol=2e-12, atol=1e-30, err_msg=f"Saved species p99 differs: {name}")
 
 
 def main():

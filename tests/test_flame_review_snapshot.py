@@ -4,7 +4,7 @@ import sys
 import pytest
 
 from benchmarks.flame_conditioning.extract import sha256
-from benchmarks.flame_conditioning.review_snapshot import main, reference_row
+from benchmarks.flame_conditioning.review_snapshot import main, reference_row, species_budget_scores
 
 
 def test_reference_report_separates_zero_and_unresolved_nonzero():
@@ -59,3 +59,10 @@ def test_review_binds_test_reference_and_keeps_population_counts(tmp_path, monke
     heldout_path.write_text(json.dumps(heldout))
     with pytest.raises(ValueError, match="differs from the scored audit"):
         main()
+
+
+def test_species_view_does_not_turn_missing_metrics_into_zero():
+    rows = species_budget_scores({"per_species": {"NO": {"budget_error": {"p99": .25}}}})
+    assert rows["NOBudgetP99"] == .25
+    assert rows["NH3BudgetP99"] is None
+    assert set(rows) == {"NH3BudgetP99", "CH4BudgetP99", "NOBudgetP99", "OHBudgetP99"}

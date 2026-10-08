@@ -12,6 +12,13 @@ if __package__ in (None, ""):
 from benchmarks.flame_conditioning.extract import sha256
 
 
+def species_budget_scores(values):
+    """Preselected fuel, pollutant-species, and radical diagnostics."""
+    per_species = values.get("per_species", {})
+    return {f"{name}BudgetP99": per_species.get(name, {}).get("budget_error", {}).get("p99")
+            for name in ("NH3", "CH4", "NO", "OH")}
+
+
 def score_row(name, values):
     heat_denominator = values["heat_release_reference_rms_W_m3"]
     return {"name": name, "samples": values["samples"],
@@ -20,7 +27,8 @@ def score_row(name, values):
             "negativeRowFraction": values["negative_endpoint_row_fraction"],
             "inverseCorrectionFraction": values["inverse_domain_correction_fraction"],
             "massDriftP99": values["mass_increment_drift"]["p99"],
-            "heatRelativeRms": values["heat_release_error_rms_W_m3"] / heat_denominator if heat_denominator else None}
+            "heatRelativeRms": values["heat_release_error_rms_W_m3"] / heat_denominator if heat_denominator else None,
+            **species_budget_scores(values)}
 
 
 def reference_row(audit):
@@ -92,6 +100,7 @@ def main():
                          "budgetExceedance": values["budget_exceedance"],
                          "heatRelativeRms": values["heat_release_error_rms_W_m3"] / values["heat_release_reference_rms_W_m3"],
                          "trainingHeatRelativeRms": model["training"]["heat_release_error_rms_W_m3"] / model["training"]["heat_release_reference_rms_W_m3"],
+                         **species_budget_scores(values),
                          "seconds": model["elapsed_seconds"]})
     audit = json.loads(args.audit.read_text())
     if audit.get("reference_subset_pass") is not True:
