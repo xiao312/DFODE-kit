@@ -10,7 +10,16 @@
 - `docs/agents/`: agent-facing operational and planning docs
 - `tests/`: lightweight repository and harness tests
 
+## Precision conditioning research branch
+
+`benchmarks/precision_conditioning/` owns the standalone representational audit.
+It depends only on NumPy and does not alter production data or training paths.
+`tests/test_precision_conditioning_audit.py` verifies its numerical invariants.
+The staged research and review plan is in
+`docs/agents/precision-conditioning-research.md`.
+
 ## Current refactor themes
+
 
 ### 1. Harness engineering
 The repository now includes:

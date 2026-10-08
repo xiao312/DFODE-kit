@@ -1,0 +1,3 @@
+# Numerical audit only; chemistry/training environments are a separate contract.
+numpy==2.5.3
+pytest==9.1.1
