@@ -100,6 +100,7 @@ def report(summary):
                            f"{100*r['test']['budget_exceedance']:.1f}%", f"{r['training_seconds']:.2f}"] for r in rows])
     decisions = []
     worst_rows = []
+    safety_rows = []
     for mechanism in audits:
         selected = min((r for r in rows if r["mechanism"] == mechanism), key=lambda r: r["validation_budget_p99"])
         baseline = audits[mechanism]["zero_baseline"]["budget_p99"]
@@ -108,7 +109,13 @@ Its test p99 is {selected['test']['budget_p99']:.5g} budgets. Predicting zero gi
 Selection used validation data, not this test comparison.</p>''')
         species = sorted(enumerate(selected["test"]["species"]), key=lambda item: item[1]["budget_p99"], reverse=True)[:5]
         worst_rows.extend([mechanism.upper(), audits[mechanism]["species"][index], f"{values['budget_p99']:.5g}"] for index, values in species)
+        metrics = selected["test"]
+        safety_rows.append([mechanism.upper(), f"{100 * audits[mechanism]['zero_baseline']['budget_exceedance']:.2f}%",
+                            f"{100 * metrics['budget_exceedance']:.2f}%", f"{metrics['relative_p99']:.5g}" if metrics['relative_p99'] is not None else "not available",
+                            f"{metrics['relative_count']} / {metrics['count']}", f"{100 * metrics['negative_endpoint_fraction']:.2f}%",
+                            f"{metrics['mass_delta_sum_abs_max']:.5g}"])
     worst = table(["Mechanism", "Species (validation-selected model)", "Test budget p99"], worst_rows)
+    safety = table(["Mechanism", "Zero baseline above budget", "Selected model above budget", "Relative error p99", "Relative-mask components / all", "Predicted negative Y", "Max abs(sum delta-Y)"], safety_rows)
     source = escape(json.dumps({"data_source": summary["provenance"]["pilot_source"], "training_source": summary["source"],
                                "raw_intervals_sha256": summary["provenance"]["intervals_sha256"], "versions": summary["provenance"]["versions"],
                                "torch": summary["torch"]}, indent=2))
@@ -162,6 +169,10 @@ it is not a guarantee on every sample and is not the interval-maximum statistic 
 {measurements}{''.join(decisions)}
 <p>The zero baseline always predicts no chemical change. It is a useful check because many intervals have very small changes.
 A model must improve on this baseline before we call it useful.</p>
+{safety}
+<p>The selected models have a slightly better p99 than zero, but more components exceed the budget.
+Their relative-error tails and conservation errors remain large. A smaller value in one metric is not an overall accuracy improvement.
+The zero baseline has relative error 1 (100%) on every nonzero reference. Negative predicted mass fractions are not clipped.</p>
 <img src="magnitude-errors.png" alt="FP64 physical prediction errors grouped by reference increment magnitude">
 <p>Magnitude bins exclude exact zero estimates. Counts and separately masked relative errors are in the downloadable metrics.
 Relative errors use only components that passed the stricter reference-relative mask.</p>{worst}</section>
