@@ -94,6 +94,7 @@ The report has no dependency back into model training or reference generation.
 `heldout -> frozen training and historical artifact identities`
 `evaluate_heldout -> historical and new predictors/common physical metrics`
 `verify_physical -> saved predictions/data/independent Cantera-density calculation`
+`verify -> saved-model replay/optional independent training physical metrics`
 exports checked numerical arrays. Historical adapters must depend on this NPZ
 boundary, never on legacy pickle loading in the working solver environment.
 

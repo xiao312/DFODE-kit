@@ -105,19 +105,20 @@ def main():
     score("zero-baseline", np.zeros_like(delta), np.zeros_like(delta, dtype=bool))
     for run in plan["models"]:
         directory = Path(run["directory"])
+        run_name = run.get("name", directory.name)
         training = json.loads((directory / "summary.json").read_text())
         config = training["plan"]["config"]
         predictors = {}
         for variant in training["variants"]:
             predict, _ = load_predictor(directory / variant["name"], config)
             predictors[variant["name"]] = predict
-            score(f'{directory.name}--{variant["name"]}', *predict(states))
+            score(f'{run_name}--{variant["name"]}', *predict(states))
         for name, boxcox in predictors.items():
             if name.endswith("-state-boxcox"):
                 prefix = name.removesuffix("state-boxcox")
                 power = predictors.get(prefix + "signed-power")
                 if power is not None:
-                    score(f"{directory.name}--{prefix}fixed-hybrid", *hybrid_prediction(states, boxcox, power))
+                    score(f"{run_name}--{prefix}fixed-hybrid", *hybrid_prediction(states, boxcox, power))
     historical_predictors = {}
     for control in plan.get("historical", []):
         for mode in control["modes"]:

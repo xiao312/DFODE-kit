@@ -285,6 +285,10 @@ predictions. It checks sample identities, budget p99, negative endpoints, mass
 drift, and heat-source RMS using Cantera density rather than the training metric's
 density formula. It is read-only by default; `--output <new.json>` saves evidence.
 This does not replace saved-model replay or independent reference integration.
+`verify.py <dataset> <training> --training-metrics --output <new.json>` also
+replays all selected training states and independently checks their physical
+scores. Use it before interpreting a training/validation gap. Without the flag,
+the faster existing validation replay remains unchanged.
 The report compiler also accepts `--historical-validation`, `--heldout`,
 `--scaling`, and `--expanded-audit` completed JSON evidence. Historical controls
 remain separate from equal-budget new fits, and the two test populations remain

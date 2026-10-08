@@ -65,7 +65,10 @@ def freeze_models(training_directories):
             for filename in ("weights.pt", "preprocessing.npz", "result.json"):
                 relative = f'{variant["name"]}/{filename}'
                 files[relative] = sha256(directory / relative)
-        plans.append({"directory": str(directory), "sha256": files})
+        name = directory.parent.name if directory.name == "results" else directory.name
+        plans.append({"name": name, "directory": str(directory), "sha256": files})
+    if len({item["name"] for item in plans}) != len(plans):
+        raise ValueError("Training run names must be unique for frozen output identities")
     return plans
 
 

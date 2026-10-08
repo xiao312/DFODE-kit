@@ -16,6 +16,7 @@ from benchmarks.flame_conditioning.coordinates import decode, input_features
 from benchmarks.flame_conditioning.data import load_dataset
 from benchmarks.flame_conditioning.extract import sha256
 from benchmarks.flame_conditioning.train import network
+from benchmarks.flame_conditioning.verify_physical import recompute, assert_scores
 
 
 def load_predictor(directory, config):
@@ -45,7 +46,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("dataset", type=Path)
     parser.add_argument("training", type=Path)
+    parser.add_argument("--training-metrics", action="store_true")
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if args.output and args.output.exists():
+        parser.error("Output must be new")
     torch.set_num_threads(1)
     data, physics, _ = load_dataset(args.dataset)
     summary = json.loads((args.training / "summary.json").read_text())
@@ -81,10 +86,24 @@ def main():
         if initial_hash != result["initial_weights_sha256"]:
             raise ValueError("Initialization hash mismatch")
         initial_hashes.add(initial_hash)
-        replayed.append({"name": variant["name"], "validation_budget_p99": p99, "training_count": size})
+        record = {"name": variant["name"], "validation_budget_p99": p99, "training_count": size}
+        if args.training_metrics:
+            selected = permutation[:size]
+            training_states = data["train"]["states"][selected]
+            training_prediction, _ = predict(training_states)
+            actual = recompute(training_states, training_prediction, data["train"]["delta"][selected],
+                               args.dataset / "mechanism.yaml", physics["interval"])
+            assert_scores(actual, result["training"])
+            record["training_metrics"] = actual
+        replayed.append(record)
     if len(initial_hashes) != 1:
         raise ValueError("Target/precision variants did not start from matching weights")
-    print(json.dumps({"status": "verified", "models": len(replayed), "replayed": replayed}, indent=2))
+    report = {"status": "verified", "models": len(replayed), "replayed": replayed,
+              "training_metrics_checked": args.training_metrics,
+              "training_summary_sha256": sha256(args.training / "summary.json")}
+    if args.output:
+        args.output.write_text(json.dumps(report, indent=2, allow_nan=False))
+    print(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":

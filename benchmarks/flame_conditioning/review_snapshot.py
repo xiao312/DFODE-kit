@@ -44,6 +44,7 @@ def main():
     parser.add_argument("--heldout", type=Path)
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
+    parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -67,6 +68,7 @@ def main():
                          "inverseCorrectionFraction": values["inverse_domain_correction_fraction"],
                          "budgetExceedance": values["budget_exceedance"],
                          "heatRelativeRms": values["heat_release_error_rms_W_m3"] / values["heat_release_reference_rms_W_m3"],
+                         "trainingHeatRelativeRms": model["training"]["heat_release_error_rms_W_m3"] / model["training"]["heat_release_reference_rms_W_m3"],
                          "seconds": model["elapsed_seconds"]})
     audit = json.loads(args.audit.read_text())
     if audit.get("reference_subset_pass") is not True:
@@ -147,8 +149,22 @@ def main():
         snapshot["queries"]["expanded_reference"] = {"rows": [{"states": len(expanded["records"]),
             "components": expanded["components_checked"], "budgetFitFraction": expanded["budget_fit_fraction"],
             "uncertaintyBudgetMax": max(row["uncertainty_budget_max"] for row in expanded["records"])}],
-            "source": source([args.expanded_audit], [{"label": "Expanded reference agreement", "definition": "Same independent endpoint/increment checks on a selected subset of the larger dataset."}],
+            "source": source([args.expanded_audit] + ([args.scaling] if args.scaling else []), [{"label": "Expanded reference agreement", "definition": "Same independent endpoint/increment checks on a selected subset of the larger dataset. The optional scaling evidence verifies prefix and validation identity."}],
                              ["Subset agreement does not certify every generated label."])}
+    if args.dataset_manifest:
+        dataset_rows = []
+        for path in args.dataset_manifest:
+            dataset = json.loads(path.read_text())
+            if dataset["status"] not in ("complete", "complete_with_exclusions"):
+                raise ValueError("Dataset generation is incomplete")
+            dataset_rows.append({"candidates": dataset["config"]["train_count"],
+                                 "trainingAccepted": dataset["splits"]["train"]["labels_accepted"],
+                                 "validationAccepted": dataset["splits"]["validation"]["labels_accepted"],
+                                 "generationSeconds": dataset["elapsed_seconds"],
+                                 "continuations": len(dataset.get("continuations", []))})
+        snapshot["queries"]["datasets"] = {"rows": dataset_rows, "source": source(args.dataset_manifest, [
+            {"label": "Accepted chemistry labels", "definition": "Candidates with finite, nonnegative endpoints and passing fixed-temperature/volume, mass and elemental checks. Failed rows remain in the private artifact but are excluded from fitting."}
+        ], ["The larger generation run reached its first wall limit and finished in a new continuation directory; its elapsed time is the sum of both segments."])}
     if not args.dry_run:
         args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
     print(json.dumps({"dry_run": args.dry_run, "output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))
