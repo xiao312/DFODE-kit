@@ -246,6 +246,8 @@ paths, raw chemistry states, model weights, or mechanism contents. The HTML repo
 is a downstream presentation of this snapshot, with the source hashes retained.
 `--parity <runtime-parity.json>` includes the unchanged-runtime comparison.
 When refreshing an existing app snapshot, preserve its stable ID and title.
+The held-out evaluator and both review commands accept `--dry-run` to validate
+their inputs and destination without writing an output artifact.
 
 ```bash
 python -m pytest tests/test_flame_*.py -q

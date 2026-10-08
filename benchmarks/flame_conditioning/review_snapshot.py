@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--cfd", type=Path, required=True)
     parser.add_argument("--parity", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     rows = []
     for path in args.training:
@@ -93,8 +94,9 @@ def main():
         snapshot["queries"]["flame_profile"] = {"rows": cfd["profiles"], "source": source([args.cfd], [
             {"label": "Temperature profile", "definition": "Initial and final cell temperature versus actual cell-centre x position. Nonuniform mesh coordinates are checked against the original geometry-vector field; the mesh is not assumed uniform."}
         ], ["The 0.1 ms CVODE-only restart is a compatibility check, not a flame-speed or steady-state validation."])}
-    args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
-    print(json.dumps({"output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))
+    if not args.dry_run:
+        args.output.write_text(json.dumps(snapshot, indent=2, allow_nan=False))
+    print(json.dumps({"dry_run": args.dry_run, "output": str(args.output), "model_rows": len(rows), "queries": list(snapshot["queries"])}))
 
 
 if __name__ == "__main__":

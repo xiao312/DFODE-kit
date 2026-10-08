@@ -62,6 +62,7 @@ def main():
     parser.add_argument("case", type=Path)
     parser.add_argument("--original", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Review output must be new")
@@ -103,7 +104,8 @@ def main():
         result["profiles"].extend({"cell": index, "position_mm": float(position * 1000),
                                     "time_ms": float(time_name) * 1000, "temperature_K": float(fields[index, 0])}
                                    for index, position in enumerate(centres))
-    args.output.write_text(json.dumps(result, indent=2, allow_nan=False))
+    if not args.dry_run:
+        args.output.write_text(json.dumps(result, indent=2, allow_nan=False))
     print(json.dumps({key: value for key, value in result.items() if key != "profiles"}, indent=2))
 
 

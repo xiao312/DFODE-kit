@@ -34,6 +34,7 @@ def main():
     parser.add_argument("test", type=Path)
     parser.add_argument("--audit", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output must be new")
@@ -78,6 +79,10 @@ def main():
         for relative, digest in run["sha256"].items():
             if sha256(Path(run["directory"]) / relative) != digest:
                 raise ValueError(f"Frozen model artifact changed: {relative}")
+    if args.dry_run:
+        print(json.dumps({"training_runs": len(plan["models"]), "accepted_cells": len(states),
+                          "populations": {name: int(mask.sum()) for name, mask in masks.items()}, "output": str(args.output)}))
+        return
     args.output.mkdir(parents=True)
     result = {"source": source_revision(), "test_manifest_sha256": sha256(args.test / "manifest.json"),
               "audit_summary_sha256": sha256(args.audit / "summary.json"), "models": [],
