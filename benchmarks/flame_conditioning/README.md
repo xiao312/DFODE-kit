@@ -245,6 +245,37 @@ the failed test and frozen models remain read-only. Dependencies are the existin
 chemistry module and pinned research environment. Verify with
 `python -m pytest tests/test_flame_label_diagnosis.py -q`.
 
+### Reference-policy amendment before first 2D model score
+
+The original strict endpoint rule rejected 789/1216 selected 2D cells, all for
+negative values of magnitude at most 2.084e-36. Most were cold cells. Fresh
+reactors reproduced the saved increments; tighter CVODE and direct Radau checks
+on seven failed states agreed within 2.856e-9 of the physical budget. Strict
+sign rejection therefore removes valid numerical information non-uniformly.
+The original test, strict acceptance mask, frozen models, and failed evaluator
+remain unchanged. No model score was produced before this amendment.
+
+`recover_test_reference.py <strict-test> --output <new-test> --dry-run` previews
+an explicit, separate numerical-reference policy. The live path rechecks every
+previously rejected cell with fresh CVODE, tighter CVODE (absolute 1e-24), and
+two direct Radau settings. Only sign-only failures can be reconsidered. Require
+finite values, the existing mass/element/fixed-T/V constraints, disagreement at
+most 1% of the physical budget, and negative endpoint magnitude no greater than
+the original solver absolute tolerance (1e-21) in every check. The latter is a
+numerical-noise screen, not a rigorous positivity or accuracy guarantee. See
+[SUNDIALS advice on negative values](https://sundials.readthedocs.io/en/v7.5.0/cvode/Usage/#advice-on-controlling-unphysical-negative-values).
+
+Do not alter any signed increment or source cell. Preserve the old mask and
+recovery flags in `reference-quality.npz`, full comparison records in JSONL, and
+both old and new artifact hashes. This changes reference eligibility only, not
+models, sample membership, normalization, scoring, or temperature thresholds.
+Keep unresolved near-zero components separate from precision claims. A fresh
+subset audit and the unchanged evaluator gate must still pass on the new test.
+Report this as a post-reference/pre-score amendment, not the original strict
+protocol. Do not use it to silently reclassify old training data. The internal
+wall limit is 1800 seconds; partial recovery cannot be scored. Verify with
+`python -m pytest tests/test_flame_reference_recovery.py -q`.
+
 `historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
 It never reads the old pickle files or runs the old training scripts. Both controls
 use the saved 4x800 GELU FP32 weights, original species order and Pa pressure.
