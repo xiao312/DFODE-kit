@@ -16,6 +16,7 @@ from benchmarks.flame_conditioning.chemistry import element_matrix
 from benchmarks.flame_conditioning.extract import sha256, source_revision
 from benchmarks.flame_conditioning.metrics import physical_scores
 from benchmarks.flame_conditioning.verify import load_predictor
+from benchmarks.flame_conditioning.historical import load_historical
 
 
 def hybrid_prediction(states, boxcox, power):
@@ -75,7 +76,7 @@ def main():
     masks = {name: source[name][accepted] for name in ("uniform", "balanced")}
     plan = json.loads((args.test / "frozen-plan.json").read_text())
     # Verify every frozen byte before loading any model or writing metrics.
-    for run in plan["models"]:
+    for run in plan["models"] + plan.get("historical", []):
         for relative, digest in run["sha256"].items():
             if sha256(Path(run["directory"]) / relative) != digest:
                 raise ValueError(f"Frozen model artifact changed: {relative}")
@@ -90,8 +91,8 @@ def main():
               "sample_counts": {name: {"selected": int(source[name].sum()), "accepted": int(mask.sum())}
                                 for name, mask in masks.items()}}
 
-    def score(name, predicted, corrected):
-        entry = {"name": name, "populations": {}}
+    def score(name, predicted, corrected, diagnostics=None):
+        entry = {"name": name, "populations": {}, "diagnostics": diagnostics or {}}
         for population, mask in masks.items():
             if mask.any():
                 entry["populations"][population] = physical_scores(predicted[mask], delta[mask], states[mask], corrected[mask], **physics)
@@ -117,6 +118,20 @@ def main():
                 power = predictors.get(prefix + "signed-power")
                 if power is not None:
                     score(f"{directory.name}--{prefix}fixed-hybrid", *hybrid_prediction(states, boxcox, power))
+    historical_predictors = {}
+    for control in plan.get("historical", []):
+        for mode in control["modes"]:
+            predict, _ = load_historical(control["directory"], gas.species_names, mode)
+            historical_predictors[(control["kind"], mode)] = predict
+            predicted, corrected = predict(states)
+            score(f'historical--{control["kind"]}--{mode}', predicted, corrected, dict(predict.diagnostics))
+    for mode in ("source-formula", "stable-adapter"):
+        boxcox = historical_predictors.get(("state-boxcox", mode))
+        power = historical_predictors.get(("signed-power", mode))
+        if boxcox is not None and power is not None:
+            score(f"historical--fixed-hybrid--{mode}", *hybrid_prediction(states, boxcox, power),
+                  diagnostics={"historical_training_overlap_not_excluded": True,
+                               "reconstruction": mode, "thresholds_K": [305, 1000]})
     result["status"] = "complete"
     (args.output / "summary.json").write_text(json.dumps(result, indent=2, allow_nan=False))
 

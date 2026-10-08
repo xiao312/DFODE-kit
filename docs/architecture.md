@@ -89,6 +89,10 @@ data for the downstream HTML report. Presentation cannot alter source evidence.
 owns the review narrative and charts; the shared runtime compiles them for Pages.
 The report has no dependency back into model training or reference generation.
 `checkpoint_conversion -> allowlisted historical checkpoint/patched isolated Torch`
+`historical -> checked numerical NPZ/Torch inference/coordinate reconstruction`
+`historical_validation -> historical/data/metrics/fixed hybrid policy`
+`heldout -> frozen training and historical artifact identities`
+`evaluate_heldout -> historical and new predictors/common physical metrics`
 exports checked numerical arrays. Historical adapters must depend on this NPZ
 boundary, never on legacy pickle loading in the working solver environment.
 

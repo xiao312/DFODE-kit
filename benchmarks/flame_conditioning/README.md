@@ -194,6 +194,26 @@ treating the two training runs as a controlled data-size comparison.
 
 ## Reserved 2D snapshot evaluation
 
+`historical.py` reads only the numerical arrays from `checkpoint_conversion/`.
+It never reads the old pickle files or runs the old training scripts. Both controls
+use the saved 4x800 GELU FP32 weights, original species order and Pa pressure.
+We predeclare two reconstruction modes: `source-formula` retains FP32 output
+arithmetic (and the conventional script's reconstructed initial endpoint);
+`stable-adapter` denormalizes in FP64 and reconstructs changes from the actual
+input state. The latter explicitly records conventional inverse-domain repairs.
+Neither mode applies the old CFD wrapper's pressure overwrite or mass repair.
+The source formula records invalid conventional power bases without hiding them.
+These are historical-weight controls, not a paper reproduction. Power statistics
+were saved only in FP32. The original BC training sources overlap this 1D domain;
+historical 2D use is not excluded. Do not call either control a fresh held-out test.
+`historical_validation.py <dataset> --audit <audit> --historical <converted-dir>
+[--historical <second-dir>] --output <new-dir> --dry-run` checks these inputs.
+Omit `--dry-run` for a small offline inference test in the unchanged research
+runtime. It saves both controls and the predeclared fixed-temperature hybrid.
+The reserved-snapshot command also accepts repeated `--historical` arguments;
+it freezes their array/manifest hashes and both reconstruction modes before
+opening the snapshot. No original model is selected from test scores.
+
 `heldout.py --source-array <reserved.npy> --mechanism <study.yaml> --training
 <completed-training> [--training <another-completed-training>] --output <new-test>
 --dry-run` checks a frozen comparison plan. The live command records model and

@@ -69,11 +69,28 @@ def freeze_models(training_directories):
     return plans
 
 
+def freeze_historical(directories):
+    plans = []
+    for directory in directories:
+        directory = directory.resolve()
+        manifest = json.loads((directory / "manifest.json").read_text())
+        if (manifest["status"] != "converted" or manifest["mechanism_sha256"] != MECHANISM_SHA256
+                or sha256(directory / "model.npz") != manifest["arrays_sha256"]):
+            raise ValueError("Historical numerical artifact is not a verified conversion")
+        plans.append({"directory": str(directory), "kind": manifest["kind"],
+                      "modes": ["source-formula", "stable-adapter"],
+                      "sha256": {name: sha256(directory / name) for name in ("manifest.json", "model.npz")}})
+    if len({item["kind"] for item in plans}) != len(plans):
+        raise ValueError("Duplicate historical model kind")
+    return plans
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-array", type=Path, required=True)
     parser.add_argument("--mechanism", type=Path, required=True)
     parser.add_argument("--training", type=Path, action="append", required=True)
+    parser.add_argument("--historical", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
@@ -82,7 +99,8 @@ def main():
     if sha256(args.mechanism) != MECHANISM_SHA256:
         raise ValueError("Require the inspected 59-species study mechanism")
     frozen = freeze_models(args.training)
-    plan = {"models": frozen, "seed": 20261009, "uniform_count": 1024, "per_temperature_bin": 32,
+    plan = {"models": frozen, "historical": freeze_historical(args.historical),
+            "seed": 20261009, "uniform_count": 1024, "per_temperature_bin": 32,
             "interval_s": 1e-6, "thresholds_K": [305, 1000], "source": source_revision()}
     print(json.dumps(plan), flush=True)
     if args.dry_run:
