@@ -4,6 +4,10 @@ Branch: `research/precision-conditioned-increments`
 
 Starting revision: `b7d3943e805d9d074f25fa1b0de4c13b17bb711f`
 
+Human review and the current decision log are centralized in
+[GitHub issue #1](https://github.com/xiao312/DFODE-kit/issues/1).
+This file is the reproducible technical plan, not an additional review inbox.
+
 ## Question and hypotheses
 
 Can error-budget-aware coordinates, sequential residual models, and stable
