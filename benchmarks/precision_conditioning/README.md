@@ -7,6 +7,12 @@ uses explicitly known synthetic increments to separate endpoint subtraction,
 coordinate encoding, and state reconstruction. It does not measure neural-network
 accuracy or establish a chemical reference solution.
 
+## Checkpoint 02 reference pilot
+
+The `reference/` submodule checks H2 and CH4 chemistry label fitness. It is separate
+from the synthetic audit and production labeling. See `reference/README.md` for
+the bounded run, independent increment check, and target comparison interface.
+
 ## Inputs and outputs
 
 The default deterministic grid contains nonnegative initial mass fractions and signed

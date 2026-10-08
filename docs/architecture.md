@@ -24,6 +24,12 @@ link the evidence without becoming numerical inputs.
 The staged research and review plan is in
 `docs/agents/precision-conditioning-research.md`.
 
+Checkpoint 02 is isolated in `benchmarks/precision_conditioning/reference/`.
+`pilot.py` calls `chemistry.py` (Cantera and SciPy), writes raw records, then calls
+`analysis.py` (NumPy). `targets.py` uses NumPy only and does not depend on the runner.
+Selected results flow to the existing GitHub review surfaces. Production labeling
+and training do not depend on this pilot. Its local README defines the run contract.
+
 ## Current refactor themes
 
 
