@@ -48,6 +48,12 @@ the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Flame-conditioned research
 
+Post-score pressure diagnosis is a separate evidence path:
+`pressure_diagnostic -> frozen models + chemistry -> new paired reference/prediction
+artifacts -> verify_pressure_diagnostic (independent physical recomputation) ->
+review_snapshot -> report`. It cannot write to the frozen test or model directories.
+There is no dependency from production solvers or training on this diagnostic.
+
 `benchmarks/flame_conditioning/` owns the application-aligned comparison separately
 from the homogeneous-reactor audit. Its one-way dependency is `read-only original
 cases -> extracted state/lineage files -> fixed-temperature, fixed-volume chemistry

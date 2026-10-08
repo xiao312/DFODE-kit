@@ -11,6 +11,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from benchmarks.flame_conditioning.extract import sha256
 from benchmarks.flame_conditioning.review_recovery import recovery_row
+from benchmarks.flame_conditioning.review_pressure import pressure_rows
 
 
 def species_budget_scores(values):
@@ -88,6 +89,8 @@ def main():
     parser.add_argument("--heldout-audit", type=Path)
     parser.add_argument("--reference-recovery", type=Path)
     parser.add_argument("--input-support", type=Path)
+    parser.add_argument("--pressure-diagnostic", type=Path)
+    parser.add_argument("--pressure-verification", type=Path)
     parser.add_argument("--scaling", type=Path)
     parser.add_argument("--expanded-audit", type=Path)
     parser.add_argument("--dataset-manifest", type=Path, action="append", default=[])
@@ -101,6 +104,8 @@ def main():
         parser.error("A reference amendment must accompany its completed evaluation")
     if args.input_support and not args.heldout:
         parser.error("Input support must accompany its completed test evaluation")
+    if bool(args.pressure_diagnostic) != bool(args.pressure_verification) or (args.pressure_diagnostic and not args.heldout):
+        parser.error("Pressure diagnosis requires its verification and completed test evaluation")
     rows = []
     for path in args.training:
         saved = json.loads(path.read_text())
@@ -258,6 +263,16 @@ def main():
                 "definition": "Raw training and observed ranges, population-specific outside-range fractions, and absolute distances after the frozen input encoding and training scale. Species use Y**0.1; temperature and pressure are linear. Constant training features use the documented scale fallback."}],
                 ["Descriptive post-score diagnosis; no model, scaler, or prediction was changed.",
                  "Univariate ranges do not prove multivariate coverage or establish a sole cause. Future repairs require fresh test evidence."])}
+    if args.pressure_diagnostic:
+        diagnostic = json.loads(args.pressure_diagnostic.read_text())
+        verified = json.loads(args.pressure_verification.read_text())
+        snapshot["queries"]["pressure_diagnostic"] = {"rows": pressure_rows(
+            diagnostic, verified, heldout, {sha256(path) for path in args.training}, sha256(args.pressure_diagnostic)),
+            "source": source([args.pressure_diagnostic, args.pressure_verification], [{"label": "Pressure-only sensitivity",
+                "definition": "The fixed 32-state audit subset at original pressure and at frozen training mean pressure. Changed-pressure predictions use fresh, independently checked changed-pressure labels. Heat response is RMS change in heat source divided by the original reference RMS."}],
+                ["Post-score diagnosis on inspected states, not a new validation population, model repair, or replacement test score.",
+                 "All four primary models, fixed hybrid, and zero are retained. No fitting or scaling change.",
+                 "The response includes physical pressure dependence. Residual errors and composition coverage gaps remain."])}
     if args.scaling:
         scaling = json.loads(args.scaling.read_text())
         if scaling["status"] != "verified":

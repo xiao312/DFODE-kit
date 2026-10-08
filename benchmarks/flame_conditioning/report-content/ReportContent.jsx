@@ -28,6 +28,8 @@ export function ReportContent() {
   const testReference = snapshot.queries.heldout_reference?.rows;
   const recovery = snapshot.queries.reference_recovery?.rows;
   const support = snapshot.queries.input_support?.rows;
+  const pressure = snapshot.queries.pressure_diagnostic?.rows;
+  const pressureRows = pressure?.map(row => ({...row, targetName:names[row.target] || (row.target === "fixed-hybrid" ? "Fixed hybrid" : "Zero change")}));
   const supportRows = (support || []).filter(row => ["P_Pa", "H2O"].includes(row.feature)).map(row => ({...row,
     trainingRange: row.feature === "P_Pa" ? `${integer(row.trainingMin)}–${integer(row.trainingMax)}` : `${row.trainingMin.toExponential(2)}–${row.trainingMax.toExponential(2)}`,
     observedRange: row.feature === "P_Pa" ? `${integer(row.observedMin)}–${integer(row.observedMax)}` : `${row.observedMin.toExponential(2)}–${row.observedMax.toExponential(2)}`,
@@ -174,6 +176,16 @@ export function ReportContent() {
         {field:"feature",label:"Feature"}, {field:"population",label:"Population"}, {field:"trainingRange",label:"Raw training range"},
         {field:"observedRange",label:"Raw observed range"}, {field:"outsideTrainingRangeFraction",label:"Outside training range",renderCell:percent},
         {field:"absoluteStandardizedMax",label:"Max |encoded distance / scale|",renderCell:value=>value.toFixed(2)},
+      ]} />
+    </DataComponent>}
+    {pressure && prose("flame-pressure-diagnosis", "Pressure-only diagnostic", "pressure_diagnostic", pressure,
+      `### A small physical pressure change can cause a large model change\n\nWe checked the same 32 states used in the reference audit. We copied each state and changed only pressure to the frozen training mean, ${pressure[0].pressurePa.toFixed(2)} Pa. We then generated new CVODE labels for these changed states and checked them with step-limited CVODE and two Radau solves. We did not compare new-pressure predictions with old-pressure answers.\n\nThe reference heat source changed by ${percent(pressure[0].referenceHeatResponse)} of its original RMS. Some model predictions changed much more. For the fixed hybrid, heat relative RMS fell from ${pressure.find(row=>row.target === "fixed-hybrid").originalHeatRelativeRms.toFixed(2)} to ${pressure.find(row=>row.target === "fixed-hybrid").changedHeatRelativeRms.toFixed(3)}. But its species-budget p99 remained ${integer(pressure.find(row=>row.target === "fixed-hybrid").changedBudgetP99)}, far above 1. The linear model's heat error became worse even though its species p99 improved.\n\nThis supports pressure sensitivity as a contributor to the failure, not its only cause. It does not prove that a new scaler alone will solve the problem. All six frozen policies are shown. No model was refitted or selected. This is a post-score diagnosis on an inspected subset, not a domain-average score, a new test, or a repair. The original 2D scores above remain unchanged.`)}
+    {pressure && visible("flame-pressure-table") && <DataComponent id="flame-pressure-table" queryId="pressure_diagnostic" kind="table" title="32 paired states: original pressure versus training-mean pressure" sourceRows={pressure} displayRows={pressureRows}>
+      <DataTable rows={pressureRows} label="Post-score pressure sensitivity" searchable={false} compactNumbers={false} columns={[
+        {field:"targetName",label:"Frozen policy"}, {field:"originalBudgetP99",label:"Original p99 ↓",renderCell:budgetNumber},
+        {field:"changedBudgetP99",label:"Changed-pressure p99 ↓",renderCell:budgetNumber},
+        {field:"originalHeatRelativeRms",label:"Original heat RMS ↓",renderCell:value=>value.toFixed(3)},
+        {field:"changedHeatRelativeRms",label:"Changed-pressure heat RMS ↓",renderCell:value=>value.toFixed(3)},
       ]} />
     </DataComponent>}
     {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,

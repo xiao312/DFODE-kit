@@ -449,6 +449,17 @@ is its new result directory. It uses the existing chemistry, model loader, metri
 and verification modules, with a 300-second internal limit. Verify with
 `python -m pytest tests/test_flame_pressure_diagnostic.py -q`.
 
+`verify_pressure_diagnostic.py <diagnostic> <test> --output <new.json>` is a
+read-only check of saved diagnostic evidence. It checks source hashes, unchanged
+temperature/composition and original labels, all 32 fresh reference records,
+and all 12 physical score records. It uses Cantera density and separately
+recomputes heat-response ratios. It does not load or change model weights.
+The report accepts `--pressure-diagnostic` with its `--pressure-verification`;
+both must match the frozen test and reviewed training run. Publish the paired
+scores only as a post-score subset diagnosis, never as replacement test scores.
+Verification requires NumPy/Cantera and the existing independent metric checker;
+it writes only the explicitly named new evidence file.
+
 `filter_audit.py <dataset> [--training <completed-run>] --output <new.json>`
 measures the effect of the inspected historical curation rule without changing
 data: keep `sum(hf_298 * delta_Y) <= 200 J/kg`. This is not a universal validity
