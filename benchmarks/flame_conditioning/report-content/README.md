@@ -26,6 +26,9 @@ as the unresolved-label fraction; inert-species zeros have no relative error.
 Model rows expose the training seed. Primary four-target charts retain seed
 20261009; the conventional-only 20261010 repeat has its own explanatory block.
 Do not merge repeated fits into a best-seed summary.
+Historical raw inverse-domain violations are separate from performed corrections.
+Show absent diagnostics as not recorded, not zero. Preserve small nonzero rates
+in percentage formatting. Test-batch diagnostics do not become population rates.
 
 ## Dependencies and dependents
 

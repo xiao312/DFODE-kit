@@ -137,7 +137,10 @@ def main():
         historical = json.loads(args.historical_validation.read_text())
         if historical["status"] != "complete":
             raise ValueError("Historical comparison is incomplete")
-        snapshot["queries"]["historical"] = {"rows": [score_row(model["name"], model["validation"]) for model in historical["models"]],
+        snapshot["queries"]["historical"] = {"rows": [
+            {**score_row(model["name"], model["validation"]),
+             "inverseDomainViolationFraction": model.get("diagnostics", {}).get("inverse_domain_violation_fraction")}
+            for model in historical["models"]],
             "source": source([args.historical_validation], [
                 {"label": "Historical-weight control", "definition": "Preselected existing FP32 weights, checked and converted to plain numerical arrays. Both original-style and stable reconstruction use the same weights; the hybrid uses fixed 305/1000 K thresholds."}
             ], ["Historical training overlap with this domain is not excluded; this is not independent generalization evidence.",
@@ -155,12 +158,14 @@ def main():
                                   "historical": model["name"].startswith("historical--"),
                                   "batchStates": timing.get("states"),
                                   "batchWallSeconds": timing.get("wall_seconds"),
-                                  "batchProcessSeconds": timing.get("process_seconds")})
+                                  "batchProcessSeconds": timing.get("process_seconds"),
+                                  "batchInverseDomainViolationFraction": model.get("diagnostics", {}).get("inverse_domain_violation_fraction")})
         snapshot["queries"]["heldout"] = {"rows": test_rows, "source": source([args.heldout], [
             {"label": "Reserved 2D snapshot", "definition": "Offline predictions on a predeclared uniform-cell sample and a separate temperature-balanced diagnostic sample. Model hashes and thresholds were fixed before reading the snapshot. No post-test tuning."}
         ], ["One snapshot is not a coupled CFD trajectory or a statistical generalization study.",
             "Uniform and temperature-balanced samples overlap; do not pool them or average their scores.",
             "Timing covers one combined offline batch, not each population separately or a CFD speedup.",
+            "Historical raw inverse-domain violations are combined-batch diagnostics when recorded. Zero corrections do not imply zero invalid bases; null means not recorded.",
             "Historical models may have prior training/evaluation exposure; only newly trained controls were kept from this snapshot."])}
         snapshot["queries"]["heldout_sampling"] = {"rows": [
             {"population": name, **counts, "excluded": counts["selected"] - counts["accepted"]}
