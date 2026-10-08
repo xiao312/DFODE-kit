@@ -116,7 +116,8 @@ def main():
     snapshot["queries"]["reference"] = {"rows": reference, "source": source([args.audit], [
         {"label": "Reference agreement", "definition": "Maximum spread across stored CVODE, fresh tighter and step-limited CVODE, and two independent Radau increment integrations, divided by the species budget. This is empirical agreement, not a rigorous bound."},
         {"label": "Relative-resolution screen", "definition": "Absolute reference increment must exceed 100 times the larger of empirical solver disagreement and endpoint spacing. Zero reference increments and unresolved nonzero increments are reported separately; zero references are not claims of exact mathematical zero."}
-    ], ["Only 32 selected augmented states are independently audited; remaining labels are not individually certified."])}
+    ], ["Only 32 selected augmented states are independently audited; remaining labels are not individually certified.",
+        "Agreement applies to the defined rounded/normalized source inputs; FP64 storage and tighter integration do not restore original ASCII digits."])}
     snapshot["queries"]["cfd"] = {"rows": [{**state, "steps": cfd["steps"], "originalFilesUnchanged": cfd["original_files_rechecked"]} for state in cfd["states"]],
         "source": source([args.cfd], [{"label": "Copied CFD restart", "definition": "Read-only review of 500-cell initial/final scalar fields, completed solver log, mesh check, and all 73 original allowlisted file hashes."}],
                          ["CVODE-only run with neural chemistry disabled. No learned model was deployed.", "Installed CFD uses Cantera 2.6.0; research labels use 3.2.0. Existing runtime was not upgraded."])}
