@@ -16,9 +16,14 @@ a{color:#1d6094}footer{margin-top:36px;font-size:.85rem;color:#526476}
 <p>A shared place to review the evidence, discuss scientific choices and follow experiments.
 The working direction is error-budget-aware coordinates, residual approximation,
 stable reconstruction and controlled integration.</p>
-<div class="badge">Checkpoint 03 fit diagnosis · ready for scientific review</div>
+<div class="badge">Checkpoint 03 optimizer polishing · ready for scientific review</div>
 <nav class="grid" aria-label="Research services"><a class="card" href="https://github.com/xiao312/DFODE-kit/discussions/5"><strong>Discuss direction</strong><span>Research questions, hypotheses and scientific choices</span></a><a class="card" href="https://github.com/xiao312/DFODE-kit/issues/2"><strong>Review checkpoint 01</strong><span>Results, figures and the decision on our next experiment</span></a><a class="card" href="https://github.com/xiao312/DFODE-kit/wiki"><strong>Read the Wiki</strong><span>Methods, vocabulary and how to reproduce experiments</span></a><a class="card" href="https://github.com/users/xiao312/projects/1"><strong>Track experiments</strong><span>Experiment status and review gates (account access required)</span></a><a class="card" href="https://github.com/xiao312/DFODE-kit/pull/4"><strong>Review code</strong><span>Draft pull request with implementation and test evidence</span></a><a class="card" href="https://github.com/xiao312/DFODE-kit/issues/1"><strong>Research hub</strong><span>Milestones, links and the experiment checklist</span></a></nav>
-<section class="checkpoint"><h2>Latest: can the model fit known answers?</h2>
+<section class="checkpoint"><h2>Latest: repeatable fitting and data expansion</h2>
+<p>All methods now save passing one-example fits across three seeds. Direct final-layer solving also passes the eight-example sets.
+Neither iterative method passes those sets, and no method passes all existing training rows. The milestone is partial.</p>
+<img src="checkpoint-03-polish/polish-results.png" alt="Multi-seed fit errors show narrow control success and unresolved larger-set fitting">
+<p><a href="checkpoint-03-polish/report.html">Read the results and dataset expansion gates</a> ·
+<a href="checkpoint-03-polish/summary.json">Measured results</a></p></section><section class="checkpoint"><h2>Latest: can the model fit known answers?</h2>
 <p>The narrow training sets can be represented by the model. Some one-example Adam runs briefly meet species budgets,
 then lose that accuracy. No final Adam fit meets every budget. This is a training-only diagnosis, not a generalization result.</p>
 <img src="checkpoint-03-fit/fit-errors.png" alt="Training-fit errors: direct head controls pass; Adam fits remain outside budget">
@@ -47,7 +52,7 @@ was evaluated. Asinh's possible learning benefit remains an experimental questio
 <a href="checkpoint-01/audit.json">Download metrics and synthetic inputs</a> ·
 <a href="https://github.com/xiao312/DFODE-kit/issues/2">Discuss this result</a></p></section>
 <section><h2>What needs a decision next?</h2>
-<p>Review a bounded optimizer-polishing test before expanding the data or adding residual models. The selected NH3/CH4 mechanism remains pending source verification.
+<p>Use the existing training rows to establish a scalable recipe, then test modest data growth on independent parents. The selected NH3/CH4 mechanism remains pending source verification.
 <a href="https://github.com/xiao312/DFODE-kit/issues/3">Review checkpoint 02</a>.</p></section>
 <footer>Public research review · reproducible source on
 <a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments">the research branch</a>.

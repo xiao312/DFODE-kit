@@ -1,0 +1,131 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Repeatable fitting and the dataset expansion decision</title><style>
+body{font:16px/1.65 system-ui,sans-serif;color:#182b3e;background:#f4f6fa;max-width:1200px;margin:auto;padding:28px}
+section{background:white;padding:24px;margin:22px 0;border-radius:12px}h1,h2{line-height:1.25}a{color:#1d6094}
+img{width:100%;height:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d6dfe8}
+.scroll{overflow-x:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.notice{border-left:5px solid #b66b12;padding:15px;background:#fff4e3}
+</style></head><body><nav><a href="../index.html">Research home</a> · <a href="../checkpoint-03-fit/report.html">Previous diagnosis</a> ·
+<a href="summary.json">Measured results</a> · <a href="https://github.com/xiao312/DFODE-kit/issues/3">Review in Issue #3</a></nav>
+<h1>Can we obtain a repeatable fit, and when should the dataset grow?</h1>
+<p>Checkpoint 03 follow-up. All 54 fits ran on lh40902. No new chemistry labels or held-out scores were generated.</p>
+<p class="notice"><strong>Partial milestone:</strong> every method now fits one example within every budget across both mechanisms and all three seeds.
+The direct final-layer solve also passes all six eight-example cases. Neither iterative method passes those eight-example cases.
+No method passes the full existing training sets. Repeatable narrow fitting and reliable saving are established;
+a scalable general-purpose training recipe is not.</p>
+<section><h2>Step 1 — Fix the acceptance rule before training</h2>
+<p>The previous experiment sometimes reached accurate species predictions and then lost them with further updates.
+We now check temperature AND every species after each accepted update. We stop at a maximum error of half a budget,
+save the weights immediately, and independently replay them against the original full budget.</p>
+<p>Species budget: <code>1e-12 + 1e-6 * abs(Y_initial)</code>. Temperature budget:
+<code>1e-6 + 1e-8 * abs(T_initial)</code>. A maximum at or below 1 means every component passes.
+The half-budget stop provides margin; it does not relax the evaluation threshold.</p>
+<p>If a run does not pass, save its lowest-maximum training checkpoint and report failure.
+This is declared training-based selection, not a test score. The saved step can differ from the last attempted step.</p></section>
+<section><h2>Step 2 — Repeat three methods under the same conditions</h2>
+<p>Use the same accepted checkpoint 03 data, budget-linear targets, training-only scales, FP64 and two 64-unit tanh layers.
+For each mechanism, use one example, eight examples from its 1400 K training parent at h=1e-6 s,
+and all existing training examples (H2: 133; CH4: 144). Repeat with seeds 20261008, 20261009 and 20261010.</p>
+<p>Each method starts from the same initialization and up to 200 warm-up Adam updates. Then change only the refinement:</p>
+<ul><li><strong>Adam with decay:</strong> reduce the step size from 1e-3 to 1e-7 over at most 5,000 more updates.</li>
+<li><strong>L-BFGS:</strong> use gradient history and a line search to choose further steps, for at most 1,000 accepted steps.</li>
+<li><strong>Direct final-layer solve:</strong> freeze the warmed-up hidden features and solve only the final coefficients by SVD least squares.</li></ul>
+<p>All methods minimize the same normalized-coordinate squared error; physical maximum error controls saving/stopping.
+This is not an equal-compute speed comparison. L-BFGS uses multiple function evaluations per accepted step.
+The direct solve is still an interpolation control. The data, architecture, objective and stop rule were not changed after seeing results.</p></section>
+<section><h2>Step 3 — Read the result</h2>
+<img src="polish-results.png" alt="Three-seed maximum errors: all methods pass one example; only direct final-layer solves pass eight; none pass all training rows">
+<div class="scroll"><table><thead><tr><th>Training subset</th><th>Method</th><th>All-component passes</th><th>Observed max-error range / budget</th></tr></thead><tbody><tr><td>one</td><td>Adam with decay</td><td>6 / 6</td><td>0.271 to 0.4795</td></tr><tr><td>one</td><td>L-BFGS</td><td>6 / 6</td><td>0.1476 to 0.4925</td></tr><tr><td>one</td><td>Direct final-layer solve</td><td>6 / 6</td><td>1.654e-12 to 2.647e-11</td></tr><tr><td>narrow</td><td>Adam with decay</td><td>0 / 6</td><td>6972 to 1.39e+04</td></tr><tr><td>narrow</td><td>L-BFGS</td><td>0 / 6</td><td>593.6 to 1.39e+04</td></tr><tr><td>narrow</td><td>Direct final-layer solve</td><td>6 / 6</td><td>2.208e-09 to 9.992e-08</td></tr><tr><td>all</td><td>Adam with decay</td><td>0 / 6</td><td>2.922e+06 to 5.103e+06</td></tr><tr><td>all</td><td>L-BFGS</td><td>0 / 6</td><td>2.174e+05 to 7.131e+05</td></tr><tr><td>all</td><td>Direct final-layer solve</td><td>0 / 6</td><td>4.268e+05 to 2.618e+06</td></tr></tbody></table></div>
+<p>Each table row contains six runs: two mechanisms times three seeds. The ranges are observed seed/mechanism variation,
+not confidence intervals. Each dot in the figure is one saved model. Different marker shapes identify the three seeds.</p>
+<p><strong>One example:</strong> all 18 runs pass. The iterative fits stop below 0.5 budgets and their saved weights replay correctly.
+We no longer lose a passing fit by continuing to update it. Because stopping and refinement both changed from the old run,
+this does not isolate the causal effect of step-size decay alone.</p>
+<p><strong>Eight examples:</strong> all six direct solves pass. Their worst all-component error is about 1e-7 budgets.
+The feature matrices have full row rank, but condition numbers near 1e5. Direct solving succeeds here;
+the tested gradient-based procedures do not find an equally accurate solution within their limits.</p>
+<p><strong>Existing full training sets:</strong> all 18 runs fail. The best maximum among these runs is still above 200,000 budgets.
+This is a training-fit problem, not evidence of successful generalization. More data was not tested, so we cannot claim that it would never help.</p></section>
+<section><h2>Step 4 — What the milestone does and does not establish</h2>
+<p><strong>Achieved:</strong> deterministic all-component checks, immediate stopping, saved passing weights,
+independent replay, and repeatable narrow fitting through a direct output-layer solve. That method passes the prescribed 12/12
+one/eight-example gate across both mechanisms and all seeds.</p>
+<p><strong>Not achieved:</strong> an iterative training method that passes the eight-example gate, a method that fits all existing rows,
+or a model that predicts unseen chemistry states accurately. The original target of a scalable high-accuracy baseline remains open.</p>
+<p>The head has 64 hidden features plus a bias per output. Eight rows can be interpolated with a full-rank feature matrix;
+133 or 144 arbitrary row targets cannot generally be interpolated by adjusting only 65 coefficients per output.
+The full neural network can change its hidden features too, so failure of the frozen-head control does not prove a capacity limit for the whole network.</p>
+<p>Do not present eight-point fitting as a useful surrogate. It is also not evidence of many correct relative digits for every tiny increment.</p></section>
+<section><h2>Step 5 — When should we use larger datasets?</h2>
+<p><strong>Do not wait for perfect accuracy everywhere.</strong> But do not launch a large labeling campaign on the basis of this control-only pass.</p>
+<ol><li><strong>Now: use the data we already have.</strong> Diagnose the fit on structured subsets of the 133/144 training rows.
+Compare a well-conditioned output-layer fit or budget-aware fitting objective under a fixed compute cap.
+Track both training error and capacity as the number of independent examples rises. Do not spend indefinitely repeating eight-point tests.</li>
+<li><strong>Next: a small generalization pilot.</strong> Freeze the candidate recipe and choose new independent parent trajectories before generating intervals.
+Use these as development validation, not a final test. Require useful improvement over zero change in both p99 and exceedance across parents,
+finite predictions, and no unexplained conservation or positivity failures. This gate is weaker than solver replacement.</li>
+<li><strong>Then: a data-size experiment.</strong> Propose roughly 1,000, 4,000 and 16,000 checked intervals per mechanism.
+Use nested training sets, one fixed validation set and a sealed new test set. Add independent parents and targeted coverage;
+do not inflate the count with adjacent samples alone. Record how many labels are rejected and why.</li>
+<li><strong>Continue only while the evidence supports it.</strong> If held-out error improves as data increases, propose the next size.
+If training remains poor, investigate fitting or capacity. If training is good but validation is poor, investigate coverage.
+If a larger set gives little improvement, stop blind expansion and examine the error source.</li></ol>
+<p>These sizes are planning targets, not launches made in this run. Before each increase, measure labeling/training cost and use approved compute placement.
+Full-grid chemistry, NH3/CH4, residual stacks and full-trajectory tests remain separate decisions.</p></section>
+<section><h2>Reproduction and limits</h2>
+<p>The run completed in 157.71 seconds with one CPU, 4 GB memory and no network/GPU.
+No fit hit its 60-second limit. The global cap was 900 seconds. The kernel lacks a separate swap limit.</p>
+<p>Cantera/CVODES supplied the original states; direct SciPy Radau supplied the previously checked labels.
+Neither solver ran again here. Shared FP64 rate calculations and empirical reference-agreement checks remain limitations.</p>
+<p>Raw data, complete histories, weights and preprocessing are under <code>runs/representation/polish-20261008</code> in the server project.
+The public summary omits full histories but retains selected/final-attempt steps and measured scores.
+<code>verify_polish.py --require-narrow linear-head</code> passes; the same gate for either iterative method fails.
+All 54 selected models have been replayed independently. Code verification is not a scientific accuracy pass.</p>
+<p><a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments/benchmarks/precision_conditioning/learning">Source and commands</a> ·
+<a href="https://github.com/xiao312/DFODE-kit/pull/4">Draft PR #4</a></p>
+<details><summary>All 54 measured results</summary><div class="scroll"><table><thead><tr><th>Mechanism</th><th>Subset</th><th>Seed</th><th>Method</th><th>Maximum / budget</th><th>Stop reason</th><th>Saved stage / step</th><th>Seconds</th></tr></thead><tbody><tr><td>H2</td><td>one</td><td>20261008</td><td>Adam with decay</td><td>0.42179</td><td>budget_pass</td><td>adam-decay / 58</td><td>0.98</td></tr><tr><td>H2</td><td>one</td><td>20261008</td><td>L-BFGS</td><td>0.14762</td><td>budget_pass</td><td>lbfgs / 5</td><td>0.21</td></tr><tr><td>H2</td><td>one</td><td>20261008</td><td>Direct final-layer solve</td><td>1.6544e-12</td><td>budget_pass</td><td>linear-head / 1</td><td>0.20</td></tr><tr><td>H2</td><td>one</td><td>20261009</td><td>Adam with decay</td><td>0.27105</td><td>budget_pass</td><td>adam-decay / 56</td><td>0.27</td></tr><tr><td>H2</td><td>one</td><td>20261009</td><td>L-BFGS</td><td>0.23182</td><td>budget_pass</td><td>lbfgs / 5</td><td>0.22</td></tr><tr><td>H2</td><td>one</td><td>20261009</td><td>Direct final-layer solve</td><td>2.647e-11</td><td>budget_pass</td><td>linear-head / 1</td><td>0.21</td></tr><tr><td>H2</td><td>one</td><td>20261010</td><td>Adam with decay</td><td>0.47951</td><td>budget_pass</td><td>adam-decay / 63</td><td>0.26</td></tr><tr><td>H2</td><td>one</td><td>20261010</td><td>L-BFGS</td><td>0.39738</td><td>budget_pass</td><td>lbfgs / 6</td><td>0.22</td></tr><tr><td>H2</td><td>one</td><td>20261010</td><td>Direct final-layer solve</td><td>1.6544e-12</td><td>budget_pass</td><td>linear-head / 1</td><td>0.20</td></tr><tr><td>CH4</td><td>one</td><td>20261008</td><td>Adam with decay</td><td>0.46427</td><td>budget_pass</td><td>adam-decay / 17</td><td>0.25</td></tr><tr><td>CH4</td><td>one</td><td>20261008</td><td>L-BFGS</td><td>0.46804</td><td>budget_pass</td><td>lbfgs / 6</td><td>0.24</td></tr><tr><td>CH4</td><td>one</td><td>20261008</td><td>Direct final-layer solve</td><td>3.3087e-12</td><td>budget_pass</td><td>linear-head / 1</td><td>0.23</td></tr><tr><td>CH4</td><td>one</td><td>20261009</td><td>Adam with decay</td><td>0.43378</td><td>budget_pass</td><td>adam-decay / 30</td><td>0.26</td></tr><tr><td>CH4</td><td>one</td><td>20261009</td><td>L-BFGS</td><td>0.4925</td><td>budget_pass</td><td>lbfgs / 5</td><td>0.24</td></tr><tr><td>CH4</td><td>one</td><td>20261009</td><td>Direct final-layer solve</td><td>3.3087e-12</td><td>budget_pass</td><td>linear-head / 1</td><td>0.23</td></tr><tr><td>CH4</td><td>one</td><td>20261010</td><td>Adam with decay</td><td>0.39357</td><td>budget_pass</td><td>adam-decay / 13</td><td>0.25</td></tr><tr><td>CH4</td><td>one</td><td>20261010</td><td>L-BFGS</td><td>0.41469</td><td>budget_pass</td><td>lbfgs / 1</td><td>0.23</td></tr><tr><td>CH4</td><td>one</td><td>20261010</td><td>Direct final-layer solve</td><td>3.3087e-12</td><td>budget_pass</td><td>linear-head / 1</td><td>0.23</td></tr><tr><td>H2</td><td>narrow</td><td>20261008</td><td>Adam with decay</td><td>13883</td><td>update_limit</td><td>adam-decay / 43</td><td>5.01</td></tr><tr><td>H2</td><td>narrow</td><td>20261008</td><td>L-BFGS</td><td>13883</td><td>update_limit</td><td>lbfgs / 14</td><td>2.79</td></tr><tr><td>H2</td><td>narrow</td><td>20261008</td><td>Direct final-layer solve</td><td>9.9924e-08</td><td>budget_pass</td><td>linear-head / 1</td><td>0.24</td></tr><tr><td>H2</td><td>narrow</td><td>20261009</td><td>Adam with decay</td><td>13898</td><td>update_limit</td><td>adam-decay / 90</td><td>5.01</td></tr><tr><td>H2</td><td>narrow</td><td>20261009</td><td>L-BFGS</td><td>13898</td><td>update_limit</td><td>lbfgs / 34</td><td>2.89</td></tr><tr><td>H2</td><td>narrow</td><td>20261009</td><td>Direct final-layer solve</td><td>3.4773e-08</td><td>budget_pass</td><td>linear-head / 1</td><td>0.24</td></tr><tr><td>H2</td><td>narrow</td><td>20261010</td><td>Adam with decay</td><td>13884</td><td>update_limit</td><td>adam-decay / 81</td><td>5.21</td></tr><tr><td>H2</td><td>narrow</td><td>20261010</td><td>L-BFGS</td><td>13888</td><td>update_limit</td><td>lbfgs / 946</td><td>2.89</td></tr><tr><td>H2</td><td>narrow</td><td>20261010</td><td>Direct final-layer solve</td><td>8.672e-08</td><td>budget_pass</td><td>linear-head / 1</td><td>0.24</td></tr><tr><td>CH4</td><td>narrow</td><td>20261008</td><td>Adam with decay</td><td>6971.7</td><td>update_limit</td><td>warmup / 180</td><td>5.49</td></tr><tr><td>CH4</td><td>narrow</td><td>20261008</td><td>L-BFGS</td><td>774.26</td><td>update_limit</td><td>lbfgs / 995</td><td>4.02</td></tr><tr><td>CH4</td><td>narrow</td><td>20261008</td><td>Direct final-layer solve</td><td>2.2078e-09</td><td>budget_pass</td><td>linear-head / 1</td><td>0.28</td></tr><tr><td>CH4</td><td>narrow</td><td>20261009</td><td>Adam with decay</td><td>7848.6</td><td>update_limit</td><td>adam-decay / 5000</td><td>7.30</td></tr><tr><td>CH4</td><td>narrow</td><td>20261009</td><td>L-BFGS</td><td>593.55</td><td>update_limit</td><td>lbfgs / 861</td><td>4.00</td></tr><tr><td>CH4</td><td>narrow</td><td>20261009</td><td>Direct final-layer solve</td><td>7.9933e-09</td><td>budget_pass</td><td>linear-head / 1</td><td>0.30</td></tr><tr><td>CH4</td><td>narrow</td><td>20261010</td><td>Adam with decay</td><td>7549.8</td><td>update_limit</td><td>adam-decay / 99</td><td>5.43</td></tr><tr><td>CH4</td><td>narrow</td><td>20261010</td><td>L-BFGS</td><td>7335.3</td><td>update_limit</td><td>lbfgs / 26</td><td>3.96</td></tr><tr><td>CH4</td><td>narrow</td><td>20261010</td><td>Direct final-layer solve</td><td>8.9997e-09</td><td>budget_pass</td><td>linear-head / 1</td><td>0.27</td></tr><tr><td>H2</td><td>all</td><td>20261008</td><td>Adam with decay</td><td>2.9223e+06</td><td>update_limit</td><td>adam-decay / 5000</td><td>8.17</td></tr><tr><td>H2</td><td>all</td><td>20261008</td><td>L-BFGS</td><td>2.2918e+05</td><td>update_limit</td><td>lbfgs / 824</td><td>3.84</td></tr><tr><td>H2</td><td>all</td><td>20261008</td><td>Direct final-layer solve</td><td>7.5031e+05</td><td>update_limit</td><td>linear-head / 1</td><td>0.32</td></tr><tr><td>H2</td><td>all</td><td>20261009</td><td>Adam with decay</td><td>4.0174e+06</td><td>update_limit</td><td>adam-decay / 5000</td><td>8.22</td></tr><tr><td>H2</td><td>all</td><td>20261009</td><td>L-BFGS</td><td>2.1739e+05</td><td>update_limit</td><td>lbfgs / 989</td><td>3.80</td></tr><tr><td>H2</td><td>all</td><td>20261009</td><td>Direct final-layer solve</td><td>9.2321e+05</td><td>update_limit</td><td>linear-head / 1</td><td>0.32</td></tr><tr><td>H2</td><td>all</td><td>20261010</td><td>Adam with decay</td><td>3.6424e+06</td><td>update_limit</td><td>adam-decay / 5000</td><td>8.18</td></tr><tr><td>H2</td><td>all</td><td>20261010</td><td>L-BFGS</td><td>5.0954e+05</td><td>update_limit</td><td>lbfgs / 475</td><td>3.77</td></tr><tr><td>H2</td><td>all</td><td>20261010</td><td>Direct final-layer solve</td><td>4.2679e+05</td><td>update_limit</td><td>linear-head / 1</td><td>0.32</td></tr><tr><td>CH4</td><td>all</td><td>20261008</td><td>Adam with decay</td><td>5.0734e+06</td><td>update_limit</td><td>adam-decay / 1020</td><td>8.38</td></tr><tr><td>CH4</td><td>all</td><td>20261008</td><td>L-BFGS</td><td>5.1956e+05</td><td>update_limit</td><td>lbfgs / 926</td><td>4.85</td></tr><tr><td>CH4</td><td>all</td><td>20261008</td><td>Direct final-layer solve</td><td>2.6179e+06</td><td>update_limit</td><td>linear-head / 1</td><td>0.39</td></tr><tr><td>CH4</td><td>all</td><td>20261009</td><td>Adam with decay</td><td>5.0864e+06</td><td>update_limit</td><td>adam-decay / 1739</td><td>8.57</td></tr><tr><td>CH4</td><td>all</td><td>20261009</td><td>L-BFGS</td><td>7.1305e+05</td><td>update_limit</td><td>lbfgs / 999</td><td>4.85</td></tr><tr><td>CH4</td><td>all</td><td>20261009</td><td>Direct final-layer solve</td><td>2.3362e+06</td><td>update_limit</td><td>linear-head / 1</td><td>0.37</td></tr><tr><td>CH4</td><td>all</td><td>20261010</td><td>Adam with decay</td><td>5.1028e+06</td><td>update_limit</td><td>adam-decay / 1974</td><td>8.75</td></tr><tr><td>CH4</td><td>all</td><td>20261010</td><td>L-BFGS</td><td>5.4723e+05</td><td>update_limit</td><td>lbfgs / 991</td><td>4.86</td></tr><tr><td>CH4</td><td>all</td><td>20261010</td><td>Direct final-layer solve</td><td>2.532e+06</td><td>update_limit</td><td>linear-head / 1</td><td>0.38</td></tr></tbody></table></div></details>
+<details><summary>Source, input hashes and pinned settings</summary><pre>{
+  &quot;source&quot;: {
+    &quot;commit&quot;: &quot;f9da1fe1e41b6c11f0538f4ef4888382e3aeccfd&quot;,
+    &quot;dirty&quot;: false
+  },
+  &quot;torch&quot;: &quot;2.5.1+cpu&quot;,
+  &quot;datasets&quot;: {
+    &quot;h2&quot;: {
+      &quot;training_rows&quot;: 133,
+      &quot;input_sha256&quot;: &quot;b7cce98e4bfab3f8022b4d01a02ad923f14bd945923fe973f673fc35b1192496&quot;
+    },
+    &quot;ch4&quot;: {
+      &quot;training_rows&quot;: 144,
+      &quot;input_sha256&quot;: &quot;c3af430cacf94e0bf680dc011dcd26aa146030efb4512ba5001d9a8f399324ad&quot;
+    }
+  },
+  &quot;config&quot;: {
+    &quot;schema_version&quot;: 1,
+    &quot;seeds&quot;: [
+      20261008,
+      20261009,
+      20261010
+    ],
+    &quot;hidden_widths&quot;: [
+      64,
+      64
+    ],
+    &quot;parent_temperature_K&quot;: 1400,
+    &quot;interval_s&quot;: 1e-06,
+    &quot;narrow_rows&quot;: 8,
+    &quot;methods&quot;: [
+      &quot;adam-decay&quot;,
+      &quot;lbfgs&quot;,
+      &quot;linear-head&quot;
+    ],
+    &quot;warmup_updates&quot;: 200,
+    &quot;learning_rate&quot;: 0.001,
+    &quot;adam_updates&quot;: 5000,
+    &quot;adam_final_rate&quot;: 1e-07,
+    &quot;lbfgs_steps&quot;: 1000,
+    &quot;lbfgs_history&quot;: 50,
+    &quot;stop_budget_max&quot;: 0.5,
+    &quot;fit_seconds&quot;: 60,
+    &quot;wall_time_seconds&quot;: 900
+  }
+}</pre></details></section></body></html>
