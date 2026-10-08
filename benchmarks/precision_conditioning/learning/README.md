@@ -38,6 +38,8 @@ The test split never selects epochs, scales, or hyperparameters. Decode in FP64.
 FP32 means normalized features, targets and network arithmetic are FP32; the input
 normalization itself and raw reference data remain FP64. This differs from the
 earlier physical initial-state re-integration test after raw FP32 rounding.
+Channels that are exactly zero in every accepted training label are fixed to zero
+for every variant; record those channel indices. No test labels choose these channels.
 
 Report pooled species budget errors, separate reliable relative errors, temperature
 errors, per-species and magnitude-bin metrics, negative endpoints, mass error,
