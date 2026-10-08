@@ -77,6 +77,8 @@ no dependency back into training or checkpoint selection.
 restart and depends on the canonical case's inactive spray dictionary. Execution
 uses the existing image, outside the preparation command. It
 neither calls the original case scripts nor modifies source cases or installations.
+`review_cfd.py -> copied fields/logs/preparation manifest` checks completion and
+rehashes the allowlisted original files through a read-only mount.
 
 ## Current refactor themes
 

@@ -221,6 +221,12 @@ inactive `sprayCloudProperties` dictionary, records its hash, and rejects a temp
 that does not explicitly disable both spray activity and coupling. The original
 study case has no such file. A failed first startup is retained as evidence.
 
+`review_cfd.py <copied-case> --original <read-only-original-case> --output <new.json>`
+checks completion, finite scalar fields, mass closure and the final temperature.
+It rechecks every allowlisted original file against its pre-copy hash. These
+checks establish startup/restart compatibility and preservation of the source,
+not a validated flame speed, mesh convergence, or neural-model accuracy.
+
 ```bash
 python -m pytest tests/test_flame_*.py -q
 ```
