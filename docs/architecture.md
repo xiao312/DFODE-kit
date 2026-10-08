@@ -56,6 +56,10 @@ labels -> target comparison -> offline/coupled evaluation -> static review`.
 labeling, solver installations, or the earlier reference formulation. The local
 README defines the provenance, split, compute and secret boundaries. No production
 module depends on these experimental tools.
+`extract.py -> paired line samples` establishes explicit source identities;
+`prepare.py -> augmentation.py/chemistry.py` preserves snapshot splits and writes
+bounded label arrays. `scout.py -> chemistry.py` independently checks a selected
+subset. The fixed-T/V numerical module does not reuse the adiabatic RHS.
 
 ## Current refactor themes
 

@@ -91,6 +91,22 @@ incremental summaries. The original-study tolerance is included for comparison,
 not presumed accurate. Budget and increment-relative fitness are separate
 diagnostics. They do not imply that the text-source states have exact digits.
 
+`prepare.py <source-directory> --output <new-dataset> --dry-run` validates
+`dataset.json`. Omit `--dry-run` to create 10k training and 1024 validation states.
+Split snapshots before augmentation; interpolate only neighboring spatial samples.
+Draw target temperature uniformly, perturb T by up to 100 K and each species
+exponent independently by up to 0.15. Preserve interpolated argon, normalize other
+species, and filter N2 to the source range padded by 5%. Pressure is interpolated
+without random perturbation. No heat-release filter is applied. These explicit
+choices differ from an exact paper reproduction. Save lineage and acceptance rates.
+Use tight fixed-T/V CVODE labels. Reject nonfinite/negative endpoints or failed
+conservation/constraint checks, with row-specific reasons. Save partial arrays
+every 100 rows and never substitute zero for missing labels. Validation snapshots
+are correlated parts of the same flame; a separate 2D test is still required.
+This runner never reads test states. Its default 2400-second limit fits a
+one-hour external timeout. Audit selected augmented labels independently before
+training; the unperturbed scout alone does not certify augmented labels.
+
 ```bash
 python -m pytest tests/test_flame_chemistry.py tests/test_flame_extraction.py -q
 ```
