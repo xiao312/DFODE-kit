@@ -1,6 +1,7 @@
 # Precision-conditioned chemistry surrogates: research plan
 
-Branch: `research/precision-conditioned-increments`  
+Branch: `research/precision-conditioned-increments`
+
 Starting revision: `b7d3943e805d9d074f25fa1b0de4c13b17bb711f`
 
 ## Question and hypotheses
