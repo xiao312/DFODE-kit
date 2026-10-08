@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checkpoint 02 — Reference accuracy</title><style>
+body{font:16px/1.6 system-ui,sans-serif;color:#182b3e;background:#f4f6fa;max-width:1150px;margin:auto;padding:28px}
+section{background:white;padding:24px;margin:22px 0;border-radius:12px}h1,h2{line-height:1.2}a{color:#1d6094}
+img{width:100%;height:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d6dfe8}
+.scroll{overflow-x:auto}.notice{border-left:5px solid #b66b12;padding:15px;background:#fff4e3}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+</style></head><body>
+<nav><a href="../index.html">Research home</a> · <a href="https://github.com/xiao312/DFODE-kit/issues/3">Review in Issue #3</a> · <a href="summary.json">Download metrics</a> · <a href="analysis-provenance.json">Analysis provenance</a></nav>
+<h1>Checkpoint 02: reference-accuracy feasibility</h1>
+<p>Executed on lh40902. Four parent trajectories. 96 intervals. 141.4 seconds. No model training.</p>
+<p class="notice"><strong>Recommendation: proceed with a filtered reference subset, after review.</strong>
+Keep the 12 unresolved components separate. Add independent parent trajectories before a train/validation/test split.
+Do not generate the full grid or claim solver-level significant digits from this pilot.</p>
+<section><h2>What passed?</h2><div class="scroll"><table><thead><tr><th>Check</th><th>Result</th><th>Denominator</th></tr></thead><tbody><tr><td>Budget-fit species increments</td><td>3,012 (99.60%)</td><td>3,024 assessed components</td></tr><tr><td>Relative-fit species increments</td><td>2,132 (70.50%)</td><td>3,024 assessed components</td></tr><tr><td>Unresolved budget check</td><td>12</td><td>3 affected intervals</td></tr><tr><td>Direct zero estimates</td><td>144</td><td>Not a proof of exact physical zero</td></tr><tr><td>Endpoint zero / direct nonzero</td><td>43</td><td>Diagnostic count, not proof of physical accuracy</td></tr><tr><td>Solver failures</td><td>0</td><td>864</td></tr></tbody></table></div>
+<p>A budget-fit component has estimated reference uncertainty at most 1% of
+<code>1e-12 + 1e-6 * abs(Y_initial)</code>. Relative fitness also requires
+<code>abs(delta) &gt; 100 * max(uncertainty, endpoint_spacing)</code>.
+The relative check excludes 892 of 3,024 components, including zero estimates.
+These are empirical agreement checks, not rigorous error bounds.</p></section>
+<section><h2>Solver agreement and label fitness</h2>
+<img src="reference-feasibility.png" alt="Solver agreement across tolerance settings and label fitness by increment magnitude">
+<p>The left plot and table use the p99 of the maximum species error in each interval, across 96 intervals.
+This is not the pooled component p99. Errors use the direct Radau solution as a working reference, not exact truth.</p><div class="scroll"><table><thead><tr><th>Solver / input setting</th><th>p99 interval-maximum error / budget</th><th>Maximum error / budget</th><th>Solve seconds</th></tr></thead><tbody><tr><td>absolute18</td><td>1.09045</td><td>1.4363</td><td>3.011</td></tr><tr><td>absolute21</td><td>0.57673</td><td>0.81804</td><td>3.103</td></tr><tr><td>default</td><td>49.863</td><td>86.7683</td><td>2.974</td></tr><tr><td>fp32_input</td><td>5538.3</td><td>7174.25</td><td>3.146</td></tr><tr><td>radau_check</td><td>0.804741</td><td>0.889029</td><td>32.376</td></tr><tr><td>relative10</td><td>29.5111</td><td>63.6635</td><td>2.919</td></tr><tr><td>relative12</td><td>17.9812</td><td>20.6536</td><td>2.949</td></tr><tr><td>step_limited</td><td>0.57673</td><td>0.81804</td><td>3.115</td></tr></tbody></table></div>
+<p>The Radau reference used 86.1 solve seconds.
+Its error against itself is omitted. Tight relative tolerance alone did not remove the largest differences.
+The initial-state budget is strict for species that form rapidly from a near-zero initial concentration.</p></section>
+<section><h2>Where the reference check failed</h2><div class="scroll"><table><thead><tr><th>Interval</th><th>Species</th><th>Direct increment</th><th>Uncertainty / budget</th></tr></thead><tbody><tr><td>h2-1500K-a1-h0.0001</td><td>H2O</td><td>0.1836985</td><td>1.4363</td></tr><tr><td>h2-1500K-a2-h0.0001</td><td>H2O</td><td>0.1837597</td><td>1.0723</td></tr><tr><td>h2-1500K-a0-h0.0001</td><td>H2O</td><td>0.1836967</td><td>0.81699</td></tr><tr><td>h2-1500K-a2-h0.0001</td><td>OH</td><td>0.0255969</td><td>0.77958</td></tr><tr><td>h2-1500K-a0-h0.0001</td><td>OH</td><td>0.02560235</td><td>0.70241</td></tr><tr><td>h2-1500K-a1-h0.0001</td><td>OH</td><td>0.0256022</td><td>0.65924</td></tr><tr><td>h2-1500K-a1-h0.0001</td><td>O</td><td>0.008987444</td><td>0.41617</td></tr><tr><td>h2-1500K-a2-h0.0001</td><td>O</td><td>0.008969872</td><td>0.31148</td></tr><tr><td>h2-1500K-a0-h0.0001</td><td>O</td><td>0.00898797</td><td>0.23795</td></tr><tr><td>h2-1500K-a1-h0.0001</td><td>H</td><td>0.001457273</td><td>0.078264</td></tr><tr><td>h2-1500K-a2-h0.0001</td><td>H</td><td>0.001454004</td><td>0.058849</td></tr><tr><td>h2-1500K-a0-h0.0001</td><td>H</td><td>0.001457371</td><td>0.046888</td></tr></tbody></table></div>
+<p>All unresolved species components occur in three H2 intervals at 1500 K, with duration 1e-4 s.
+They include large product increments. Thus, reference disagreement is not only a trace-species problem.
+Exclude these components, or exclude the three intervals as a conservative whole-sample rule.
+Do not relax the physical budget after seeing these results.</p></section>
+<section><h2>Cancellation and input precision</h2>
+<img src="reference-cancellation.png" alt="Reference uncertainty against increment magnitude and endpoint-zero counts by species">
+<p>The direct solver integrates changes from zero. It can retain changes that endpoint subtraction loses.
+It still shares Cantera FP64 thermochemistry with the endpoint solver. The plotted very small changes
+are numerical estimates; their magnitude is not evidence of many correct significant digits.</p>
+<p>To isolate input effects, compare the same tight endpoint solver before and after rounding T, P and Y
+to FP32, then restoring FP64 and normalizing Y. The p99 interval-maximum difference is
+5538.84 physical budgets; the maximum is 7174.82.
+This changes the initial physical state. It is not an FP32 output-rounding test.</p></section>
+<section><h2>Conservation and cost</h2><div class="scroll"><table><thead><tr><th>Setting</th><th>Mass change sum (absolute)</th><th>Element change max</th><th>Relative enthalpy drift</th><th>Minimum Y</th></tr></thead><tbody><tr><td>absolute21</td><td>3.3344e-15</td><td>3.4681e-15</td><td>1.4442e-12</td><td>-3.7953e-43</td></tr><tr><td>radau_reference</td><td>5.8287e-16</td><td>5.3429e-16</td><td>6.1331e-15</td><td>-2.5173e-44</td></tr></tbody></table></div>
+<p>Tiny negative mass fractions remain in the saved results. No clipping was used to hide them.</p>
+<p>A linear estimate for 54 parent trajectories, eight anchors and five intervals is 2,160 intervals,
+or about 53 minutes for all nine checks on this host. With 40 anchors it is about
+4.4 hours. This is a rough cost estimate. Other conditions and the unverified
+Okafor mechanism can change the cost. It is not a request to start that run.</p></section>
+<section><h2>Next experiment and limits</h2>
+<p>The code has budget-linear, signed-power and scaled-asinh interfaces, stable inverse tests,
+train-only normalization and a fixed FP32/FP64 comparison configuration. No models were trained.
+The pilot has only two parents per mechanism. It cannot supply three independent data splits.
+Add a small reviewed set of parents, then compare the three coordinates with matched model settings.</p>
+<p>The direct method is SciPy Radau on scaled delta-T and delta-Y. Two settings and tight CVODES checks
+estimate uncertainty. This is not arbitrary precision. Shared chemical-rate errors remain unmeasured.
+The H2 and CH4 tests use Cantera h2o2.yaml and gri30.yaml. The Fuel-study Okafor NH3/CH4 files remain
+pending source verification. No flame or full-trajectory surrogate result is claimed.</p></section>
+<section><h2>Reproduction and provenance</h2>
+<p>Raw data remain in <code>/data2/kexiao/work/projects/DFODE-kit/runs/reference-pilot/checkpoint02-20261008</code>.
+The pilot container used one CPU, 4 GB memory, no network and a one-hour limit.</p>
+<p><a href="https://github.com/xiao312/DFODE-kit/tree/research/precision-conditioned-increments/benchmarks/precision_conditioning/reference">Source, configuration and reproduction commands</a></p>
+<pre>{
+  &quot;started_utc&quot;: &quot;2026-10-08T11:32:15.926191+00:00&quot;,
+  &quot;status&quot;: &quot;complete&quot;,
+  &quot;elapsed_seconds&quot;: 141.38416133448482,
+  &quot;source&quot;: {
+    &quot;commit&quot;: &quot;4a94c51fe6e28f7d406485aeb86564cc33f5b62a&quot;,
+    &quot;dirty&quot;: false
+  },
+  &quot;versions&quot;: {
+    &quot;python&quot;: &quot;3.10.20&quot;,
+    &quot;cantera&quot;: &quot;3.2.0&quot;,
+    &quot;numpy&quot;: &quot;2.2.6&quot;,
+    &quot;scipy&quot;: &quot;1.15.3&quot;,
+    &quot;sundials&quot;: &quot;7.4.0&quot;
+  },
+  &quot;mechanisms&quot;: [
+    {
+      &quot;id&quot;: &quot;h2&quot;,
+      &quot;sha256&quot;: &quot;0efc6c52862741a29e0c29b65d979c7d8cb409db5282bca83b9c5437b3d8c8d4&quot;,
+      &quot;species_count&quot;: 10,
+      &quot;reaction_count&quot;: 29
+    },
+    {
+      &quot;id&quot;: &quot;ch4&quot;,
+      &quot;sha256&quot;: &quot;06650b1e0ee0012f6903d5328b1bb218cb6007d07f8ebe375d18f24811039345&quot;,
+      &quot;species_count&quot;: 53,
+      &quot;reaction_count&quot;: 325
+    }
+  ]
+}</pre></section></body></html>

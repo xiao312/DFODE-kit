@@ -1,0 +1,864 @@
+{
+  "interval_count": 96,
+  "assessed_species_components": 3024,
+  "assessed_interval_count": 96,
+  "budget_fit_count": 3012,
+  "relative_fit_count": 2132,
+  "reference_zero_estimate_count": 144,
+  "endpoint_zero_direct_nonzero_count": 43,
+  "uncertainty_budget": {
+    "count": 3024,
+    "p50": 3.2795564585444053e-13,
+    "p99": 0.0003648486305919553,
+    "max": 1.4362950697200818
+  },
+  "solvers": {
+    "absolute18": {
+      "completed": 96,
+      "total_seconds": 3.010895563289523,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 4.268301367467109e-06,
+        "p99": 1.090452990926184,
+        "max": 1.4362950697200818
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 1.598155952763728e-08,
+        "p99": 0.0014324291908980739,
+        "max": 0.0016863879384740258
+      },
+      "mass_delta_sum_abs_max": 1.6769752460873627e-15,
+      "element_delta_max": 1.4016565685892601e-15,
+      "enthalpy_relative_drift_max": 2.209815337982733e-12,
+      "minimum_mass_fraction": -1.082047058515125e-39,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 5.52334194092202e-06,
+        "p99": 0.008891773821488588,
+        "max": 0.008983998997998342
+      }
+    },
+    "absolute21": {
+      "completed": 96,
+      "total_seconds": 3.1034208834171295,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 4.387699895233796e-08,
+        "p99": 0.5767301737838614,
+        "max": 0.8180398197004709
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 1.6042659377833115e-08,
+        "p99": 0.0011630311240807694,
+        "max": 0.001317763467880357
+      },
+      "mass_delta_sum_abs_max": 3.334391594813689e-15,
+      "element_delta_max": 3.4681154816319845e-15,
+      "enthalpy_relative_drift_max": 1.4442059997236184e-12,
+      "minimum_mass_fraction": -3.795258319997329e-43,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 1.428789393880232e-06,
+        "p99": 0.005475340731006165,
+        "max": 0.0056955744088838045
+      }
+    },
+    "default": {
+      "completed": 96,
+      "total_seconds": 2.9741133768111467,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 0.0017958160919971835,
+        "p99": 49.863023937312626,
+        "max": 86.76832485242757
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 8.385391744508762e-07,
+        "p99": 0.13392097369226363,
+        "max": 0.5659381035138742
+      },
+      "mass_delta_sum_abs_max": 3.3108227165137814e-15,
+      "element_delta_max": 2.720590624562103e-15,
+      "enthalpy_relative_drift_max": 2.9491688246199986e-10,
+      "minimum_mass_fraction": -4.191475171562773e-37,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 0.00012381304172311752,
+        "p99": 2.4253954502475588,
+        "max": 2.6766227019846363
+      }
+    },
+    "fp32_input": {
+      "completed": 96,
+      "total_seconds": 3.1462299898266792,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 0.00020241712997099893,
+        "p99": 5538.297085489683,
+        "max": 7174.254620283376
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 1.1828062213448369e-07,
+        "p99": 2.684669502353535,
+        "max": 2.827461404795555
+      },
+      "mass_delta_sum_abs_max": 2.973997805025175e-15,
+      "element_delta_max": 2.954124677135758e-15,
+      "enthalpy_relative_drift_max": 1.1926230178425766e-12,
+      "minimum_mass_fraction": -6.972761159077357e-43,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 9.194583310864315e-05,
+        "p99": 121.19405916263983,
+        "max": 294.8372714928004
+      },
+      "input_quantization_budget_max_per_interval": {
+        "count": 96,
+        "p50": 0.00020243181366113905,
+        "p99": 5538.841014711281,
+        "max": 7174.8186499494805
+      }
+    },
+    "radau_check": {
+      "completed": 96,
+      "total_seconds": 32.37595164589584,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 5.7119022418536e-10,
+        "p99": 0.804740513716332,
+        "max": 0.889029195606808
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 9.32815814496098e-13,
+        "p99": 9.074057266889797e-05,
+        "max": 9.838178831171631e-05
+      },
+      "mass_delta_sum_abs_max": 4.163336342344337e-16,
+      "element_delta_max": 4.0939474033052647e-16,
+      "enthalpy_relative_drift_max": 4.012038254562464e-14,
+      "minimum_mass_fraction": -2.5172899514559266e-44,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 1.628654975561933e-10,
+        "p99": 5.212019729853827e-06,
+        "max": 2.234709143682729e-05
+      }
+    },
+    "radau_reference": {
+      "completed": 96,
+      "total_seconds": 86.11005757935345,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      },
+      "mass_delta_sum_abs_max": 5.828670879282072e-16,
+      "element_delta_max": 5.342948306008566e-16,
+      "enthalpy_relative_drift_max": 6.1330521088852955e-15,
+      "minimum_mass_fraction": -2.5172899514559266e-44,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      }
+    },
+    "relative10": {
+      "completed": 96,
+      "total_seconds": 2.9194108862429857,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 0.0005495462934169134,
+        "p99": 29.511052309923652,
+        "max": 63.663526389684925
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 8.396294768373187e-07,
+        "p99": 0.0744127652190239,
+        "max": 0.08188485758089789
+      },
+      "mass_delta_sum_abs_max": 2.837235943083354e-15,
+      "element_delta_max": 2.495445803750875e-15,
+      "enthalpy_relative_drift_max": 1.264322303650815e-10,
+      "minimum_mass_fraction": -7.015412553067064e-38,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 8.593519047242644e-05,
+        "p99": 1.7307370823233716,
+        "max": 2.3943448899907023
+      }
+    },
+    "relative12": {
+      "completed": 96,
+      "total_seconds": 2.949170235544443,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 5.1443313792755786e-05,
+        "p99": 17.9812257587144,
+        "max": 20.653583374437392
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 8.861584658930738e-07,
+        "p99": 0.020032364840024318,
+        "max": 0.022726695465678882
+      },
+      "mass_delta_sum_abs_max": 2.9493147044937964e-15,
+      "element_delta_max": 2.6069399379422987e-15,
+      "enthalpy_relative_drift_max": 3.7714437312077345e-12,
+      "minimum_mass_fraction": -3.5395807723649758e-37,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 7.322392909023357e-05,
+        "p99": 2.539152347794364,
+        "max": 3.7107763063744525
+      }
+    },
+    "step_limited": {
+      "completed": 96,
+      "total_seconds": 3.1152828875929117,
+      "species_budget_error_max_per_interval": {
+        "count": 96,
+        "p50": 3.2046073836981884e-08,
+        "p99": 0.5767301737838614,
+        "max": 0.8180398197004709
+      },
+      "temperature_budget_error": {
+        "count": 96,
+        "p50": 2.678299910645333e-08,
+        "p99": 0.0011630311240807694,
+        "max": 0.001317763467880357
+      },
+      "mass_delta_sum_abs_max": 3.334391594813689e-15,
+      "element_delta_max": 3.4681154816319845e-15,
+      "enthalpy_relative_drift_max": 1.4442059997236184e-12,
+      "minimum_mass_fraction": -3.973269719373055e-44,
+      "masked_relative_error_p99_per_interval": {
+        "count": 90,
+        "p50": 9.459583796384928e-07,
+        "p99": 0.007718158337649323,
+        "max": 0.007722115431280799
+      }
+    }
+  },
+  "failures": [],
+  "magnitude_bins": [
+    {
+      "bin": "[-inf,-32)",
+      "count": 577,
+      "budget_fit_count": 577,
+      "relative_fit_count": 210,
+      "endpoint_zero_direct_nonzero_count": 0
+    },
+    {
+      "bin": "[-32,-24)",
+      "count": 374,
+      "budget_fit_count": 374,
+      "relative_fit_count": 226,
+      "endpoint_zero_direct_nonzero_count": 8
+    },
+    {
+      "bin": "[-24,-16)",
+      "count": 685,
+      "budget_fit_count": 685,
+      "relative_fit_count": 482,
+      "endpoint_zero_direct_nonzero_count": 35
+    },
+    {
+      "bin": "[-16,-8)",
+      "count": 880,
+      "budget_fit_count": 880,
+      "relative_fit_count": 862,
+      "endpoint_zero_direct_nonzero_count": 0
+    },
+    {
+      "bin": "[-8,inf)",
+      "count": 364,
+      "budget_fit_count": 352,
+      "relative_fit_count": 352,
+      "endpoint_zero_direct_nonzero_count": 0
+    }
+  ],
+  "species": [
+    {
+      "mechanism": "h2",
+      "species": "H2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 1.430014292663275e-05
+    },
+    {
+      "mechanism": "h2",
+      "species": "H",
+      "count": 48,
+      "budget_fit_fraction": 0.9375,
+      "relative_fit_fraction": 0.875,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.07826377968370993
+    },
+    {
+      "mechanism": "h2",
+      "species": "O",
+      "count": 48,
+      "budget_fit_fraction": 0.9375,
+      "relative_fit_fraction": 0.8333333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.4161671325745021
+    },
+    {
+      "mechanism": "h2",
+      "species": "O2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.0890650759705867e-05
+    },
+    {
+      "mechanism": "h2",
+      "species": "OH",
+      "count": 48,
+      "budget_fit_fraction": 0.9375,
+      "relative_fit_fraction": 0.8333333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.779575216479585
+    },
+    {
+      "mechanism": "h2",
+      "species": "H2O",
+      "count": 48,
+      "budget_fit_fraction": 0.9375,
+      "relative_fit_fraction": 0.8125,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.4362950697200818
+    },
+    {
+      "mechanism": "h2",
+      "species": "HO2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0005273999824102066
+    },
+    {
+      "mechanism": "h2",
+      "species": "H2O2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8958333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 2.8640297633627603e-05
+    },
+    {
+      "mechanism": "h2",
+      "species": "AR",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.0,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0
+    },
+    {
+      "mechanism": "h2",
+      "species": "N2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.0,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0
+    },
+    {
+      "mechanism": "ch4",
+      "species": "H2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8125,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.00042716186389000105
+    },
+    {
+      "mechanism": "ch4",
+      "species": "H",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9166666666666666,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.0007261615513839918
+    },
+    {
+      "mechanism": "ch4",
+      "species": "O",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8125,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.001155631818519998
+    },
+    {
+      "mechanism": "ch4",
+      "species": "O2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8125,
+      "endpoint_zero_direct_nonzero_count": 2,
+      "uncertainty_budget_max": 1.6074158277409414e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "OH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0012657881860172698
+    },
+    {
+      "mechanism": "ch4",
+      "species": "H2O",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.00031013791816701333
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HO2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 8.687168012780453e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "H2O2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7916666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00010857909122850854
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.4375,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.8294439623588825e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8958333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.3321986899077334e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0004637970287382005
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2(S)",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 7.18863869946546e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH3",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00029893116514639385
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH4",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8333333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 3.364151621363338e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6666666666666666,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.0005415360418806058
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CO2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6666666666666666,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 0.0017685572587288147
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0011254664338065485
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2O",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7916666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00018548925895970538
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2OH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00016803729140771415
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH3O",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00033370424327166837
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH3OH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.1465361722913507e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6041666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 7.934978531907891e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6458333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.004332058415028771
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H3",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6875,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.001165740440345951
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H4",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6458333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 8.615730495170487e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H5",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0006375049078840541
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C2H6",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6666666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 7.617752534878288e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCCO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0009842706192262954
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2CO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0013204245578947518
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCCOH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00037415149953178223
+    },
+    {
+      "mechanism": "ch4",
+      "species": "N",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 8.184916778186539e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 5.047521438510385e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NH2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.250019947512746e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NH3",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 9.428971868636987e-08
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NNH",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8958333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.1408820327797677e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7708333333333334,
+      "endpoint_zero_direct_nonzero_count": 2,
+      "uncertainty_budget_max": 0.00027682730870988393
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NO2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 4.728769898924286e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "N2O",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.9375,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 1.4207828923330443e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HNO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6875,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.0658625118499286e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CN",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.5416666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 2.5431851197847135e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCN",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.7916666666666666,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 9.454472790229887e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "H2CN",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.75,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 2.8378987261458692e-09
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCNN",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.8541666666666666,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 4.742148595044308e-09
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HCNO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 1.3789817843857084e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HOCN",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.1147354185538173e-07
+    },
+    {
+      "mechanism": "ch4",
+      "species": "HNCO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 1.9960804286209255e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "NCO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6041666666666666,
+      "endpoint_zero_direct_nonzero_count": 1,
+      "uncertainty_budget_max": 1.243161385180785e-06
+    },
+    {
+      "mechanism": "ch4",
+      "species": "N2",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.3333333333333333,
+      "endpoint_zero_direct_nonzero_count": 27,
+      "uncertainty_budget_max": 8.146724719075541e-09
+    },
+    {
+      "mechanism": "ch4",
+      "species": "AR",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.0,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C3H7",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.6458333333333334,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 3.215873551608936e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "C3H8",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 7.591593689230719e-05
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH2CHO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.0004135383113267835
+    },
+    {
+      "mechanism": "ch4",
+      "species": "CH3CHO",
+      "count": 48,
+      "budget_fit_fraction": 1.0,
+      "relative_fit_fraction": 0.625,
+      "endpoint_zero_direct_nonzero_count": 0,
+      "uncertainty_budget_max": 0.00210605137575771
+    }
+  ]
+}
