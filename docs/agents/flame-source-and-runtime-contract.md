@@ -187,3 +187,126 @@ and invalid-state policy instead of copying these assumptions silently.
 All checks in this note were read-only except downloading small source-code
 files and the mechanism to ignored local `runs/sources/`, and writing this
 note. No simulation or model training was started by this investigation.
+
+## Small copied 1D CVODE baseline: feasibility check
+
+The existing case can support a small **restart experiment**, without copying
+large datasets or rebuilding DeepFlame. Start from its reconstructed 0.0025 s
+state. Do not claim this reproduces the original transient from ignition.
+This section records inspection only; no solver was run on a case.
+
+### Why not start from the old `0` directory?
+
+The source `0` directory is not a complete, safe initial condition:
+
+- `p` and `U` are absent; only `p.orig` and `U.orig` remain.
+- Its file `C` is a `volVectorField` of cell-centre coordinates, not the
+  required scalar atomic-carbon mass fraction. Blind copying would introduce
+  a field-name collision.
+
+In contrast, `${ONE_D_CASE}/0.0025` has all 62 required fields: `T`, `p`, `U`,
+and the mechanism's 59 species. Each has the expected scalar/vector class.
+No required field contains a code stream, coded boundary, or file include.
+The reconstructed velocity has a fixed inlet value `(0.170038 0 0)` and a
+zero-gradient outlet. Pressure is initially uniform at 101466 Pa, with a
+zero-gradient inlet and a `waveTransmissive` outlet. These observations come
+from the actual restart field files, not the nominal paper inlet pressure.
+
+The five existing `constant/polyMesh` files are sufficient to preserve the
+500-cell mesh. They are approximately 0.15 MB in total. Its patches are
+`boundary` (empty, 2000 faces), `inlet` (one face), and `outlet` (one face).
+Together with the restart fields and mechanism, the copied case is small.
+
+### Explicit copy set
+
+Create a new run directory under this project's ignored run tree. Copy only:
+
+```text
+copied-case/
+  Okafor2018_s59r356.yaml
+  0.0025/
+    T, p, U, and each of the 59 named species
+  constant/
+    polyMesh/{points,faces,owner,neighbour,boundary}
+    g
+    thermophysicalProperties
+    turbulenceProperties
+    combustionProperties
+    CanteraTorchProperties
+  system/
+    fvSchemes
+    fvSolution
+    controlDict
+```
+
+Use an explicit species-name list from the pinned mechanism, not a wildcard
+copy of the source restart directory. Do not copy old `rho`, `phi`, `Qdot`,
+enthalpy, or diagnostic fields; the solver can construct them from the
+retained state. Do not copy `processor*`, `dynamicCode`, `postProcessing`,
+old logs, or the source `Allrun`. Hash the copied inputs and record their
+source locations in an ignored manifest.
+
+The original `Allrun` invokes MPI using four subdomains from
+`decomposeParDict`. That is unnecessary for a 500-cell serial smoke test.
+The existing mesh also removes the need for `blockMesh`, `setFields`, or
+`decomposePar` on the source case.
+
+### Changes needed in the copy
+
+1. Replace `controlDict` with explicit values: `startFrom startTime`,
+   `startTime 0.0025`, `endTime 0.0026`, `deltaT 1e-6`, and
+   `adjustTimeStep off`. This specifies 100 steps. Use `functions {}` and
+   no `#calc`, `#include`, or sampling functions for the first smoke test.
+2. Set output precision to 17 digits. Write only bounded checkpoints, such
+   as every 25 steps, with no purge. Preserve the copied restart itself.
+3. In `CanteraTorchProperties`, keep `chemistry on`, `transportModel Mix`,
+   `inertSpecie AR`, and `splittingStrategy off`. Set `torch`, `GPU`, and
+   torch logging off. Set load balancing off for the serial test.
+4. Preserve original CVODE tolerances `1e-6/1e-10` for a first compatibility
+   baseline. A tighter-reference comparison is a separate recorded variant,
+   not an unrecorded change to the old case.
+5. Add `h` and `hFinal` linear-solver entries. The old `fvSolution` only
+   includes `ha` in its velocity/energy pattern, whereas the installed solver
+   calls `EEqn.solve("h")`. The supplied image examples use `(U|h|k|epsilon)`.
+   Existing `div(phi,h)` in `fvSchemes` already covers the energy flux.
+
+The source `thermophysicalProperties` is intentionally an empty dictionary
+after its header. The installed image's CH4 example does the same; its
+Cantera mixture reads `CanteraTorchProperties`. Do not invent an unrelated
+OpenFOAM thermophysical model to fill it.
+
+### Pinned runtime checks
+
+Image ID prefix `41bd0c7147ab` was inspected using temporary containers with
+a read-only root filesystem and no network. The normal image entrypoint
+loads OpenFOAM 7, activates the existing `deepflame` Conda environment, and
+loads the DeepFlame environment. `dfLowMachFoam -help` completes successfully.
+Its linked libraries have no unresolved entries in the inspected `ldd`
+output. This is a startup check, not a successful CFD-run result.
+
+The installed Python Cantera is **2.6.0**, and the executable links to
+`libcantera.so.2` from that environment. The new labeling environment uses
+Cantera 3.2.0. The installed environment has Python 3.8.20 and PyTorch
+2.4.1+cu121. Record both versions and later compare selected local chemistry
+updates; do not upgrade the working solver installation merely to make the
+version strings equal.
+
+The installed `createFields.H` selects sensible enthalpy, `hs`. The energy
+equation adds chemistry heat release once. The installed bridge also divides
+pressure by 101325 before ANN input packing. These agree with the source-level
+contract above and confirm that the old `ha` solver settings need adaptation.
+
+### Execution boundary and remaining checks
+
+The implementing agent can first run `checkMesh` on the copied case, then a
+one-step CVODE check, before attempting the 100-step restart. Mount only the
+new project run directory writable; keep original assets read-only or omit
+them from the container after copying. Use one CPU, bounded memory, no GPU,
+no network, and a wall-clock timeout. Use the normal image entrypoint and
+call `dfLowMachFoam -case <copied-case> -noFunctionObjects` directly.
+
+Remaining uncertainties are actual boundary-condition compatibility at
+startup, runtime for this 59-species case, and the effect of source-state
+rounding and the Cantera version difference. A 100-step restart can establish
+that a copied CFD case runs and produces bounded fields. It cannot establish
+grid convergence, long-time flame stability, or learned-model reliability.

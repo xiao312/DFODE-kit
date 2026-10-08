@@ -16,6 +16,12 @@ Use this docs tree for information that is too detailed or too volatile for `AGE
 - `train-config-plan.md`: training/config refactor plan for experiment throughput
 - `package-topology-spec.md`: target package organization and module-boundary spec
 - `package-topology-migration-plan.md`: staged migration plan toward the target package topology
+- `cfd_conditioned_data.md`: read when working on CFD-conditioned trajectory datasets
+- `precision-conditioning-research.md`: original precision-audit stages and review workflow
+- `cantera-tolerance-sources.md`: read before changing the numerical tolerance ladder
+- `fuel-mechanism-source.md`: initial mechanism identification and provenance gate
+- `fuel-cfd-benchmark-alignment.md`: approved shift from reactor diagnostics to flame-based evaluation
+- `flame-source-and-runtime-contract.md`: read before reusing study assets or preparing a copied CFD case
 
 ## Philosophy
 - `AGENTS.md` is the entrypoint for repository workflow.

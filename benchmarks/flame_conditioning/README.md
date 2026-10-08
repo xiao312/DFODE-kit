@@ -158,6 +158,27 @@ Expected: 16 verified models for the default plan. Verification of saved evidenc
 is not a scientific accuracy pass. `load_predictor` exposes the same explicit
 decode/correction interface for later held-out and copied-case evaluation.
 
+The first 16-model run completed and replayed successfully, but large training
+and validation errors remain. FP32/FP64 results nearly overlap. The bounded
+follow-up `learning-longer.json` changes only update budget (20k), validation
+cadence (500 updates), and keeps FP32/the full accepted 10k candidate set. It
+repeats all four targets with the same 128/128/128 model. This is an optimization
+budget check, not proof that data size is irrelevant or a broad parameter search.
+
+## Copied CFD restart
+
+`copy_case.py --source-case <original-1D-case> --mechanism <study.yaml> --output
+<new-case>` is a read-only preview. Add `--apply` to copy an explicit allowlist:
+the reconstructed 0.0025 fields, five mesh files and selected dictionaries. It
+refuses existing output and does not run the solver. The source `0` directory is
+not usable: it lacks U/p and has a coordinate-vector C rather than carbon Y.
+The copy adds the installed solver's h/hFinal settings, disables ANN/GPU/load
+balancing/functions, and uses literal fixed-step control values. Default is one
+step; `--steps 100` gives the separately bounded 100-step compatibility run.
+Keep original CVODE tolerances 1e-6/1e-10 for this first runtime check. The installed
+Cantera is 2.6.0, unlike labeling 3.2.0; do not upgrade it. A copied restart smoke
+test is neither an ignition reproduction nor a learned-model CFD validation.
+
 ```bash
 python -m pytest tests/test_flame_*.py -q
 ```

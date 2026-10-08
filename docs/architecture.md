@@ -68,6 +68,9 @@ non-argon accuracy and all-species conservation without modifying predictions.
 `train.py -> data/coordinates/metrics` requires that audit and exposes validation
 only. `verify.py -> saved models/coordinates/data` independently replays the
 matched-budget result. Held-out 2D evaluation and CFD deployment are later layers.
+`copy_case.py -> inspected original fields/mesh` prepares an allowlisted isolated
+restart. Execution uses the existing image, outside the preparation command. It
+neither calls the original case scripts nor modifies source cases or installations.
 
 ## Current refactor themes
 
