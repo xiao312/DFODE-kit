@@ -179,6 +179,8 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `fuel-state` | [Transformed-state increment — Fuel source recipe](#fuel-state) | Fuel source-recipe replication |
+| `fuel-power` | [Direct signed-power increment — Fuel source recipe](#fuel-power) | Fuel source-recipe replication |
 | `state-boxcox-coordinate` | [Transformed-state increment — paired coordinate loss](#state-boxcox-coordinate) | Paired target and error-scale comparison |
 | `state-boxcox-increment` | [Transformed-state increment — paired increment loss](#state-boxcox-increment) | Paired target and error-scale comparison |
 | `state-boxcox-state` | [Transformed-state increment — paired state loss](#state-boxcox-state) | Paired target and error-scale comparison |
@@ -217,6 +219,50 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="fuel-state"></a>
+### Transformed-state increment — Fuel source recipe
+
+Artifact ID: `fuel-state`. Family: Fuel source-recipe replication.
+
+4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only centered sample-standard-deviation scaling. 1500 shuffled epochs; requested batch 20k capped at training count. Adam resets before epochs 502 and 1002 with tenfold LR drops. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.
+
+```mermaid
+flowchart TD
+  n0["Same checked training states"]
+  n1["Sample-standard-deviation input and target scaling"]
+  n2["61 to 800x4 to 58 GELU network"]
+  n3["1500 epochs; source Adam resets"]
+  n4["Stable transformed-state inverse"]
+  n5["Both error budgets and SSPI"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="fuel-power"></a>
+### Direct signed-power increment — Fuel source recipe
+
+Artifact ID: `fuel-power`. Family: Fuel source-recipe replication.
+
+4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only population-standard-deviation scaling; zero target center, not RMS. 2000 shuffled epochs; requested batch 20k capped at training count. Tenfold LR drop every 500 epochs; retain Adam state. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.
+
+```mermaid
+flowchart TD
+  n0["Same checked training states"]
+  n1["Signed tenth-root increment; zero target center"]
+  n2["Population-standard-deviation scaling"]
+  n3["61 to 800x4 to 58 GELU network"]
+  n4["2000 epochs; StepLR with Adam state retained"]
+  n5["Direct power inverse; both budgets and SSPI"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="state-boxcox-coordinate"></a>
 ### Transformed-state increment — paired coordinate loss

@@ -48,6 +48,13 @@ the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Flame-conditioned research
 
+`offline_accuracy.paper_baseline.plan -> run -> fit -> coordinates` owns the
+reduced-data Fuel source-recipe replication. It reuses `refinement.run.inputs`
+and the paired runtime, acceptance and independent-verification functions.
+It changes normalization, output count and training schedule, not the frozen
+dataset or pass rule. Its result summaries feed the research review; original
+study scripts and environments remain read-only.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
