@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
 
-const names = {"state-boxcox":"Transformed state", "signed-power":"Signed power", "budget-linear":"State-budget linear", "scaled-asinh":"Scaled asinh", zero:"Zero change"};
+import {targetNames} from "./method-catalogue.mjs";
+const names = Object.fromEntries(["state-boxcox", "signed-power", "budget-linear", "scaled-asinh", "zero"].map(id=>[id,targetNames[id]]));
 const percent = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
 const number = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
 

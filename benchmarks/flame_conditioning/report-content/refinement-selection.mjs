@@ -1,20 +1,6 @@
 // Comparison membership is fixed by method, never by observed accuracy.
-export const refinementNames = {
-  "original-state-boxcox": "Transformed state · 2k updates",
-  "original-signed-power": "Signed power · 2k updates",
-  "original-budget-linear": "State-budget linear · 2k updates",
-  "original-scaled-asinh": "Empirical-scale asinh · 2k updates",
-  "long-state-boxcox": "Transformed state · 4k updates",
-  "long-signed-power": "Signed power · 4k updates",
-  "long-budget-linear": "State-budget linear · 4k updates",
-  "long-scaled-asinh": "Empirical-scale asinh · 4k updates",
-  "budget-log": "Budget signed-log",
-  "budget-asinh": "Budget asinh",
-  "physical-budget-log": "Budget signed-log + physical loss",
-  "physical-budget-asinh": "Budget asinh + physical loss",
-  "residual-state-boxcox": "Frozen base + residual",
-  "deep-state-boxcox": "Larger single model · 8 layers",
-};
+import {recipeNames as refinementNames} from "./method-catalogue.mjs";
+export {refinementNames};
 
 export function comparisonNames(group, target) {
   if (group === "training") return [`original-${target}`, `long-${target}`];

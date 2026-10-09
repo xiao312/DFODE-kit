@@ -131,6 +131,13 @@ boundary, never on legacy pickle loading in the working solver environment.
 
 ## Current refactor themes
 
+The review-only method registry has one-way dependencies:
+`method-catalogue.mjs -> report selection labels / ReviewGuide / Markdown renderer`.
+The renderer generates `docs/research-method-catalogue.md`, which GitHub review
+surfaces link to. Executable experiment plans remain the authority for numerical
+configuration. The registry never changes saved run IDs, predictions or scores.
+The split guide reads existing verified report queries; it does not train or test.
+
 The isolated `offline_accuracy.improve` benchmark adapts acceptance-directed
 losses and local approximation methods. Dependency direction is
 `plan -> run -> neural/local -> coordinates`, with read-only dependencies on

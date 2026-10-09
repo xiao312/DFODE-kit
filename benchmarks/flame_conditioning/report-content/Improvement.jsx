@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp} from "../../data-app-public.jsx";
 import {improvementGroup, improvementNames, improvementSelection} from "./improvement-selection.mjs";
+import {methodLink} from "./method-catalogue.mjs";
 
 const percent = value => value == null ? "Not available" : `${(100*value).toFixed(2)}%`;
 const number = value => value == null ? "Not available" : value.toLocaleString("en-US", {maximumFractionDigits:2});
@@ -38,7 +39,7 @@ export function Improvement() {
     {physics.length > 0 && visible("improve-physics") && <ReportSection id="improve-physics" queryId="physics_models" sourceRows={physics} title="Could known kinetics give a better starting point?">
       <RichNarrative id="improve-physics:body" value={"These two controls do not learn. They call the actual reaction mechanism. The first predicts interval times the initial net rate. The second solves a scalar production/destruction equation for each species, with its coefficients frozen over the interval. It uses expm1 to preserve small changes. Neither has adaptive error control. The second can lose conservation because each species is treated separately.\n\nThis tests a possible starting point for later learned corrections. Higher acceptance here is not a neural-model gain. Inference cost includes kinetics, but excludes one-time mechanism parsing. Both controls use all 1,023 development states; there is no seed selection. [Cantera kinetics interface](https://www.cantera.org/stable/python/kinetics.html)."}/>
       <DataTable rows={physics} label="Non-learned kinetics controls" columns={[
-        {field:"name",label:"Control"},{field:"componentRate",label:"Species pass",renderCell:percent},
+        {field:"name",label:"Control",renderCell:value=><a href={methodLink(value)}>{improvementNames[value]}</a>},{field:"componentRate",label:"Species pass",renderCell:percent},
         {field:"stateRate",label:"Complete states",renderCell:percent},{field:"qualifiedRate",label:"Audited components pass",renderCell:percent},
         {field:"inferenceMs",label:"CPU ms/state",renderCell:value=>value.toPrecision(3)},
         {field:"negativeRate",label:"Negative endpoints",renderCell:percent},
@@ -56,7 +57,7 @@ export function Improvement() {
     {visible("improve-cost") && <EvidenceChart id="improve-cost" queryId="improve_models" queryIds={["improve_models","refinement_models"]} title="Acceptance versus cost — primary tolerance" rows={withNames(selected.filter(row=>row.status === "verified"))} displayRows={withNames(selected)} sourceRowsByQuery={modelSources} height={340} spec={{type:"scatter",x:cost,y:measure,series:"method",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Total training CPU seconds" : "Inference CPU ms/state",yLabel:"Acceptance"}}/>}
     {visible("improve-table") && <DataComponent id="improve-table" queryId="improve_models" kind="table" title="Every declared trial — both seeds, primary tolerance" sourceRows={models} displayRows={withNames(models)}><DataTable rows={withNames(models)} label="Acceptance adaptation results" columns={[
       {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"status",label:"Status"},
-      {field:"trainingComponentRate",label:"Train components",renderCell:percent},{field:"componentRate",label:"Evaluation components",renderCell:percent},
+      {field:"trainingComponentRate",label:"Train components",renderCell:percent},{field:"componentRate",label:"Development components",renderCell:percent},
       {field:"stateRate",label:"Complete states",renderCell:percent},{field:"normalizedErrorP99",label:"Error / budget p99",renderCell:value=>value == null ? "Unknown" : value.toExponential(2)},
       {field:"negativeRate",label:"Negative endpoints",renderCell:percent},{field:"correctedRate",label:"Inverse corrections",renderCell:percent},
       {field:"trainingSeconds",label:"CPU s incl. base",renderCell:number},{field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value == null ? "Unknown" : value.toPrecision(3)},

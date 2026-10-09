@@ -8,6 +8,24 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`method-catalogue.mjs` owns canonical representation and recipe display names,
+historical ID aliases, and diagram steps. The selection helpers import its names.
+Do not rename immutable run IDs or maintain a second display-name dictionary.
+The catalogue describes recipes; executable experiment plans still own parameters.
+`node scripts/build_research_method_catalogue.mjs --write` generates the linked
+GitHub review page. Without `--write`, it checks for drift and writes nothing.
+`ReviewGuide.jsx` explains the three splits and shows saved training/development
+scores. It does not run a new test. Missing independent-test scores stay unknown.
+`node scripts/prepare_research_review.mjs <snapshot.json>` validates the reviewed
+method IDs without writing. Add `--apply` to bind split metadata to the guide's
+component IDs; it preserves evidence rows, artifact identity and data timestamps.
+Training local-table scores include each queried training point in the table;
+they are resubstitution scores, not leave-one-out validation.
+The tolerance discussion is a proposal, not an amendment to saved pass criteria.
+Verify with `node --test tests/method_catalogue.test.mjs` and the generator's
+default read-only check. The compiled report and generated Markdown both depend
+on this registry; the architecture graph records this shared dependency.
+
 Input: the sanitized snapshot from `../review_snapshot.py`, with `models`,
 `reference`, and `cfd` queries, plus optional `runtime_parity`, `flame_profile`,
 `historical`, `datasets`, `scaling`, `expanded_reference`, `filter_audit`, and

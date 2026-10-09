@@ -1,5 +1,9 @@
 # Methods to improve chemistry-increment acceptance
 
+For current canonical names and flowcharts, use the
+[method catalogue](../research-method-catalogue.md). This note preserves the
+literature rationale and the proposal at the time it was written.
+
 Source check: 2026-10-09. This note separates published evidence from proposed
 adaptations. It does not report a new training result.
 

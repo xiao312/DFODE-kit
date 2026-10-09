@@ -1,16 +1,4 @@
-export const improvementNames = {
-  "base": "Conventional base — 4k updates",
-  "continue-coordinate": "Continue coordinate loss",
-  "finetune-physical": "Physical loss fine-tune",
-  "finetune-tail": "Physical + tail fine-tune",
-  "relative-correction": "Relative-scale correction",
-  "protected-correction": "Protected relative correction",
-  "local-state": "Local RBF — transformed state",
-  "local-asinh": "Local RBF — tolerance asinh",
-  "arrhenius-heads": "Arrhenius inputs — species heads",
-  "arrhenius-lbfgs": "Arrhenius heads — L-BFGS/RMS",
-  "arrhenius-local": "Arrhenius inputs — local RBF",
-};
+export {recipeNames as improvementNames} from "./method-catalogue.mjs";
 export function improvementGroup(group) {
   const groups = {
     objective:["base", "continue-coordinate", "finetune-physical", "finetune-tail"],

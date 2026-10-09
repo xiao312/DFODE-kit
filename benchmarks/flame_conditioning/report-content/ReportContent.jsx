@@ -2,12 +2,14 @@ import React from "react";
 import { OfflineAccuracy } from "./OfflineAccuracy.jsx";
 import { Refinement } from "./Refinement.jsx";
 import { Improvement } from "./Improvement.jsx";
+import { ReviewGuide } from "./ReviewGuide.jsx";
+import { targetNames } from "./method-catalogue.mjs";
 import { policyBinTable } from "./policy-bins.mjs";
 import { largestPrimaryComparison } from "./validation-selection.mjs";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
 
 const paper = "https://arxiv.org/html/2507.08277v2";
-const names = {"state-boxcox":"Transformed state (Box–Cox)", "signed-power":"Direct signed power", "budget-linear":"Budget-linear", "scaled-asinh":"Scaled asinh"};
+const names = Object.fromEntries(["state-boxcox", "signed-power", "budget-linear", "scaled-asinh"].map(id=>[id,targetNames[id]]));
 const percent = value => `${value !== 0 && Math.abs(value) < 0.0001 ? (100 * value).toPrecision(3) : (100 * value).toFixed(2)}%`;
 const integer = value => Math.round(value).toLocaleString("en-US");
 const budgetNumber = value => value == null ? "Not recorded" : value !== 0 && Math.abs(value) < 100 ? value.toPrecision(3) : integer(value);
@@ -97,6 +99,7 @@ export function ReportContent() {
       <h1 data-data-app-title contentEditable={canEdit && mode === "edit"} suppressContentEditableWarning onBlur={canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined}>{appTitle}</h1>
       <RichNarrative id="flame:introduction" className="report-deck" value="We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver." />
     </header>
+    <ReviewGuide />
     <Improvement />
     <Refinement />
     <OfflineAccuracy />

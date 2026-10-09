@@ -1,5 +1,10 @@
 # Offline representation accuracy
 
+Use the [method catalogue](../../docs/research-method-catalogue.md) for canonical
+names, formulas, diagrams and artifact-ID mappings. The live review report adds
+an explicit train/development/test table. The present evaluation split is
+development data, not an independent-case test.
+
 The acceptance-directed adaptation campaign is in [`improve/README.md`](improve/README.md).
 It keeps the data and pass rule fixed, and tests warm-start physical/tail losses,
 base-relative protected corrections and local approximations.
