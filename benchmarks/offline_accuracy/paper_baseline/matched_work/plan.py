@@ -12,6 +12,10 @@ def configuration(recipe, seed):
     return config
 
 
+def extended_configuration(recipe, seed):
+    return dict(configuration(recipe, seed), experiment="fuel-fixed-data-budget-v1", updates=18000)
+
+
 def update_policy(config, completed):
     if not 0 <= completed < config["updates"]:
         raise ValueError("Update outside declared plan")

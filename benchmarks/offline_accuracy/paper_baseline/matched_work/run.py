@@ -12,7 +12,8 @@ from ..data import expanded_inputs
 from ..plan import configuration as source_configuration
 from ..run import evaluate_and_verify
 from .fit import fit, preprocessing_hash
-from .plan import configuration
+from .plan import configuration, extended_configuration
+from .budget_checks import check_baseline, check_pair
 
 
 def checked_result(path):
@@ -59,18 +60,32 @@ def main():
     parser.add_argument("--seed", type=int, choices=(20261011, 20261012), required=True)
     parser.add_argument("--training-count", type=int, choices=(50000, 200000), required=True)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--budget-baseline", type=Path)
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Output exists; choose a new run")
     config = configuration(args.recipe, args.seed)
+    if args.budget_baseline:
+        if args.training_count != 200000:
+            parser.error("The budget extension requires 200k training rows")
+        config = extended_configuration(args.recipe, args.seed)
     full, normalization, development, physics, audit, hashes = inputs(
         args.campaign, args.previous, args.original, args.base_root, args.recipe, args.seed)
     training = full if args.training_count == 200000 else normalization
+    baseline = None
+    if args.budget_baseline:
+        baseline = checked_result(args.budget_baseline)
+        check_baseline(baseline, args.recipe, args.seed, hashes)
+        for name, rows in (("training-indices.npy", training), ("normalization-indices.npy", normalization)):
+            np.testing.assert_array_equal(np.load(args.budget_baseline / name, allow_pickle=False), rows["source_indices"])
     if physics["interval"] != 1e-6 or len(physics["species_names"]) != 59:
         raise ValueError("Unexpected chemistry interface")
     result = dict(status="planned", config=config, hashes=hashes, training_count=args.training_count,
                   development_count=len(development["states"]), independent_test_count=0,
                   scope="Fixed work and fixed 50k normalization; not original epoch schedule")
+    if baseline:
+        result.update(scope="Fixed 200k data; 18k updates with proportionally stretched schedule",
+                      baseline_result_sha256=sha256(args.budget_baseline / "result.json"))
     print(json.dumps(result), flush=True)
     if not args.execute:
         return
@@ -84,6 +99,8 @@ def main():
         result.update(fitted)
         result.update(evaluate_and_verify(model, prep, training, development, physics, audit, config,
                       args.output, args.campaign / "dataset", normalization_training=normalization))
+        if baseline:
+            check_pair(args.budget_baseline, args.output, baseline, result)
         with np.load(args.output / "preprocessing.npz", allow_pickle=False) as saved:
             if preprocessing_hash(dict(saved)) != result["preprocessing_array_sha256"]:
                 raise ValueError("Saved normalization differs")

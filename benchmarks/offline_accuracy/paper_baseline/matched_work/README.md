@@ -65,6 +65,27 @@ Output queries are `fuel_matched_models`, `fuel_matched_history` and
 `fuel_matched_pairs`. The latter reports 200k minus 50k acceptance in percentage
 points for each recipe, seed and policy; it does not select the best fit.
 
+## Fixed-data budget extension
+
+`budget_campaign` accepts the same source paths plus `--baseline <verified-matched-work-root>`.
+It previews four fresh 200k fits; `--execute` runs both recipes and both seeds.
+Each receives 18,000 updates, batch 10k and 180M presentations. Compare against
+the checked 6,000-update 200k fits, not the source fixed-epoch runs. Stretch each
+recipe's learning-rate stages threefold; retain its Adam reset policy. This is
+a budget-and-proportional-schedule comparison, not low-rate continuation.
+The first 6k batch selections, initial weights, 50k scalers, full training IDs,
+development IDs and both error policies must match. Diagnostics remain every
+1,000 updates. There is no checkpoint selection, test access or data expansion.
+The per-fit limits remain 1,200 seconds for fitting and 1,500 seconds overall.
+
+The single-fit `run` accepts `--budget-baseline <verified-6k-fit>` only with
+200k rows. Without it, the original 6k protocol is unchanged. Baseline artifacts
+are checksum-checked before fitting; array identities, preprocessing and initial
+weights are checked again before the result is accepted. `budget_campaign`
+binds all four new results and the original eight-result campaign verification.
+`budget_review` emits sanitized `fuel_budget_models` and `fuel_budget_history`
+queries; it never replaces matched-work or earlier source-recipe evidence.
+
 ## Dependencies and verification
 
 `campaign -> run -> fit/plan`; `run -> paper_baseline.data/coordinates/fit/run`
@@ -73,6 +94,8 @@ No production module depends on this experiment. Verified summaries feed the
 existing review; report code cannot affect fitting or evaluation.
 `review -> plan / paper_baseline.review.primary -> sanitized queries` has no
 Torch dependency and preserves every unrelated query and the report ID.
+`budget_campaign -> run / budget_checks` reuses the fitting and validation boundary.
+`budget_review -> review / plan` supplies the fixed-data review, without training.
 
 `python -m pytest tests/test_matched_work.py tests/test_matched_review.py
 tests/test_paper_baseline.py -q`

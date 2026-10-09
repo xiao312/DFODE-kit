@@ -70,6 +70,9 @@ eight-result campaign verification and preserves prior report queries.
 size experiment. It reuses the checked nested data, coordinate adapters and
 independent verification, but freezes 50k preprocessing for both pools. Its
 summaries remain separate from the original fixed-epoch evidence.
+`matched_work.budget_campaign -> run / budget_checks` extends only the work
+budget on the checked 200k pool; `budget_review -> fuel_budget_* -> FuelBudget.jsx`
+retains the earlier evidence. It changes neither chemistry labels nor production code.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
