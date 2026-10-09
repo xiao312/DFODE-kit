@@ -24,6 +24,7 @@ Use this docs tree for information that is too detailed or too volatile for `AGE
 - `fuel-cfd-benchmark-alignment.md`: approved shift from reactor diagnostics to flame-based evaluation
 - `flame-source-and-runtime-contract.md`: read before reusing study assets or preparing a copied CFD case
 - `representation-accuracy-success-sources.md`: source checks for offline tolerance criteria, pressure sampling, and SSPI
+- `acceptance-improvement-methods.md`: primary sources and bounded adaptations for higher offline acceptance
 
 ## Philosophy
 - `AGENTS.md` is the entrypoint for repository workflow.
