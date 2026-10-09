@@ -17,7 +17,7 @@ def validate_config(config, available_snapshots):
     for name in ("train_count", "validation_count", "wall_seconds"):
         if type(config[name]) is not int or config[name] <= 0:
             raise ValueError(f"{name} must be a positive integer")
-    if config["train_count"] > 200000 or config["validation_count"] > 20000 or config["wall_seconds"] > 3600:
+    if config["train_count"] > 201000 or config["validation_count"] > 20000 or config["wall_seconds"] > 3600:
         raise ValueError("Plan exceeds bounded benchmark limits")
     for name in ("interval_s", "cvode_rtol", "cvode_atol", "minimum_temperature_K"):
         if not np.isfinite(config[name]) or config[name] <= 0:

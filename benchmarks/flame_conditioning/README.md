@@ -96,6 +96,12 @@ consume small static evidence only, not raw case files or credentials.
 
 ## Security and execution boundary
 
+The later user-approved parallel dataset stage is documented in
+[`parallel_labels/README.md`](parallel_labels/README.md). It permits 1–8 allocated
+CPU workers for reference labels, with unchanged numerical checks and resumable
+chunks. This supersedes the original one-CPU pilot limit only for that runner.
+Neural training uses the project-specific GPU environment, not the old CPU image.
+
 Read existing cases and solver assets through read-only mounts. Do not run their
 Allrun/Allclean scripts in place. Do not install into shared environments, rebuild
 an existing image, terminate another process, or expose a network service.
