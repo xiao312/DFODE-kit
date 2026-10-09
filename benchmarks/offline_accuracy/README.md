@@ -30,6 +30,8 @@ environments, data, and prior results stay unchanged.
 - Primary physical increment budget: abs(pred-reference) <= 1e-15 + 0.1*abs(reference).
   The 10% level is an initial research target, not high precision or deployment
   approval. A 1e-12 increment may have about 1e-13 absolute error.
+  Passing this floor does not establish relative precision for changes far below
+  1e-15; the tighter grid and magnitude bins expose that limitation.
 - Report a predeclared grid: absolute floors 1e-12, 1e-15, 1e-18 and relative
   tolerances 1, 0.1, 0.01, 0.001. The primary pair stays fixed; no threshold is
   selected because it makes a result look good. SSPI uses threshold 1e-15.
