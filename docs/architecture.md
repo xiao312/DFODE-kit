@@ -53,6 +53,9 @@ The later offline-accuracy stage is owned by `benchmarks/offline_accuracy/`:
 training -> physical tolerance/SSPI metrics -> acceptance/cost review`.
 It reuses the existing numerical and model modules. CFD transfer is a later,
 separate evaluation, not a dependency of this representation comparison.
+`offline_accuracy.review -> verified evaluation summaries -> existing report
+snapshot -> report-content/OfflineAccuracy.jsx` is a read-only evidence path.
+It preserves prior queries and has no dependency back into training.
 
 Post-score pressure diagnosis is a separate evidence path:
 `pressure_diagnostic -> frozen models + chemistry -> new paired reference/prediction

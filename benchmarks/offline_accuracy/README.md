@@ -78,6 +78,14 @@ Dependencies: existing flame augmentation, reference chemistry, model trainer,
 stable coordinates and saved-artifact verification. Outputs feed the existing
 GitHub review report. No production module depends on this experiment.
 
+`review.py <existing-snapshot> <seed-directory> <seed-directory> --output <new-json>`
+adds sanitized offline queries to the existing report. Each seed directory must
+contain complete training/evaluation summaries and successful replay/acceptance
+verification. Hashes bind those checks to their inputs. Both seeds and all sizes
+remain visible. It copies no raw states, weights, or machine paths. The authored
+`OfflineAccuracy.jsx` component consumes these queries in the same report app.
+Verify the compiler with `python -m pytest tests/test_offline_accuracy_review.py -q`.
+
 Start bounded runs only after dry-run/tests and reference audit. At most two
 half-CPU jobs, 4 GiB each, in the existing immutable research image. No CFD run.
 Increase to 50k/200k only after this cost/accuracy evidence; do not silently

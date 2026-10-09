@@ -1,4 +1,5 @@
 import React from "react";
+import { OfflineAccuracy } from "./OfflineAccuracy.jsx";
 import { policyBinTable } from "./policy-bins.mjs";
 import { largestPrimaryComparison } from "./validation-selection.mjs";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
@@ -57,7 +58,11 @@ export function ReportContent() {
   const selected = models.filter(row => row.precision === "float32" && row.trainingCount > 9000);
   const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
   const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
-  const prose = (id, title, queryId, rows, text) => visible(id) && <ReportSection id={id} title={title} queryId={queryId} sourceRows={rows} showHeading={false}><RichNarrative id={`${id}:body`} value={text} sourcePreviews={sourcePreviews} /></ReportSection>;
+  const prose = (id, title, queryId, rows, text) => {
+    const prior = snapshot.queries.offline_models && ["flame-decision", "flame-next"].includes(id);
+    const display = prior ? `### Prior-stage record\n\nThis section preserves the earlier application assessment. The current offline representation experiment above takes priority; CFD transfer comes later.\n\n${text}` : text;
+    return visible(id) && <ReportSection id={id} title={title} queryId={queryId} sourceRows={rows} showHeading={false}><RichNarrative id={`${id}:body`} value={display} sourcePreviews={sourcePreviews} /></ReportSection>;
+  };
   const testTable = (population, title) => {
     const id = `flame-heldout-${population}`;
     const rows = testRows(population);
@@ -90,6 +95,7 @@ export function ReportContent() {
       <h1 data-data-app-title contentEditable={canEdit && mode === "edit"} suppressContentEditableWarning onBlur={canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined}>{appTitle}</h1>
       <RichNarrative id="flame:introduction" className="report-deck" value="We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver." />
     </header>
+    <OfflineAccuracy />
     {prose("flame-decision", "Current decision", "models", models,
       `## What this means now\n\nThe flame-based experiment is complete through a frozen offline 2D test. It uses the chemistry step that CFD calls, not only a small reactor exercise. This is progress toward the application in the [Fuel study](${paper}), not a reproduction of its accuracy.\n\nMore data helped on the 1D validation states: all four targets improved species p99 and heat-release RMS from 10k to 50k to 200k candidates. The conventional model reached 8.3% heat-release relative RMS at 200k. However, the separate 2D test exposed a major transfer failure. The new models are not ready to replace CVODE.\n\nA post-score input check found pressure and cold-mixture values outside training coverage. This is evidence to repair input scaling and source coverage before a larger density campaign. The test-reference policy also needed an explicit numerical-sign-noise amendment before model scoring; its original failure and all raw signed labels are preserved below.`)}
     {prose("flame-problem", "The problem we now learn", "models", models,

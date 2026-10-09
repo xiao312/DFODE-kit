@@ -15,6 +15,11 @@ Input: the sanitized snapshot from `../review_snapshot.py`, with `models`,
 Optional `cfd_tolerance` evidence compares two CVODE-only restart runs. Keep
 its final-state difference distinct from one-step learned-increment errors.
 Output: the `ReportContent` React export used by a prepared report app.
+The optional `offline_*` queries from `offline_accuracy.review` add the current
+representation experiment through `OfflineAccuracy.jsx`. Controls select a fixed
+seed, size, absolute floor, and component or whole-state criterion. Both seeds
+and all models remain in the table. CPU cost uses process seconds. Prior CFD
+evidence stays below, but is not the current experiment's decision gate.
 Stable report and component IDs must survive updates. Update the narrative when
 the experiment status changes; a data-only refresh is not sufficient.
 The reserved-snapshot tables use a pre-test display rule: show the largest

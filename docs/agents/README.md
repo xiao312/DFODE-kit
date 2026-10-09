@@ -23,6 +23,7 @@ Use this docs tree for information that is too detailed or too volatile for `AGE
 - `okafor-mechanism-provenance.md`: read before claiming original-release equivalence or publishing the recovered mechanism
 - `fuel-cfd-benchmark-alignment.md`: approved shift from reactor diagnostics to flame-based evaluation
 - `flame-source-and-runtime-contract.md`: read before reusing study assets or preparing a copied CFD case
+- `representation-accuracy-success-sources.md`: source checks for offline tolerance criteria, pressure sampling, and SSPI
 
 ## Philosophy
 - `AGENTS.md` is the entrypoint for repository workflow.
