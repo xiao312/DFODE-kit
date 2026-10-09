@@ -16,6 +16,9 @@ export function OfflineAccuracy() {
   if (!models) return null;
   const contract = snapshot.queries.offline_contract.rows[0];
   const audit = snapshot.queries.offline_audit.rows;
+  const magnitude = snapshot.queries.offline_magnitudes.rows.filter(row=>row.seed === seed && row.trainingCount === size);
+  const magnitudeRows = magnitude.map(row=>({...row, targetName:names[row.target],
+    range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}));
   const curves = snapshot.queries.offline_curves.rows.filter(row => row.atol === floor &&
     (row.target === "zero" || (row.seed === seed && row.trainingCount === size)));
   const curveRows = curves.map(row => ({...row, targetName:names[row.target]})).sort((a,b)=>a.rtol-b.rtol);
@@ -45,6 +48,12 @@ export function OfflineAccuracy() {
         {field:"componentRate",label:"Components pass",renderCell:percent},{field:"stateRate",label:"States pass",renderCell:percent},
         {field:"sspiRate",label:"SSPI",renderCell:percent},{field:"trainingSeconds",label:"CPU s",renderCell:number},
         {field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value.toPrecision(3)},
+      ]}/>
+    </DataComponent>}
+    {visible("offline-magnitudes") && <DataComponent id="offline-magnitudes" queryId="offline_magnitudes" kind="table" title={`Acceptance by increment magnitude — seed ${seed}, ${number(size)} training states, primary tolerance`} sourceRows={magnitude} displayRows={magnitudeRows}>
+      <DataTable rows={magnitudeRows} label="Magnitude-specific acceptance" compactNumbers={false} columns={[
+        {field:"targetName",label:"Target"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number},
+        {field:"pass_fraction",label:"Pass",renderCell:percent},{field:"absolute_error_p99",label:"Absolute error p99",renderCell:value=>value == null ? "No observations" : value.toExponential(2)},
       ]}/>
     </DataComponent>}
     {source("offline-audit", "offline_audit", `### 3. Keep uncertainty separate from model error\n\nThe independent reference check covers ${contract.audited_evaluation_states} evaluation states, not all ${contract.evaluation_states}. It compares tighter and step-limited CVODE with direct-increment Radau solves. A checked component is qualified only when estimated uncertainty is at most 10% of its tolerance budget. Its prediction must then pass with that uncertainty added to the error. This is an empirical margin, not a rigorous bound.\n\nAt the primary tolerance, ${audit[0].qualified_components} of ${audit[0].components} audited components and ${audit[0].qualified_states} of ${audit[0].states} audited states qualify. The remaining ${audit[0].unknown_components} components are unknown at this precision. Full-population plots are nominal scores against CVODE labels, not certified acceptance.\n\nThe next increase in data size must keep the pressure domain, held-out rows, and tolerance grid fixed. Compare the accuracy gain with added label and training cost. If more rows do not help at fixed updates, test a larger update budget separately. Do not add residual stages or return to CFD until the offline error pattern gives a reason.\n\nThe following sections preserve the earlier experiments. Their CFD transfer failure is not a pass/fail gate for this new representation stage.`)}
