@@ -27,6 +27,14 @@ the later controlled implementations through `Refinement.jsx`. Preserve the
 original offline queries. Keep both seeds, failed/unknown distinctions, physical
 loss controls, the frozen base cost and the fixed acceptance grid explicit.
 No result-based model selection is permitted in the comparison controls.
+Optional `improve_*` queries add the acceptance-directed adaptation campaign in
+`Improvement.jsx`. Keep the seven first-stage methods, three later input candidates
+and two separately labelled non-learned kinetics controls. The latter use actual
+mechanism evaluation at inference and cannot be counted as neural model gains.
+Keep both seeds, including failed trials as unknown scores. Compare with each
+seed's 4,000-update conventional base.
+Show gain and damage separately, and distinguish local table query cost from
+neural inference. These are development results, not independent test selection.
 The reserved-snapshot tables use a pre-test display rule: show the largest
 completed matched 4x800/10k-update run, zero baseline, and historical source-formula
 controls. Keep uniform and temperature-balanced populations in separate tables.

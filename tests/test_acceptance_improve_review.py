@@ -6,7 +6,7 @@ import pytest
 
 from benchmarks.flame_conditioning.extract import sha256
 from benchmarks.offline_accuracy.improve.plan import NAMES, configuration
-from benchmarks.offline_accuracy.improve.review import collect, extend
+from benchmarks.offline_accuracy.improve.review import collect, extend, physics_tables
 
 
 def write(path, data):
@@ -69,3 +69,25 @@ def test_incomplete_campaign_is_rejected(evidence):
     (evidence / "seed-20261012/local-asinh/verification.json").unlink()
     with pytest.raises(FileNotFoundError):
         collect(evidence)
+
+
+def test_physics_control_export_requires_bound_verification(tmp_path):
+    directory = tmp_path / "physics-prior"
+    directory.mkdir()
+    tolerance = dict(atol=1e-15, rtol=.1, component_pass_fraction=.8, state_pass_fraction=.2,
+                     qualified_pass_fraction=.7, qualified_state_pass_fraction=.1)
+    physical = dict(negative_endpoint_fraction=.01, mass_increment_drift=dict(p99=1e-8),
+                    heat_release_error_rms_W_m3=2., heat_release_reference_rms_W_m3=4.)
+    models = [dict(name=name, validation=dict(tolerances=[tolerance]), audited_subset=dict(tolerances=[tolerance]),
+                   inference_cpu_ms_per_state=.2, validation_physical=physical)
+              for name in ("rate-euler", "frozen-exponential")]
+    write(directory / "summary.json", dict(status="complete", dataset_manifest_sha256="d", audit_sha256="a", models=models))
+    write(directory / "verification.json", dict(status="verified", summary_sha256=sha256(directory / "summary.json"),
+          prediction_replay="exact", independent_counts=True, physical_checks=True))
+    tables, files = physics_tables(tmp_path, ("d", "a"))
+    assert len(files) == 2 and tables["physics_models"][0]["heatRelativeRms"] == .5
+    with pytest.raises(ValueError, match="identities"):
+        physics_tables(tmp_path, ("other", "a"))
+    write(directory / "verification.json", dict(status="unverified"))
+    with pytest.raises(ValueError, match="mismatch"):
+        physics_tables(tmp_path, ("d", "a"))
