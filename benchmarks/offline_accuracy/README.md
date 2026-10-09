@@ -61,6 +61,17 @@ environments, data, and prior results stay unchanged.
 
 ## Interfaces and boundaries
 
+### Required next-run comparison
+
+Later runs must follow the
+[dual-scaling protocol](../../docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs):
+evaluate the same predictions under both increment-reference and state-endpoint
+budgets, then compare matched physical-loss training under each scale. Score
+every trained model under both rules. Keep historical scores and the frozen
+first-stage contract above unchanged. This is a planned comparison, not a result
+or a change to the current runner. Custom magnitude-dependent absolute and
+relative parameters are a separate factor and are not standard CVODE behavior.
+
 `dataset.json` works with `flame_conditioning.prepare` and saves fresh immutable
 states, lineage, signed CVODE labels and exclusions. `learning.json` and its fixed
 second-seed variant work with `flame_conditioning.train`. New outputs belong in

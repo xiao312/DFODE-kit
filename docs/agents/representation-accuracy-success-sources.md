@@ -1,6 +1,7 @@
 # Representation accuracy: source check and proposed measures
 
-Checked 2026-10-09. This note does not change a benchmark or start an experiment.
+Checked 2026-10-09. The dual-scaling protocol below is required for later runs.
+This documentation update does not change saved scores or start an experiment.
 
 ## Paper facts
 
@@ -57,9 +58,35 @@ These are integration settings, not automatically suitable neural-network
 acceptance criteria.
 [Versioned ReactorNet source](https://github.com/Cantera/cantera/blob/v3.2.0/include/cantera/zeroD/ReactorNet.h)
 
-## Proposed offline success contract
+### Parameters, contributions and total allowance
 
-These are proposed definitions, not requirements from either source.
+In the standard formula, `epsilon_i = atol_i + rtol * abs(y_i)`:
+
+| Term | Meaning | Standard behavior |
+| --- | --- | --- |
+| `atol_i` | Absolute-tolerance parameter, in the units of component i | Fixed scalar or component-specific value |
+| `rtol` | Relative-tolerance parameter, dimensionless | Fixed scalar |
+| `rtol * abs(y_i)` | Relative-error contribution in physical units | Changes with state magnitude |
+| `epsilon_i` | Total allowed-error scale, not machine epsilon | Changes even when both parameters stay fixed |
+
+The standard scalar/vector tolerance interfaces do not automatically make the
+parameters functions of magnitude. CVODE also permits user-defined error
+weights; this is separate from its standard formula.
+[CVODE tolerance interfaces](https://sundials.readthedocs.io/en/latest/cvode/Usage/index.html)
+
+A custom policy `tau_i(m) = a_i(m) + r_i(m)*m` may vary **both** terms with
+magnitude. This is a separate research factor, not a description of standard
+CVODE behavior. Once both terms vary, their decomposition is not unique; record
+the total allowed-error curve, its units, zero behavior and applicable domain.
+Such a curve is not yet selected or tested. Earlier suggestions of fixed species
+floors were proposals, not a requirement that `a_i(m)` must remain constant.
+
+## Required dual-scaling protocol for later runs
+
+Approved direction: evaluate both state-based and increment-based scaling in
+later offline runs. The definitions below are project choices inspired by solver
+error control, not requirements from CVODE or the Fuel paper. No new results for
+this paired comparison are claimed here.
 
 Separate the research question about increments from the application question
 about the state after one chemistry interval. For reference increment \(d_i\),
@@ -76,6 +103,65 @@ The first measures increment accuracy. The second measures state error from
 the same initial state, before any additional endpoint-rounding error. It is
 inspired by solver weights but is not CVODE's internal local-error estimator.
 For each selected contract, a component passes when \(E_i\leq1\).
+
+Use names `increment-reference-v1` and `state-endpoint-v1`. In the latter,
+`Y_i^+ = Y_i + d_i` is the reference endpoint, never the predicted endpoint.
+A scale based on `max(abs(Y_i), abs(Y_i^+))` is a possible alternative, but must
+have a separate name; do not mix it with the endpoint convention above.
+
+The numerator is the same physical increment error in both metrics. A tiny
+increment in a large species concentration can pass the state-based rule while
+failing the increment-based rule. This is a difference in the question asked,
+not contradictory evidence. Compute the error from saved signed increments;
+forming two rounded endpoints first can hide small errors through cancellation.
+
+```mermaid
+flowchart TD
+  A["Same saved predictions, references and population"] --> B["Physical increment error"]
+  B --> C["Divide by increment-based allowance"]
+  B --> D["Divide by state-based allowance"]
+  C --> E["Increment acceptance and error tails"]
+  D --> F["State-scaled acceptance and error tails"]
+  E --> G["Compare both; qualify reference uncertainty separately"]
+  F --> G
+```
+
+### Later-run checklist
+
+1. Freeze a numerical tolerance grid and policy IDs before the next test. Keep
+   the historical increment benchmark `atol=1e-15, rtol=0.1` unchanged. Include a
+   paired grid with identical parameters under both magnitude definitions to
+   isolate the effect of the scale. Label any additional application-specific
+   state budget separately; equal parameters do not imply equal physical demands.
+2. First evaluate the same frozen predictions with both scales. Report training,
+   development and fresh independent-case test separately. Do not resplit or
+   consume new test data just to add this diagnostic.
+3. Then compare training with state-scaled versus increment-scaled physical
+   objectives. Keep data, split, architecture, target representation, seed,
+   optimizer and work budget matched. Evaluate **each** resulting model with
+   **both** metrics. Changing the scoring rule alone is not a learning gain.
+4. Treat a new target encoding or magnitude-dependent `a_i(m), r_i(m)` curve as
+   a separate ablation. A label-dependent scale may be used in training loss
+   and offline evaluation, but must not be required by an inference-time decoder.
+5. For each policy, report component and all-58-species state acceptance, p50,
+   p95, p99 and maximum normalized errors, species/magnitude bins, the zero
+   control, negative states, conservation and measured computational cost.
+   Add a weighted RMS summary only under its own name, not as a replacement for
+   the all-component pass rule.
+6. Qualify reference uncertainty separately under each budget and report
+   qualified coverage. Unknown is not zero error. A subset audit cannot certify
+   the full population. Preserve earlier labels, predictions and reports.
+
+The paired training/evaluation layout is:
+
+| Training objective | Increment-scaled evaluation | State-scaled evaluation |
+| --- | --- | --- |
+| Existing coordinate-loss control | Required | Required |
+| Increment-scaled physical loss | Required | Required |
+| State-scaled physical loss | Required | Required |
+
+This separates learning improvements from changes in what the score measures.
+Dataset growth remains a separate controlled factor; CFD transfer comes later.
 
 Before training, fix the tolerance pairs, mechanism, chemistry interval,
 state distribution, and data split. Report component pass fractions and the

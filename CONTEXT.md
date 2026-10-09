@@ -22,6 +22,15 @@ _Avoid_: Development snapshots from the same flame
 **Increment acceptance**: A prediction error that meets a declared absolute-plus-relative budget based on the reference increment.
 _Avoid_: Solver-level accuracy
 
+**State-scaled acceptance**: A prediction error measured against a budget based on the reference state magnitude, not the increment magnitude. It answers a different question from increment acceptance.
+_Avoid_: Increment acceptance, CVODE certification
+
+**Tolerance parameters**: The absolute allowance parameter `atol` and dimensionless relative parameter `rtol` used to construct an error budget. The product `rtol * magnitude` is a contribution to that budget, not `rtol` itself.
+_Avoid_: Calling the full allowed error `atol` or `rtol`
+
+**Error-budget scaling**: Division of a physical prediction error by its declared allowed-error scale. It is distinct from encoding or standardizing the model's training target.
+_Avoid_: Target representation, solver tolerance setting
+
 **Component acceptance**: The fraction of scored species-state pairs that meet the declared error budget.
 _Avoid_: Complete-state acceptance
 

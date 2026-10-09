@@ -13,6 +13,18 @@ In practice, DFODE-kit sits between:
 - DeepFlame documentation: https://deepflame.deepmodeling.com/en/latest/
 - DeepFlame source: https://github.com/deepmodeling/deepflame-dev
 
+## Precision-conditioning research review
+
+1. [Overall status and measured results](https://xiao312.github.io/DFODE-kit/flame-conditioning/):
+   acceptance/tolerance/cost plots, all current methods, and train/development scores.
+2. [Method catalogue and flowcharts](docs/research-method-catalogue.md):
+   canonical names, target formulas and complete recipe steps.
+3. [Accuracy definitions and next-run protocol](docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs):
+   state-based versus increment-based scaling, and the required paired comparison.
+
+The research remains experimental. The next dual-scaling comparison is planned,
+not a completed result. Existing reports retain their original scoring rules.
+
 ## What DFODE-kit does
 
 DFODE-kit currently supports the core workflow below:
