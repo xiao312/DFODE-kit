@@ -83,6 +83,10 @@ floors were proposals, not a requirement that `a_i(m)` must remain constant.
 
 ## Required dual-scaling protocol for later runs
 
+Implementation: [GBCT and paired error-scale experiment](../../benchmarks/offline_accuracy/paired/README.md).
+Its GPU campaign keeps both policy IDs below and preserves historical scores.
+Custom magnitude-dependent parameters remain a separate untested factor.
+
 Approved direction: evaluate both state-based and increment-based scaling in
 later offline runs. The definitions below are project choices inspired by solver
 error control, not requirements from CVODE or the Fuel paper. No new results for

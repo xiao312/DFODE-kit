@@ -82,7 +82,7 @@ Production code does not depend on this module. Dataset growth is a later factor
 
 ## Verification
 
-`python -m pytest tests/test_paired_accuracy.py -q`
+`python -m pytest tests/test_paired_accuracy.py tests/test_paired_review.py -q`
 
 Expected: stable GBCT round trips, explicit inverse-domain correction, finite
 Torch gradients, and scale-dependent acceptance with an identical error numerator.

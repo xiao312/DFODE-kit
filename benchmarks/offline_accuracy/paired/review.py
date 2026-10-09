@@ -18,6 +18,7 @@ def primary(policy):
 def collect(root):
     rows = {name: [] for name in ("paired_models", "paired_curves", "paired_audit", "paired_bins", "paired_species")}
     files, identities, initial_hashes, warmup_hashes = [], set(), {}, {}
+    runtimes = set()
     zero = None
     for seed in (20261011, 20261012):
         for target in TARGETS:
@@ -31,8 +32,9 @@ def collect(root):
                         or check["result_sha256"] != sha256(directory / "result.json")
                         or not all(check.get(k) for k in ("exact_model_replay", "independent_paired_counts",
                                                          "physical_checks", "training_only_preprocessing"))):
-                    raise ValueError("Require all twelve complete and verified final fits")
+                    raise ValueError("Require all twelve complete and verified final GPU fits")
                 identities.add((result["hashes"]["dataset_manifest"], result["hashes"]["audit_summary"]))
+                runtimes.add(json.dumps(result["runtime"], sort_keys=True))
                 initial_hashes.setdefault(seed, set()).add(result["initial_weights_sha256"])
                 warmup_hashes.setdefault((seed, target), set()).add(result["warmup_weights_sha256"])
                 if zero is not None and zero != result["zero_baseline"]:
@@ -69,7 +71,7 @@ def collect(root):
                         for item in result["validation"][policy]["per_species"])
                 for filename in ("result.json", "verification.json"):
                     files.append(dict(name=f"seed-{seed}/{name}/{filename}", sha256=sha256(directory / filename)))
-    if len(identities) != 1 or any(len(v) != 1 for v in [*initial_hashes.values(), *warmup_hashes.values()]):
+    if len(identities) != 1 or len(runtimes) != 1 or any(len(v) != 1 for v in [*initial_hashes.values(), *warmup_hashes.values()]):
         raise ValueError("Inputs, initial weights or target-specific warmup differ between matched arms")
     rows["paired_zero"] = [dict(policy=p, **item) for p in POLICIES for item in zero[p]["grid"]]
     return rows, files, identities.pop()

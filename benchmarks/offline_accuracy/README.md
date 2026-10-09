@@ -69,8 +69,8 @@ Later runs must follow the
 evaluate the same predictions under both increment-reference and state-endpoint
 budgets, then compare matched physical-loss training under each scale. Score
 every trained model under both rules. Keep historical scores and the frozen
-first-stage contract above unchanged. This is a planned comparison, not a result
-or a change to the current runner. Custom magnitude-dependent absolute and
+first-stage contract above unchanged. The isolated `paired` runner implements
+this comparison without changing the historical runner. Custom magnitude-dependent absolute and
 relative parameters are a separate factor and are not standard CVODE behavior.
 
 `dataset.json` works with `flame_conditioning.prepare` and saves fresh immutable
