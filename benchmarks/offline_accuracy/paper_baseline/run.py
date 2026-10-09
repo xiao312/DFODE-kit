@@ -18,9 +18,11 @@ from .coordinates import preprocessing
 from .fit import fit, prediction, reload_model
 
 
-def evaluate_and_verify(model, prep, training, validation, physics, audit, config, destination, dataset):
+def evaluate_and_verify(model, prep, training, validation, physics, audit, config, destination, dataset,
+                        normalization_training=None):
     restored, saved_prep = reload_model(destination, config)
-    rebuilt = preprocessing(training, physics["species_names"], config)
+    rebuilt = preprocessing(training if normalization_training is None else normalization_training,
+                            physics["species_names"], config)
     for key in rebuilt:
         np.testing.assert_array_equal(saved_prep[key], rebuilt[key])
     np.testing.assert_array_equal(np.load(destination / "training-indices.npy"), training["source_indices"])

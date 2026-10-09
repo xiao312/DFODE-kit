@@ -117,6 +117,11 @@ audit and four sequential GPU fits retain the existing external time limits.
 
 ## Review output
 
+The separate [matched-work experiment](matched_work/README.md) compares nested
+50k and 200k pools with equal updates, batch sizes and row presentations. It
+freezes 50k preprocessing and indexes the schedule by updates. Its results are
+not mixed with the original fixed-epoch recipes.
+
 `python -m benchmarks.offline_accuracy.paper_baseline.review <current-snapshot>
 <complete-10k-campaign> --output <new-json>` requires all four verified fits,
 matching dataset/audit identities, environment hashes and declared work counts.

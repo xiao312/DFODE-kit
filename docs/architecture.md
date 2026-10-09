@@ -63,6 +63,10 @@ adds verified evidence to the same report, using the shared method registry.
 `paper_baseline.scale_review -> fuel_scale_* / fuel_label_throughput -> FuelScale.jsx`
 adds verified size/work and CPU-label-throughput tables without replacing the
 historical 10k queries. The report never launches work or reads sealed test data.
+`paper_baseline.matched_work.campaign -> run -> fit/plan` owns the equal-update
+size experiment. It reuses the checked nested data, coordinate adapters and
+independent verification, but freezes 50k preprocessing for both pools. Its
+summaries remain separate from the original fixed-epoch evidence.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
