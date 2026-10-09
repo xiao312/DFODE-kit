@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 torch = pytest.importorskip("torch")
+pytest.importorskip("cantera")
 from benchmarks.flame_conditioning.coordinates import inverse_state_change
 from benchmarks.offline_accuracy.improve.coordinates import state_inverse, correction_inverse, physical_loss, transitions
 from benchmarks.offline_accuracy.improve.plan import configuration

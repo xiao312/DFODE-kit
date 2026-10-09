@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+pytest.importorskip("cantera")
 from benchmarks.flame_conditioning.extract import sha256
 from benchmarks.offline_accuracy.improve.plan import NAMES, configuration
 from benchmarks.offline_accuracy.improve.review import collect, extend, physics_tables

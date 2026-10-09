@@ -57,7 +57,7 @@ export function Improvement() {
     {visible("improve-table") && <DataComponent id="improve-table" queryId="improve_models" kind="table" title="Every declared trial — both seeds, primary tolerance" sourceRows={models} displayRows={withNames(models)}><DataTable rows={withNames(models)} label="Acceptance adaptation results" columns={[
       {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"status",label:"Status"},
       {field:"trainingComponentRate",label:"Train components",renderCell:percent},{field:"componentRate",label:"Evaluation components",renderCell:percent},
-      {field:"stateRate",label:"Complete states",renderCell:percent},{field:"negativeRate",label:"Negative endpoints",renderCell:percent},
+      {field:"stateRate",label:"Complete states",renderCell:percent},{field:"negativeRate",label:"Negative endpoints",renderCell:percent},{field:"correctedRate",label:"Inverse corrections",renderCell:percent},
       {field:"trainingSeconds",label:"CPU s incl. base",renderCell:number},{field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value == null ? "Unknown" : value.toPrecision(3)},
     ]}/></DataComponent>}
     {visible("improve-transitions") && <DataComponent id="improve-transitions" queryId="improve_models" kind="table" title="New passes and new failures versus the frozen base" sourceRows={chosen("improve_models")} displayRows={withNames(chosen("improve_models"))}><DataTable rows={withNames(chosen("improve_models"))} searchable={false} label="Correction damage and gain" columns={

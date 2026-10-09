@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+pytest.importorskip("cantera")
 from benchmarks.offline_accuracy.improve.physics_prior import frozen_step, Predictor
 
 
