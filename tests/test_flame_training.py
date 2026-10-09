@@ -61,3 +61,22 @@ def test_tiny_training_saves_replayable_evidence(tmp_path, target, activation, l
     saved = np.load(tmp_path / target / "validation-predictions.npz")
     np.testing.assert_array_equal(recovered, saved["prediction"])
     np.testing.assert_array_equal(mask, saved["correction"])
+
+
+def test_offline_pressure_scale_and_final_checkpoint_are_explicit(tmp_path):
+    torch.set_num_threads(1)
+    config = settings()
+    config.update(updates=3, validation_every=1, hidden_widths=[8], batch_size=4,
+                  checkpoint_selection="final", pressure_bounds_Pa=[96000, 106000])
+    states = np.column_stack([np.linspace(300, 1500, 12), np.full(12, 101325),
+                              np.full(12, .2), np.full(12, .7), np.full(12, .1)])
+    rows = {"states": states, "delta": np.tile([-.001, .001, 0.], (12, 1)), "source_indices": np.arange(12)}
+    physics = {"species_names": ["A", "B", "AR"], "element_matrix": np.ones((1, 3)),
+               "formation_enthalpies": np.array([0, -100000, 0]), "molecular_weights": np.array([2, 4, 40])}
+    result = fit_variant(rows, rows, physics, config, "signed-power", "float32", tmp_path / "model", time.monotonic()+30)
+    assert result["selected_step"] == 3 and result["process_seconds"] > 0
+    with np.load(tmp_path / "model/preprocessing.npz") as saved:
+        assert saved["x_offset"][1] == 101000 and saved["x_scale"][1] == 5000
+    prediction, _ = load_predictor(tmp_path / "model", config)[0](states)
+    with np.load(tmp_path / "model/validation-predictions.npz") as saved:
+        np.testing.assert_array_equal(prediction, saved["prediction"])

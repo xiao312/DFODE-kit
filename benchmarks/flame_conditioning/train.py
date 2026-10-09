@@ -34,6 +34,12 @@ def network(inputs, outputs, widths, seed, dtype, activation="tanh"):
 
 
 def validate_config(config):
+    if config.get("checkpoint_selection", "validation-p99") not in ("validation-p99", "final"):
+        raise ValueError("checkpoint_selection must be validation-p99 or final")
+    if "pressure_bounds_Pa" in config:
+        bounds = np.asarray(config["pressure_bounds_Pa"], dtype=float)
+        if bounds.shape != (2,) or not np.isfinite(bounds).all() or not 0 < bounds[0] < bounds[1]:
+            raise ValueError("pressure_bounds_Pa must be two increasing positive finite bounds")
     if config.get("activation", "tanh") not in ("tanh", "gelu") or config.get("loss", "mse") not in ("mse", "l1"):
         raise ValueError("Unsupported activation or loss")
     if config["schema_version"] != 1 or not set(config["targets"]) <= set(KINDS):
@@ -59,9 +65,15 @@ def validate_config(config):
 def fit_variant(training, validation, physics, config, target, precision, destination, deadline):
     destination.mkdir()
     started = time.monotonic()
+    process_started = time.process_time()
     dtype = getattr(torch, precision)
     states, delta = training["states"], training["delta"]
     x_offset, x_scale = standardization(input_features(states))
+    if "pressure_bounds_Pa" in config:
+        lower, upper = config["pressure_bounds_Pa"]
+        if any(np.any((rows["states"][:, 1] < lower) | (rows["states"][:, 1] > upper)) for rows in (training, validation)):
+            raise ValueError("Training/evaluation pressure is outside the declared offline domain")
+        x_offset[1], x_scale[1] = (lower + upper) / 2, (upper - lower) / 2
     asinh_scale = np.maximum(np.quantile(np.abs(delta), .9, axis=0), 1e-32)
     transformed = encode(states[:, 2:], delta, target, asinh_scale)
     y_offset, y_scale = standardization(transformed)
@@ -111,7 +123,8 @@ def fit_variant(training, validation, physics, config, target, precision, destin
                 history.append({"step": step, "training_batch_loss": float(loss.item()),
                                 "validation_budget_p99": score,
                                 "inverse_domain_correction_fraction": float(corrections[:, active].mean())})
-                if score < best_score:
+                use_final = config.get("checkpoint_selection") == "final"
+                if (use_final and step == config["updates"]) or (not use_final and score < best_score):
                     best_score, selected_step, best_state = score, step, copy.deepcopy(model.state_dict())
             except ValueError as error:
                 history.append({"step": step, "validation_error": str(error)})
@@ -124,6 +137,7 @@ def fit_variant(training, validation, physics, config, target, precision, destin
         "status": status, "target": target, "precision": precision, "training_count": len(states),
         "updates_completed": step, "updates_planned": config["updates"], "selected_step": selected_step,
         "initial_weights_sha256": initial_hash, "elapsed_seconds": time.monotonic() - started,
+        "process_seconds": time.process_time() - process_started,
         "inactive_species": [name for name, enabled in zip(physics["species_names"], active, strict=True) if not enabled],
         "validation": physical_scores(predicted, validation["delta"], validation["states"], corrections, **physics),
         "training": physical_scores(training_prediction, delta, states, training_corrections, **physics),

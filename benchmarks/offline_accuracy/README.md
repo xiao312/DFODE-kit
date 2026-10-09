@@ -50,6 +50,19 @@ second-seed variant work with `flame_conditioning.train`. New outputs belong in
 ignored `runs/offline-accuracy/` in the existing project. Inputs are read-only.
 No secrets, original mechanism content, or weights enter Git or public reports.
 
+`evaluate.py <dataset> <training> --audit <audit> --output <new-directory>
+--dry-run` validates complete final-checkpoint models and their provenance.
+The live path replays saved evaluation predictions, computes tolerance and SSPI
+curves, and times five full-batch predictions after a warmup. It also reports
+the audited evaluation subset against its direct-increment references, with
+empirical uncertainty margins. The full population remains nominal. The zero
+baseline is always present. Saved output contains small numerical summaries,
+input hashes, runtime settings, and no original state vectors or model weights.
+Run `flame_conditioning.verify --training-metrics` first for independent model
+replay/physical-score checks. `verify_evaluation.py` independently counts each
+tolerance/SSPI result from saved predictions and audit evidence, not from the
+metric helper. It is read-only unless a new output path is supplied.
+
 Minimal preparation preview:
 
 ```sh
