@@ -106,7 +106,7 @@ def extend_snapshot(snapshot, rows, files):
                              {"title": "Retain the full comparison", "detail": "Keep four targets, two sizes and both fixed seeds. Add the zero-change baseline. Preserve all old report queries."}]}}
     snapshot["generatedAt"] = now
     snapshot["buildStatus"] = "updating"
-    snapshot["report"]["asOf"] = "2026-10-09"
+    snapshot.setdefault("report", {})["asOf"] = "2026-10-09"
     return snapshot
 
 

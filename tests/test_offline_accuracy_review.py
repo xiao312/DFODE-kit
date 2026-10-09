@@ -16,3 +16,10 @@ def test_review_preserves_identity_prior_queries_and_nulls():
 def test_review_rejects_missing_seeds():
     with pytest.raises(ValueError, match="both predeclared seeds"):
         compile_rows([])
+
+
+def test_existing_report_without_as_of_metadata_remains_supported():
+    snapshot = {"id": "old-report", "queries": {}}
+    result = extend_snapshot(snapshot, {}, [])
+    assert result["report"]["asOf"] == "2026-10-09"
+    assert result["id"] == "old-report"
