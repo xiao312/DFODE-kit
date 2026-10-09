@@ -27,6 +27,10 @@ def validate_config(config, available_snapshots):
             raise ValueError(f"{name} must be nonnegative and finite")
     if config["species_exponent_perturbation"] >= 1:
         raise ValueError("Perturbation exponents must remain positive")
+    if "pressure_bounds_Pa" in config:
+        bounds = np.asarray(config["pressure_bounds_Pa"], dtype=float)
+        if bounds.shape != (2,) or not np.isfinite(bounds).all() or not 0 < bounds[0] < bounds[1]:
+            raise ValueError("pressure_bounds_Pa must be two increasing positive finite bounds")
 
 
 def sample_split(source, species_names, config, split):
@@ -35,6 +39,7 @@ def sample_split(source, species_names, config, split):
     groups = config[f"{split}_snapshots"]
     count = config[f"{split}_count"]
     rng = np.random.default_rng(config["seed"] + (split == "validation"))
+    pressure_rng = np.random.default_rng(config["seed"] + 1000 + (split == "validation"))
     gas_states = source["states"]
     rows_by_group = {name: np.flatnonzero(source["snapshot"] == name) for name in groups}
     for name, rows in rows_by_group.items():
@@ -84,6 +89,8 @@ def sample_split(source, species_names, config, split):
             continue
         if not nitrogen_range[0] * (1 - padding) <= fractions[nitrogen] <= nitrogen_range[1] * (1 + padding):
             continue
+        if "pressure_bounds_Pa" in config:
+            state[1] = pressure_rng.uniform(*config["pressure_bounds_Pa"])
         accepted.append(state)
         lineage.append((group, int(rows[left]), int(rows[left + 1]), fraction))
     return np.asarray(accepted), {

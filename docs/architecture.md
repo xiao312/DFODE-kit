@@ -48,6 +48,12 @@ the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Flame-conditioned research
 
+The later offline-accuracy stage is owned by `benchmarks/offline_accuracy/`:
+`declared pressure domain -> flame prepare/audit -> matched final-checkpoint
+training -> physical tolerance/SSPI metrics -> acceptance/cost review`.
+It reuses the existing numerical and model modules. CFD transfer is a later,
+separate evaluation, not a dependency of this representation comparison.
+
 Post-score pressure diagnosis is a separate evidence path:
 `pressure_diagnostic -> frozen models + chemistry -> new paired reference/prediction
 artifacts -> verify_pressure_diagnostic (independent physical recomputation) ->

@@ -10,6 +10,23 @@ cases, or shared environments. A one-step test is not coupled CFD validation.
 
 ## Plan and decision gates
 
+### Current offline-accuracy stage (9 October, after the overnight checkpoint)
+
+The user has approved a separate offline representation study. The earlier 2D
+scores remain unchanged and are not a gate for this stage. The new contract,
+metrics, and review commands are in `../offline_accuracy/README.md`.
+Optional `pressure_bounds_Pa: [lower, upper]` in dataset configuration samples
+pressure uniformly from a declared positive physical range, using a separate
+random stream. This preserves the temperature/composition draws and prefix
+identity. Omitting the field preserves the original interpolation-only behavior.
+Every sampled pressure receives a new CVODE label; old labels are not reused.
+Optional training `pressure_bounds_Pa` fixes the pressure input centre and
+half-range, instead of estimating its scale from a nearly constant sample.
+Other input and output statistics still use training data only. Both options
+are explicit and saved in manifests. Optional `checkpoint_selection: final`
+uses the last planned update, without selecting a checkpoint from evaluation
+scores. The default remains the historical validation-p99 selection.
+
 1. Inspect existing study cases and mechanisms read-only. Record hashes and the
    actual chemistry interface before extracting any data.
 2. Extract a bounded set of 1D reference-flame states. Keep cold, preheat, reaction,

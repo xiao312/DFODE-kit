@@ -69,7 +69,8 @@ def main():
         "status": "running", "source": source_revision(), "config": config,
         "source_manifest": source_manifest, "cantera": ct.__version__, "splits": {},
         "deviations_from_paper": ["Bounded six-snapshot source rather than all time steps",
-                                  "Pressure is interpolated, not randomly perturbed",
+                                  ("Pressure sampled uniformly over declared physical bounds" if "pressure_bounds_Pa" in config
+                                   else "Pressure is interpolated, not randomly perturbed"),
                                   "Argon is held at its interpolated source value",
                                   "No heat-release rejection filter; negative heat release is not universally invalid",
                                   "Independent species exponent draws and explicit non-argon normalization"],
