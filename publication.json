@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-09T04:39:57+00:00",
-  "benchmark": "offline_accuracy_refinement",
+  "generated_at": "2026-10-09T05:46:53+00:00",
+  "benchmark": "offline_acceptance_adaptations",
   "report_path": "flame-conditioning/",
-  "source_revision": "2486d4bd",
-  "scope": "20 verified refinement fits: longer original fits, tolerance-derived coordinates, physical-loss pairs, frozen-base residual correction and deeper single-model control; same 10k rows and two seeds; all earlier offline and flame/CFD evidence preserved; no learned CFD deployment",
+  "source_revision": "0fd4659",
+  "scope": "20 verified model trials plus two non-learned kinetics controls; fixed 10k training selections, two seeds and unchanged acceptance criterion; physical and tail losses, base-relative corrections, local RBF, inverse-temperature/partial-pressure inputs and species heads with Adam or L-BFGS; all earlier evidence preserved; no complete state passes and no learned CFD deployment",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
