@@ -49,7 +49,7 @@ def fixture_seed(root, seed):
                "inference": {"median_process_seconds": .01}}
               for target in targets for size in (2000, 10000)]
     evaluation_path = directory / "evaluation/summary.json"
-    evaluation_path.write_text(json.dumps({"status": "complete", "plan": {"seed": seed},
+    evaluation_path.write_text(json.dumps({"status": "complete", "plan": {"seed": seed, "models": 8},
         "training_summary_sha256": sha256(training_path), "dataset_manifest_sha256": "same-data",
         "audit_summary_sha256": "same-audit", "zero_baseline": {"nominal": values},
         "models": models, "dataset": {}}))

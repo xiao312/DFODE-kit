@@ -23,6 +23,13 @@ export function OfflineAccuracy() {
     (row.target === "zero" || (row.seed === seed && row.trainingCount === size)));
   const curveRows = curves.map(row => ({...row, targetName:names[row.target]})).sort((a,b)=>a.rtol-b.rtol);
   const table = models.map(row => ({...row, targetName:names[row.target], inferenceMs:1000*row.inferenceSeconds/row.states}));
+  const seedRange = (target, count) => {
+    const values = models.filter(row=>row.target === target && row.trainingCount === count).map(row=>row.componentRate);
+    return `${percent(Math.min(...values))}–${percent(Math.max(...values))}`;
+  };
+  const sizeRows = Object.keys(names).filter(target=>target !== "zero").map(target=>({
+    targetName:names[target], small:seedRange(target, 2000), large:seedRange(target, 10000),
+  }));
   const maxState = Math.max(...models.map(row=>row.stateRate));
   const minimum = Math.min(...models.map(row=>row.componentRate));
   const maximum = Math.max(...models.map(row=>row.componentRate));
@@ -31,6 +38,10 @@ export function OfflineAccuracy() {
     {source("offline-opening", "offline_models", `## Current stage: measure representation accuracy before CFD\n\nAll 16 fits completed: four target representations, two nested training sizes, and two fixed seeds. At the primary tolerance, species-component acceptance ranges from ${percent(minimum)} to ${percent(maximum)}. The best observed complete-state acceptance is ${percent(maxState)}; the predeclared research target is 99%. This is a descriptive range over all fits, not a selected deployment model.\n\nA complete state passes only when every non-argon species passes. A high component score can therefore coexist with a low state score. These offline comparisons do not establish CFD accuracy or a guarantee on every prediction.`)}
     {source("offline-contract", "offline_contract", `### 1. Define an acceptable answer\n\nFor a reference increment d, require |prediction − d| ≤ 10⁻¹⁵ + 0.1 × |d|. At d = 10⁻¹², this permits 1.01 × 10⁻¹³ absolute error. The proposed 10⁻¹⁴ error is about 1% and remains a stretch target. This is our research criterion, not a CVODE error guarantee.\n\nPressure now covers 0.95–1.05 atm. Its input uses that declared physical range, not the narrow spread of the old samples. Temperature and composition retain the existing augmentation. Each fit uses four 800-unit GELU layers, FP32, L1 loss, batch size 256, and exactly 2,000 updates. We save the final update, with no evaluation-based checkpoint selection. Target scales use training data only.\n\nCVODE produced ${number(contract.accepted)} accepted training labels and ${number(contract.evaluation_states)} evaluation labels. ${contract.excluded.train} training and ${contract.excluded.validation} evaluation candidates were excluded; no failed label became zero. Label generation took ${number(contract.label_generation_wall_seconds)} wall seconds. The two evaluation snapshots come from the same flame realization as training, not an independent flame case.`)}
     {source("offline-floor", "offline_contract", "The absolute floor does not require accurate relative digits for changes far below 10⁻¹⁵. Use the tighter floors and magnitude table to inspect that limitation. Also, the same L1 loss in different target coordinates gives different physical error weights. This experiment compares target-plus-loss conditioning, not transform round-trip arithmetic alone.")}
+    {source("offline-result", "offline_models", "All four representations improve component acceptance from 2k to 10k rows in both seeds. Transformed-state targets perform best at the primary tolerance in this small, fixed-update experiment. Direct power has better small-increment preservation at 10k, but much lower overall component acceptance. Thus, a good SSPI score and a good general accuracy score are different results. This does not establish a universal ranking of transformations or reproduce the paper's much larger training campaign.")}
+    {visible("offline-size-summary") && <DataComponent id="offline-size-summary" queryId="offline_models" kind="table" title="Component acceptance: range across the two seeds, not a confidence interval" sourceRows={models} displayRows={sizeRows}>
+      <DataTable rows={sizeRows} label="Controlled data-size comparison" searchable={false} columns={[{field:"targetName",label:"Target"},{field:"small",label:"2,000 states"},{field:"large",label:"10,000 states"}]}/>
+    </DataComponent>}
     <div style={{display:"flex",gap:"1rem",flexWrap:"wrap",marginBlock:"1rem"}} aria-label="Tolerance plot controls">
       <label>Seed <select value={seed} onChange={event=>setSeed(Number(event.target.value))}><option value={20261011}>20261011</option><option value={20261012}>20261012</option></select></label>
       <label>Training states <select value={size} onChange={event=>setSize(Number(event.target.value))}><option value={2000}>2,000</option><option value={10000}>10,000</option></select></label>

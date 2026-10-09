@@ -86,6 +86,9 @@ def compile_rows(directories):
                 "zeroComponentRate": primary(zero["nominal"])["component_pass_fraction"],
                 "zeroStateRate": primary(zero["nominal"])["state_pass_fraction"],
                 "zeroSspiRate": zero["nominal"]["sspi"]["value"], "totalModels": len(models)}
+    metadata.pop("seed")
+    metadata.pop("models")
+    metadata["seeds"] = sorted(seeds)
     return {"offline_models": models, "offline_curves": curves, "offline_audit": audited,
             "offline_species": species, "offline_magnitudes": magnitudes, "offline_contract": [metadata]}, files
 
@@ -98,7 +101,7 @@ def extend_snapshot(snapshot, rows, files):
             "executedAt": now,
             "metricDefinitions": [{"label": "Increment acceptance", "definition":
                 "abs(prediction-reference) <= atol + rtol*abs(reference). Components exclude AR; a state passes all remaining species. Primary atol=1e-15, rtol=0.1. Full-population results are nominal; reference qualification applies only to 16 audited evaluation states.",
-                "componentIds": ["offline-opening", "offline-contract", "offline-tolerance", "offline-cost", "offline-all-models", "offline-magnitudes", "offline-audit", "offline-next"]},
+                "componentIds": ["offline-opening", "offline-contract", "offline-floor", "offline-result", "offline-size-summary", "offline-tolerance", "offline-cost", "offline-all-models", "offline-magnitudes", "offline-audit", "offline-next"]},
                 {"label": "Training CPU cost", "definition": "Process CPU seconds recorded by the training process, including input preparation and periodic evaluations. Excludes label generation and independent verification.", "componentIds": ["offline-cost", "offline-all-models"]},
                 {"label": "Inference cost", "definition": "Median process seconds from five full-batch predictions after warmup. Displayed milliseconds per state equals 1000 times that median divided by the evaluated state count. Not single-state latency.", "componentIds": ["offline-cost", "offline-all-models"]},
                 {"label": "SSPI", "definition": "Among components with absolute reference increment below 1e-15, the fraction whose absolute prediction is also below 1e-15. Zero change scores 100%; this alone does not show useful accuracy.", "componentIds": ["offline-all-models", "offline-next"]}],
