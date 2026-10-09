@@ -6,6 +6,7 @@ an explicit train/development/test table. The present evaluation split is
 development data, not an independent-case test.
 
 The acceptance-directed adaptation campaign is in [`improve/README.md`](improve/README.md).
+The GBCT target and dual error-scale comparison is in [`paired/README.md`](paired/README.md).
 It keeps the data and pass rule fixed, and tests warm-start physical/tail losses,
 base-relative protected corrections and local approximations.
 

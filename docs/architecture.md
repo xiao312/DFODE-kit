@@ -48,6 +48,13 @@ the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Flame-conditioned research
 
+`offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
+adaptation and paired increment/state error-scale experiment. It reads the frozen
+dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
+independently checks both acceptance policies and physical diagnostics. Small
+verified summaries feed review; historical and production modules do not depend
+on this new experiment. See its local README for the predeclared matrix.
+
 `offline_accuracy.refinement.plan -> run -> fit -> tolerance coordinates`
 adds isolated longer-training, physical-loss and frozen-residual experiments.
 It reads checked flame datasets and original models without changing them.
