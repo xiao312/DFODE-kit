@@ -57,6 +57,8 @@ def check_summary(predicted, reference, saved, names, uncertainty=None):
         raise ValueError("Frozen tolerance grid differs")
     for row in saved["tolerances"]:
         check_row(predicted, reference, row, uncertainty)
+    if len(saved["per_species"]) != len(active):
+        raise ValueError("Missing species results")
     for index, row in enumerate(saved["per_species"]):
         if row["species"] != names[active[index]]:
             raise ValueError("Species order differs")
@@ -70,6 +72,9 @@ def check_summary(predicted, reference, saved, names, uncertainty=None):
         np.testing.assert_allclose(saved["sspi"]["value"], correct.sum()/small.sum())
     elif saved["sspi"]["value"] is not None:
         raise ValueError("An empty SSPI population is unknown")
+    edges = [0., 1e-30, 1e-20, 1e-15, 1e-12, 1e-9, 1e-6, None]
+    if [(row["lower"], row["upper"]) for row in saved["magnitude_bins"]] != list(zip(edges[:-1], edges[1:])):
+        raise ValueError("Magnitude bins differ")
     for row in saved["magnitude_bins"]:
         upper = np.inf if row["upper"] is None else row["upper"]
         mask = (abs(reference) >= row["lower"]) & (abs(reference) < upper)
@@ -113,6 +118,20 @@ def main():
     uncertainty = np.maximum(np.array([row["uncertainty_estimate"] for row in records]),
         np.maximum(abs(np.spacing(initial)), abs(np.spacing(initial+references))))
     for model in saved["models"]:
+        original = next(row for row in training["variants"] if row["name"] == model["name"])
+        for output_key, input_key in (("target", "target"), ("training_count", "training_count"),
+                                       ("updates", "updates_completed"), ("training_wall_seconds", "elapsed_seconds"),
+                                       ("training_process_seconds", "process_seconds")):
+            if model[output_key] != original[input_key]:
+                raise ValueError("Model identity or training cost differs")
+        inference = model["inference"]
+        if inference["states"] != len(validation["states"]) or len(inference["repeats"]) != 5:
+            raise ValueError("Inference timing population differs")
+        for metric in ("wall_seconds", "process_seconds"):
+            durations = [row[metric] for row in inference["repeats"]]
+            if not np.isfinite(durations).all() or min(durations) <= 0:
+                raise ValueError("Invalid inference duration")
+            np.testing.assert_allclose(inference[f"median_{metric}"], np.median(durations))
         directory = args.training/model["name"]
         for name, digest in model["artifact_sha256"].items():
             if sha256(directory/name) != digest:

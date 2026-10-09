@@ -1,8 +1,18 @@
 import numpy as np
 import pytest
+import copy
 
 from benchmarks.offline_accuracy.metrics import summarize, tolerance_counts
 from benchmarks.offline_accuracy.verify_evaluation import check_summary
+
+
+@pytest.mark.parametrize("field", ["per_species", "magnitude_bins"])
+def test_independent_check_rejects_missing_diagnostics(field):
+    reference = np.array([[1e-12, 1e-6]])
+    result = copy.deepcopy(summarize(reference, reference, ["A", "B"]))
+    result[field].pop()
+    with pytest.raises(ValueError):
+        check_summary(reference, reference, result, ["A", "B"])
 
 
 def test_primary_tolerance_and_whole_state_are_distinct():
