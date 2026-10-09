@@ -49,6 +49,8 @@ export function OfflineAccuracy() {
         {field:"componentRate",label:"Components pass",renderCell:percent},{field:"stateRate",label:"States pass",renderCell:percent},
         {field:"sspiRate",label:"SSPI",renderCell:percent},{field:"trainingSeconds",label:"CPU s",renderCell:number},
         {field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value.toPrecision(3)},
+        {field:"negativeComponentRate",label:"Negative endpoints",renderCell:percent},
+        {field:"inverseCorrectionRate",label:"Inverse corrections",renderCell:percent},
       ]}/>
     </DataComponent>}
     {visible("offline-magnitudes") && <DataComponent id="offline-magnitudes" queryId="offline_magnitudes" kind="table" title={`Acceptance by increment magnitude — seed ${seed}, ${number(size)} training states, primary tolerance`} sourceRows={magnitude} displayRows={magnitudeRows}>
