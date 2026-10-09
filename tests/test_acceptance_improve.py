@@ -98,3 +98,33 @@ def test_small_fit_preserves_frozen_base_and_replays(tmp_path, name):
     assert detail["updates_completed"] == 2 and weight_hash(base) == before
     saved = neural.reload(tmp_path, config, base)
     np.testing.assert_array_equal(predictor(states)[0], saved(states)[0])
+
+
+@pytest.mark.parametrize("name", ["arrhenius-heads", "arrhenius-lbfgs", "arrhenius-local"])
+def test_arrhenius_inputs_fit_and_replay(tmp_path, name):
+    from benchmarks.offline_accuracy.improve import arrhenius
+    states = np.column_stack([np.linspace(800, 1200, 32), np.full(32, 101325.),
+                              np.full(32, .2), np.full(32, .8), np.zeros(32)])
+    delta = np.column_stack([np.linspace(1e-8, 3e-8, 32), np.zeros((32, 2))])
+    weights = np.array([2., 28., 40.])
+    config = configuration(name, 20261011)
+    config.update(updates=4 if name == "arrhenius-heads" else 0, batch_size=8, widths=[4, 4])
+    if name == "arrhenius-lbfgs":
+        config.update(updates=4, adam_updates=2, lbfgs_steps=2)
+    data = dict(states=states, delta=delta, source_indices=np.arange(32))
+    values = arrhenius.features(states, weights)
+    assert np.isfinite(values).all() and np.all(values[:, -1] == 0)
+    active = np.array([True, False, False])
+    model, detail = arrhenius.fit(data, data, dict(molecular_weights=weights), config, active, tmp_path)
+    saved = arrhenius.reload(tmp_path, config)
+    np.testing.assert_array_equal(model(states)[0], saved(states)[0])
+    assert np.isfinite(model(states)[0]).all()
+
+
+def test_state_failure_profile_is_not_component_average():
+    from benchmarks.offline_accuracy.improve.diagnostics import state_profile
+    profile = state_profile(np.array([[0., 0.], [0., 2e-15]]), np.zeros((2, 2)), np.array([True, True]))
+    assert profile["minimum_failing_species"] == 0
+    assert profile["maximum_failing_species"] == 1
+    assert profile["median_failing_species"] == .5
+    assert profile["failure_histogram"] == [dict(failing_species=0, states=1), dict(failing_species=1, states=1), dict(failing_species=2, states=0)]

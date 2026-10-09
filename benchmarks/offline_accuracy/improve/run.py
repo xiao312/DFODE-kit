@@ -16,7 +16,7 @@ from benchmarks.offline_accuracy.metrics import summarize
 from benchmarks.offline_accuracy.verify_evaluation import check_summary
 from benchmarks.offline_accuracy.refinement.fit import reload_model, prediction, weight_hash
 from benchmarks.offline_accuracy.refinement.run import inputs, save
-from . import local, neural
+from . import arrhenius, local, neural
 from .coordinates import transitions
 from .plan import configuration, NAMES
 
@@ -75,8 +75,20 @@ def verify(args, training, validation, physics, audit, model, p, hashes):
         if sha256(directory / name) != digest:
             raise ValueError(f"Changed saved artifact: {name}")
     np.testing.assert_array_equal(np.load(directory / "training-indices.npy"), training["source_indices"])
-    predictor = local.reload(directory, config) if config["local"] else neural.reload(directory, config, model)
-    if not config["local"]:
+    new_inputs = config["name"].startswith("arrhenius-")
+    predictor = (arrhenius.reload(directory, config) if new_inputs else
+                 local.reload(directory, config) if config["local"] else neural.reload(directory, config, model))
+    if new_inputs:
+        x, target, expected = arrhenius.prepare(training, physics["molecular_weights"], config, p["active"])
+        for key, value in expected.items():
+            np.testing.assert_array_equal(predictor.preprocessing[key], value)
+        if config["local"]:
+            _, singular, vh = np.linalg.svd(x, full_matrices=False)
+            basis = vh[singular > singular[0]*1e-10].T
+            np.testing.assert_array_equal(predictor.preprocessing["basis"], basis)
+            np.testing.assert_array_equal(predictor.preprocessing["points"], x @ basis)
+            np.testing.assert_array_equal(predictor.preprocessing["targets"], target)
+    elif not config["local"]:
         for key, value in p.items():
             np.testing.assert_array_equal(predictor.preprocessing[key], value)
     else:
@@ -142,14 +154,17 @@ def main():
     frozen_hash = weight_hash(model)
     save(args.output / "result.json", result)
     try:
-        if config["local"]:
+        new_inputs = config["name"].startswith("arrhenius-")
+        if new_inputs:
+            predictor, fitted = arrhenius.fit(training, validation, physics, config, p["active"], args.output)
+        elif config["local"]:
             predictor, fitted = local.fit(training, config, p, args.output)
         else:
             predictor, fitted = neural.fit(training, validation, config, model, p, args.output)
         result.update(fitted)
         base = lambda states: prediction(model, p, states, "state-boxcox")
         result.update(evaluate(predictor, base, training, validation, physics, audit, args.output))
-        result["base_training_process_seconds"] = original["training_process_seconds"] if not config["local"] else 0.
+        result["base_training_process_seconds"] = original["training_process_seconds"] if not (config["local"] or new_inputs) else 0.
         result["total_training_process_seconds"] = result["fit_process_seconds"] + result["base_training_process_seconds"]
         result["total_parameter_count"] = (None if config["local"] else result["parameter_count"] +
             (sum(v.numel() for v in model.parameters()) if config["correction"] else 0))

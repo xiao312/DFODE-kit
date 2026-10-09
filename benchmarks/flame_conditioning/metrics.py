@@ -37,7 +37,8 @@ def physical_scores(predicted, reference, initial, corrected, species_names,
     relative = absolute[nominal_relative] / np.abs(reference[nominal_relative])
     density = initial[:, 1] / (8314.46261815324 * initial[:, 0] * np.sum(initial[:, 2:] / molecular_weights, axis=1))
     heat_reference = -(reference @ formation_enthalpies) * density / interval
-    heat_prediction = -(predicted @ formation_enthalpies) * density / interval
+    # Subtract increments first: two large heat releases can hide a small error.
+    heat_error = -((predicted-reference) @ formation_enthalpies) * density / interval
     result = {
         "samples": len(initial), "non_argon_species_components": int(len(initial) * active.sum()),
         "absolute_error": summary(absolute[:, active]), "budget_error": summary(weighted[:, active]),
@@ -51,9 +52,9 @@ def physical_scores(predicted, reference, initial, corrected, species_names,
         "negative_endpoint_row_fraction": float(np.mean(np.any(initial[:, 2:] + predicted < 0, axis=1))),
         "mass_increment_drift": summary(np.abs(predicted.sum(axis=1))),
         "element_increment_drift": summary(np.abs(predicted @ element_matrix.T)),
-        "heat_release_absolute_error_W_m3": summary(np.abs(heat_prediction - heat_reference)),
+        "heat_release_absolute_error_W_m3": summary(np.abs(heat_error)),
         "heat_release_reference_rms_W_m3": float(np.sqrt(np.mean(heat_reference ** 2))),
-        "heat_release_error_rms_W_m3": float(np.sqrt(np.mean((heat_prediction - heat_reference) ** 2))),
+        "heat_release_error_rms_W_m3": float(np.sqrt(np.mean(heat_error ** 2))),
         "temperature_bins": [], "magnitude_bins": [], "per_species": {},
     }
     edges = [0, 305, 500, 1000, 1500, 2000, 3000]

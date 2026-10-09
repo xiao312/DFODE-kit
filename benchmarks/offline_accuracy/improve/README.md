@@ -37,6 +37,24 @@ Rank by complete-state acceptance, then component acceptance, then measured cost
 Do not claim selected development scores are independent generalization evidence.
 Any later adaptation must have a new named configuration and retained results.
 
+Second-stage extension, declared after the first physical fine-tuning scores:
+`arrhenius-heads` uses inverse temperature, log pressure and log-like partial
+pressures, with two 32-unit tanh layers independently for each species. It learns
+standardized `asinh(delta/1e-14)` for 4,000 updates, then physical normalized error
+for 4,000 updates with a fresh lower-rate optimizer. `arrhenius-local` applies
+the same new input coordinates to local asinh RBF interpolation. The input floor
+is a fixed dimensionless partial pressure of 1e-30 (relative to 1 atm), not a
+training/evaluation label. Both seeds remain required. This is a bundled
+input/architecture/training adaptation, not an isolated input-transform ablation.
+`arrhenius-lbfgs` uses the same independent heads and 4,000-update coordinate
+warmup, followed by 80 full-batch L-BFGS steps with strong-Wolfe line search,
+history size 10 and at most 400 closure evaluations. Its smooth objective is the
+mean of each species' RMS budget-normalized physical error. Cost, not optimizer
+step count, compares this with Adam. This also changes the physical loss from
+robust log1p to RMS, so it is an optimizer-plus-loss candidate, not a pure optimizer
+ablation. The source paper uses L-BFGS and a relative RMS objective; our finite
+absolute floor handles zeros. All candidates have fixed final checkpoints.
+
 ## Interface, storage and security
 
 `python -m benchmarks.offline_accuracy.improve.run <dataset> --audit <audit>
@@ -75,3 +93,18 @@ pass. The live runner saves `verification.json` bound to `result.json` only afte
 exact saved-model replay, independent acceptance/physical checks and input hashes.
 The check also reports base pass-to-fail and fail-to-pass transitions, so an average
 gain cannot conceal damage to previously accurate components.
+
+After every declared run finishes, `python -m benchmarks.offline_accuracy.improve.diagnostics
+<dataset> <campaign> --output <campaign>/state-diagnostics.json` verifies saved
+prediction hashes and reports failing-species counts per state. Then
+`python -m benchmarks.offline_accuracy.improve.review <existing-snapshot> <campaign>
+--output <new-json>` appends only verified small summaries and retains failed runs
+with unknown scores. The report preserves its identity and earlier evidence.
+
+`python -m benchmarks.offline_accuracy.improve.recheck <campaign> --seed <seed>
+--variant <local-state|local-asinh>` is read-only by default. `--apply` repairs
+only the heat-error diagnostic after its cancellation regression is fixed. It
+requires the exact known verification failure, unchanged artifact hashes and
+original data identities. It preserves the original failed result under
+`result-before-heat-fix.json`, recomputes physical metrics, then reruns all model
+and score checks. It never retrains or edits model predictions or acceptance.

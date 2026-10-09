@@ -184,3 +184,28 @@ solver-fallback version must report fallback frequency and full cost separately.
 
 No model implementation, training, server mutation, or GitHub publication was
 performed as part of this source note.
+
+## Additional chemistry-specific input representation
+
+Döppel and Votsmeier (2023) combine inverse-temperature/log-partial-pressure
+inputs, a latent asinh representation and physical-space loss for steady surface
+kinetics. Their examples use separate small networks for selected species, not
+our full gas-phase finite-time flow map. The result supports testing input and
+output conditioning together; it does not predict our achieved acceptance.
+[Primary paper](https://pubs.rsc.org/en/content/articlehtml/2023/re/d3re00212h),
+[primary supplement](https://www.rsc.org/suppdata/d3/re/d3re00212h/d3re00212h1.pdf).
+
+Adaptation: use `1000/T`, `log(P/1 atm)` and a continuous log-like partial-pressure
+coordinate with a fixed floor for zero species. Train independent small species
+heads with a latent sinh decoder. Compare with local RBF on the same new inputs.
+This changes several design factors; call it a bundled method candidate, then
+separate the factors only if it works. Do not borrow the paper's speedups or
+percentage errors as expectations for this chemistry dataset.
+
+The paper's Sections 2.3.4–2.3.6 specify full-batch L-BFGS with strong-Wolfe
+search and root-mean-square relative physical error. That is materially different
+from short stochastic Adam with log1p loss. Test a bounded L-BFGS/RMS finish after
+the same coordinate warmup; retain the Adam/log-loss candidate as a comparator.
+Use mean per-species RMS budget error to balance independent output heads, and
+record closure evaluations, memory and CPU cost. This is an optimization-plus-loss
+comparison, not evidence that L-BFGS alone caused any difference.

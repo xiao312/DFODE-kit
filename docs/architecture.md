@@ -135,6 +135,13 @@ The isolated `offline_accuracy.improve` benchmark adapts acceptance-directed
 losses and local approximation methods. Dependency direction is
 `plan -> run -> neural/local -> coordinates`, with read-only dependencies on
 `refinement.inputs/loaders`, offline metrics and independent verification.
+The later `arrhenius` candidate owns partial-pressure input features, independent
+species heads and a local-table alternative. `diagnostics` reads checked prediction
+artifacts; `review` binds their small state-error summaries into the existing app.
+`improve.recheck -> saved predictions/run.verify` repairs only the documented
+heat-diagnostic cancellation failure, with original results retained. Shared
+physical metrics now contract increment errors before heat-release aggregation;
+the independent Cantera checker remains separate.
 Verified small summaries feed GitHub review; production training and solvers
 do not depend on this research path. See its module README for the fixed matrix.
 

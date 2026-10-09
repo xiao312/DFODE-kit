@@ -63,6 +63,11 @@ temperature fixed, not pressure. Pressure can change when molecular count change
 The CFD source interface observed in the installed solver is
 `RR_i = rho_initial * delta_Y_i / interval`; its heat release uses formation
 enthalpies. The CFD energy equation remains outside this local chemistry solve.
+Physical heat-release error contracts the species-increment error with formation
+enthalpies directly. It must not subtract two separately rounded heat releases:
+that loses small errors for accurate local interpolants. The independent checker
+uses a separate elementwise sum and Cantera density. Verify this arithmetic with
+`python -m pytest tests/test_heat_error_stability.py -q` (one passing test).
 Record the exact runtime revision and species order before model deployment.
 
 All generated states, copied cases, model weights, logs and reports go into a new
