@@ -32,7 +32,7 @@ def evidence(tmp_path):
                 validation_physical=dict(negative_endpoint_fraction=.1,
                     inverse_domain_correction_fraction=0., mass_increment_drift=dict(p99=1e-8)))
             write(directory / "result.json", result)
-            write(directory / "verification.json", dict(status="verified", independent_counts=True,
+            write(directory / "verification-final.json", dict(status="verified", independent_counts=True,
                 physical_checks=True, training_only_scales_checked=True,
                 model_replay="exact", result_sha256=sha256(directory / "result.json")))
     return tmp_path
@@ -64,15 +64,15 @@ def test_rejects_mixed_dataset_even_with_new_hash(evidence):
     result = json.loads((directory / "result.json").read_text())
     result["hashes"]["dataset_manifest"] = "different"
     write(directory / "result.json", result)
-    check = json.loads((directory / "verification.json").read_text())
+    check = json.loads((directory / "verification-final.json").read_text())
     check["result_sha256"] = sha256(directory / "result.json")
-    write(directory / "verification.json", check)
+    write(directory / "verification-final.json", check)
     with pytest.raises(ValueError, match="differs"):
         collect(evidence)
 
 
 def test_rejects_incomplete_matrix(evidence):
-    file = evidence / "seed-20261012/deep-state-boxcox/verification.json"
+    file = evidence / "seed-20261012/deep-state-boxcox/verification-final.json"
     file.unlink()
     with pytest.raises(FileNotFoundError):
         collect(evidence)

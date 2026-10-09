@@ -21,7 +21,7 @@ def collect(root):
             name = variant["name"]
             directory = root / f"seed-{seed}" / name
             result = read(directory / "result.json")
-            check = read(directory / "verification.json")
+            check = read(directory / "verification-final.json")
             if (result["status"] != "complete" or check["status"] != "verified"
                     or check["result_sha256"] != sha256(directory / "result.json")
                     or not check["independent_counts"] or not check["physical_checks"]
@@ -62,7 +62,7 @@ def collect(root):
             audits.append(dict(key, **primary(result["audited_subset"])))
             bins.extend(dict(key, **item) for item in result["validation"]["magnitude_bins"])
             species.extend(dict(key, **item) for item in result["validation"]["per_species"])
-            for filename in ("result.json", "verification.json"):
+            for filename in ("result.json", "verification-final.json"):
                 files.append(dict(name=f"seed-{seed}/{name}/{filename}", sha256=sha256(directory / filename)))
     return dict(refinement_models=models, refinement_curves=curves, refinement_history=histories,
                 refinement_audit=audits, refinement_bins=bins, refinement_species=species), files, identity

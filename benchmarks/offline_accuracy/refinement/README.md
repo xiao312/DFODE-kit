@@ -51,6 +51,12 @@ owns the immutable matrix. Each model has a 900-second internal wall limit;
 use a one-hour external timeout and at most two half-CPU/4-GiB jobs in the
 existing image. Inputs and solver installations are read-only.
 
+Save the extended check for each completed model with:
+
+```sh
+python -m benchmarks.offline_accuracy.refinement.verify <dataset> <model-output> --audit <audit> --base <original-seed-training> --output <model-output>/verification-final.json
+```
+
 Outputs: configuration/provenance JSON, training-only preprocessing, weights,
 optimizer state, exact selected row identities, predictions, learning curves,
 tolerance/SSPI/species/magnitude metrics, audit-subset uncertainty scores and
@@ -79,6 +85,8 @@ matrix and failure validation. The pinned server image supplies Torch. A small
 synthetic fit checks save/reload and residual-base preservation before live runs.
 
 `review <existing-snapshot> <results-root> --output <new-json>` requires all 20
-hash-bound verified results and appends `refinement_*` queries. It refuses mixed
+hash-bound verified results (`result.json` and `verification-final.json` in each
+`seed-<seed>/<variant>/` directory) and appends `refinement_*` queries. Keep earlier
+verification records unchanged when running an extended check. It refuses mixed
 dataset identities and leaves earlier evidence unchanged. Report selection is
 tested with `node --test tests/refinement_report_selection.test.mjs`.

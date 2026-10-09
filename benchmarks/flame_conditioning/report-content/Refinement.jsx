@@ -38,6 +38,9 @@ export function Refinement() {
   const bins = snapshot.queries.refinement_bins.rows.filter(row=>row.seed === seed && selectedNames.includes(row.name));
   const audits = snapshot.queries.refinement_audit.rows.filter(row=>row.seed === seed && selectedNames.includes(row.name));
   const species = snapshot.queries.refinement_species.rows.filter(row=>row.seed === seed && selectedNames.includes(row.name));
+  const binRows = bins.map(row=>({...row,method:refinementNames[row.name],range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}));
+  const auditRows = audits.map(row=>({...row,method:refinementNames[row.name]}));
+  const speciesRows = species.map(row=>({...row,method:refinementNames[row.name]}));
   const text = (id, query, value) => visible(id) && <ReportSection id={id} queryId={query} title={id} showHeading={false} sourceRows={snapshot.queries[query].rows}><RichNarrative id={`${id}:body`} value={value}/></ReportSection>;
   const maxState = Math.max(...models.map(row=>row.stateRate));
   const bestComponent = Math.max(...models.map(row=>row.componentRate));
@@ -80,19 +83,19 @@ export function Refinement() {
     </DataComponent>}
     {visible("refinement-history") && <EvidenceChart id="refinement-history" queryId="refinement_history" title="New-model learning curves — primary tolerance, fixed final checkpoint" rows={histories.map(row=>({...row,method:refinementNames[row.name]}))} sourceRows={histories} height={320}
       spec={{type:"line",x:"step",y:measure,series:"method",stackable:false,valueDecimals:2,xLabel:"Optimizer updates",yLabel:"Evaluation acceptance"}}/>}
-    {visible("refinement-bins") && <DataComponent id="refinement-bins" queryId="refinement_bins" kind="table" title="New-model acceptance by increment magnitude — primary tolerance" sourceRows={bins} displayRows={bins}>
-      <DataTable rows={bins.map(row=>({...row,method:refinementNames[row.name],range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}))} label="Magnitude bins" columns={[
+    {visible("refinement-bins") && <DataComponent id="refinement-bins" queryId="refinement_bins" kind="table" title="New-model acceptance by increment magnitude — primary tolerance" sourceRows={bins} displayRows={binRows}>
+      <DataTable rows={binRows} label="Magnitude bins" columns={[
         {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:numeric},{field:"pass_fraction",label:"Pass",renderCell:percent},
       ]}/>
     </DataComponent>}
-    {visible("refinement-audit") && <DataComponent id="refinement-audit" queryId="refinement_audit" kind="table" title="Independent-reference subset — 16 evaluation states, primary tolerance" sourceRows={audits} displayRows={audits}>
-      <DataTable rows={audits.map(row=>({...row,method:refinementNames[row.name]}))} label="Audited subset" columns={[
+    {visible("refinement-audit") && <DataComponent id="refinement-audit" queryId="refinement_audit" kind="table" title="Independent-reference subset — 16 evaluation states, primary tolerance" sourceRows={audits} displayRows={auditRows}>
+      <DataTable rows={auditRows} label="Audited subset" columns={[
         {field:"method",label:"Method"},{field:"qualified_components",label:"Qualified components"},{field:"unknown_components",label:"Unknown"},
         {field:"qualified_pass_fraction",label:"Qualified components pass",renderCell:percent},{field:"qualified_state_pass_fraction",label:"Qualified states pass",renderCell:percent},
       ]}/>
     </DataComponent>}
-    {visible("refinement-species") && <DataComponent id="refinement-species" queryId="refinement_species" kind="table" title="New-model acceptance for each species — primary tolerance" sourceRows={species} displayRows={species}>
-      <DataTable rows={species.map(row=>({...row,method:refinementNames[row.name]}))} label="Species acceptance" columns={[
+    {visible("refinement-species") && <DataComponent id="refinement-species" queryId="refinement_species" kind="table" title="New-model acceptance for each species — primary tolerance" sourceRows={species} displayRows={speciesRows}>
+      <DataTable rows={speciesRows} label="Species acceptance" columns={[
         {field:"method",label:"Method"},{field:"species",label:"Species"},{field:"components",label:"Components"},
         {field:"component_pass_fraction",label:"Pass",renderCell:percent},
         {field:"normalized_error_p99",label:"Error / budget p99",renderCell:value=>value.toExponential(2)},
