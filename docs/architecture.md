@@ -53,7 +53,11 @@ reduced-data Fuel source-recipe replication. It reuses `refinement.run.inputs`
 and the paired runtime, acceptance and independent-verification functions.
 It changes normalization, output count and training schedule, not the frozen
 dataset or pass rule. Its result summaries feed the research review; original
-study scripts and environments remain read-only.
+study scripts and environments remain read-only. `paper_baseline.campaign`
+adds a bounded 50k preparation/audit stage; `paper_baseline.data` gates training
+on a preserved original training prefix and byte-value-identical development
+arrays. It depends on `flame_conditioning.prepare/audit_labels/data` and stops
+before training on any reference or identity failure.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

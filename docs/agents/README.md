@@ -25,6 +25,8 @@ Use this docs tree for information that is too detailed or too volatile for `AGE
 - `flame-source-and-runtime-contract.md`: read before reusing study assets or preparing a copied CFD case
 - `representation-accuracy-success-sources.md`: source checks, tolerance terminology, and required state/increment dual-scaling protocol for later runs
 - `acceptance-improvement-methods.md`: primary sources and bounded adaptations for higher offline acceptance
+- `gbct-source-and-adaptation.md`: GBCT paper, code differences and matched target adaptation
+- `fuel-baseline-replication.md`: exact saved Fuel training recipes, source gaps and reduced-data replication limits
 
 ## Philosophy
 - `AGENTS.md` is the entrypoint for repository workflow.

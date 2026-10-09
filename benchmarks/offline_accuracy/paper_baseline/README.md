@@ -68,3 +68,30 @@ Expected: source-specific normalization and stage boundaries pass; signed
 increments round-trip; AR is not a network output; saved GPU weights replay.
 CPU is permitted only for these small non-training checks and reference I/O.
 Each live run must independently check acceptance counts and physical scores.
+
+## Separate 50k data-size stage
+
+After the four 10k fits, prepare `dataset-50k.json` with the existing flame
+preparer and run a fresh 16-state-per-split reference audit. This requires
+Cantera/SciPy on one CPU; neural training remains GPU-only. Preparation has a
+3600-second limit; audit has a 900-second limit. Fail closed on an incomplete
+dataset, fewer than 50k accepted labels, or a failed audit.
+
+Pass `--training-count 50000 --comparison-dataset <original-dataset>` to the
+runner. It checks unchanged source/domain/chemistry, exact original training
+prefix, exact development states AND labels, and preserves each seed's original
+10k rows as the first 10k of its nested selection. No new development selection.
+Train-only scales are refit; this is a full data-size protocol comparison, not
+a fixed-scaler ablation. Keep both recipes and both seeds. State training drops
+the final 10k partial batch per shuffled epoch, matching its source rule;
+power training retains it. Record the different update/presentation counts.
+This remains the existing four-source-snapshot domain, not eight-million-row
+paper data or restored heat-release/interpolation lineage.
+
+`python -m benchmarks.offline_accuracy.paper_baseline.campaign --source
+<source-snapshots> --original <original-dataset> --base-root <original-campaign>
+--output <new-campaign>` prints the six stages without mutation. `--execute`
+runs them in order, saves separate logs and `campaign-status.json`, and stops
+on any failure. The overall maximum is 3700 + 960 + 4*1500 seconds; actual
+neural fits have their own shorter 1200-second limits. Completion requires all
+four verified model results, not just a completed preparation process.

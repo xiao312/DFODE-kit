@@ -64,3 +64,12 @@ def test_gpu_fit_and_reload(tmp_path):
     np.testing.assert_array_equal(actual_mask, mask)
     assert result["row_presentations"] == 6 and result["updates_completed"] == 4
     assert np.all(actual[:, 1] == 0)
+
+
+def test_nested_training_indices():
+    pytest.importorskip("cantera")
+    from benchmarks.offline_accuracy.paper_baseline.data import nested_indices
+    indices = nested_indices(10010, 50100, 50000, 20261011)
+    expected = np.random.default_rng(20261011).permutation(10010)[:10000]
+    np.testing.assert_array_equal(indices[:10000], expected)
+    assert len(indices) == len(np.unique(indices)) == 50000

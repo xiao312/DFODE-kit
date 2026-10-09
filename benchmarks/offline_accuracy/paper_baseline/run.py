@@ -65,13 +65,24 @@ def main():
         parser.add_argument("--"+name, type=Path, required=True)
     parser.add_argument("--recipe", choices=("fuel-state", "fuel-power"), required=True)
     parser.add_argument("--seed", type=int, required=True)
+    parser.add_argument("--training-count", type=int, choices=(10000, 50000), default=10000)
+    parser.add_argument("--comparison-dataset", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     config = configuration(args.recipe, args.seed)
     if args.output.exists():
         parser.error("Output already exists; select a new directory")
     runtime = configure()
-    training, validation, physics, audit, _, _, hashes = inputs(args.dataset, args.audit, args.base, args.seed)
+    if args.training_count == 10000:
+        if args.comparison_dataset is not None:
+            parser.error("Comparison dataset is only for the 50k expansion")
+        training, validation, physics, audit, _, _, hashes = inputs(args.dataset, args.audit, args.base, args.seed)
+    else:
+        if args.comparison_dataset is None:
+            parser.error("The 50k expansion requires --comparison-dataset")
+        from .data import expanded_inputs
+        training, validation, physics, audit, hashes = expanded_inputs(
+            args.dataset, args.audit, args.comparison_dataset, args.base, args.seed, args.training_count)
     if physics["interval"] != config["interval"] or len(physics["species_names"]) != 59:
         raise ValueError("Require the declared chemistry interval and mechanism")
     plan = dict(config=config, hashes=hashes, training_count=len(training["states"]),

@@ -40,6 +40,7 @@ export function renderCatalogue() {
     "- [Adaptation plan](../benchmarks/offline_accuracy/improve/plan.py), [neural fitting](../benchmarks/offline_accuracy/improve/neural.py), [local fitting](../benchmarks/offline_accuracy/improve/local.py), and [input/head adaptation](../benchmarks/offline_accuracy/improve/arrhenius.py).",
     "- [Non-learned controls](../benchmarks/offline_accuracy/improve/physics_prior.py).", "",
     "- [GBCT and paired-scaling plan](../benchmarks/offline_accuracy/paired/README.md), [configuration](../benchmarks/offline_accuracy/paired/plan.py), and [stable coordinates](../benchmarks/offline_accuracy/paired/coordinates.py).", "",
+    "- [Fuel source-recipe replication](../benchmarks/offline_accuracy/paper_baseline/README.md) and [original-source audit](agents/fuel-baseline-replication.md).", "",
     "Executable plans and saved run configurations own numerical parameters. This registry owns review names, diagrams and alias mappings. A display-name change never rewrites a run artifact.", "");
   return lines.join("\n");
 }
