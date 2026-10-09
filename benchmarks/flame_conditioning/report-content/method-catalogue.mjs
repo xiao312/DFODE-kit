@@ -41,6 +41,12 @@ export const recipes = [
   {id:"fuel-power", name:"Direct signed-power increment — Fuel source recipe", target:"signed-power", family:"Fuel source-recipe replication",
     detail:"4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only population-standard-deviation scaling; zero target center, not RMS. 2000 shuffled epochs; requested batch 20k capped at training count. Tenfold LR drop every 500 epochs; retain Adam state. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.",
     flow:["Same checked training states", "Signed tenth-root increment; zero target center", "Population-standard-deviation scaling", "61 to 800x4 to 58 GELU network", "2000 epochs; StepLR with Adam state retained", "Direct power inverse; both budgets and SSPI"]},
+  ...["fuel-state", "fuel-power"].map(recipe=>({
+    id:`${recipe}-matched-work`, name:`${recipe === "fuel-state" ? "Transformed-state increment" : "Direct signed-power increment"} — matched-work control`,
+    target:recipe === "fuel-state" ? "state-boxcox" : "signed-power", family:"Matched-update data-size comparison",
+    detail:`50k/200k nested rows, fixed 50k training-only scalers. Same seeded 4x800 GELU, FP32 L1, 6000 updates, batch 10k, 60M presentations. ${recipe === "fuel-state" ? "Three 2000-update LR stages; reset Adam." : "Four 1500-update LR stages; retain Adam."} Final checkpoint, stable FP64 inverse. Not the original epoch schedule; compare sizes within each recipe.`,
+    flow:["Nested 50k or 200k training rows", "Freeze input and target scaling fitted on 50k", "Same seeded 61 to 800x4 to 58 GELU network", "6000 updates; 10k rows per update", "Stable physical reconstruction", "Same development states; both error policies"],
+  })),
   ...["state-boxcox","gbct"].flatMap(target=>["coordinate","increment","state"].map(objective=>({
     id:`${target}-${objective}`, name:`${targetNames[target]} — paired ${objective} loss`, target, family:"Paired target and error-scale comparison",
     detail:`Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k ${objective} updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.`,

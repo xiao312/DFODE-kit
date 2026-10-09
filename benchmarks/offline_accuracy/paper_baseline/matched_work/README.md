@@ -54,15 +54,30 @@ fixed-update histories, predictions, full metrics, and result-bound verification
 Campaign verification checks paired initial weights and preprocessing, exact work
 counts, nested row IDs, development predictions' row IDs, and all eight results.
 
+`python -m benchmarks.offline_accuracy.paper_baseline.matched_work.review
+<existing-snapshot.json> <completed-campaign> --output <new-snapshot.json>`
+adds sanitized summaries to the existing review. Download only each fit's
+result, verification and environment JSON, plus campaign verification JSON.
+The compiler requires all eight result hashes to match the remote campaign
+verification. It checks paired configuration, work, preprocessing and source
+identities again. It does not replay weights locally or expose private paths.
+Output queries are `fuel_matched_models`, `fuel_matched_history` and
+`fuel_matched_pairs`. The latter reports 200k minus 50k acceptance in percentage
+points for each recipe, seed and policy; it does not select the best fit.
+
 ## Dependencies and verification
 
 `campaign -> run -> fit/plan`; `run -> paper_baseline.data/coordinates/fit/run`
 reuses the checked data gate, reconstruction and independent physical evaluator.
 No production module depends on this experiment. Verified summaries feed the
 existing review; report code cannot affect fitting or evaluation.
+`review -> plan / paper_baseline.review.primary -> sanitized queries` has no
+Torch dependency and preserves every unrelated query and the report ID.
 
-`python -m pytest tests/test_matched_work.py tests/test_paper_baseline.py -q`
+`python -m pytest tests/test_matched_work.py tests/test_matched_review.py
+tests/test_paper_baseline.py -q`
 
 Expected: exact schedule/reset boundaries, equal presentations, unchanged pools,
-common normalization, GPU reload parity, and refusal of invalid saved identities.
+common normalization, GPU reload parity, refusal of invalid saved identities,
+complete pairs, and correct percentage-point differences in review output.
 Local CPU checks may skip the GPU test; execute that test on the server GPU.

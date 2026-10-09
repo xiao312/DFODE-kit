@@ -181,6 +181,8 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 | --- | --- | --- |
 | `fuel-state` | [Transformed-state increment — Fuel source recipe](#fuel-state) | Fuel source-recipe replication |
 | `fuel-power` | [Direct signed-power increment — Fuel source recipe](#fuel-power) | Fuel source-recipe replication |
+| `fuel-state-matched-work` | [Transformed-state increment — matched-work control](#fuel-state-matched-work) | Matched-update data-size comparison |
+| `fuel-power-matched-work` | [Direct signed-power increment — matched-work control](#fuel-power-matched-work) | Matched-update data-size comparison |
 | `state-boxcox-coordinate` | [Transformed-state increment — paired coordinate loss](#state-boxcox-coordinate) | Paired target and error-scale comparison |
 | `state-boxcox-increment` | [Transformed-state increment — paired increment loss](#state-boxcox-increment) | Paired target and error-scale comparison |
 | `state-boxcox-state` | [Transformed-state increment — paired state loss](#state-boxcox-state) | Paired target and error-scale comparison |
@@ -257,6 +259,50 @@ flowchart TD
   n3["61 to 800x4 to 58 GELU network"]
   n4["2000 epochs; StepLR with Adam state retained"]
   n5["Direct power inverse; both budgets and SSPI"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="fuel-state-matched-work"></a>
+### Transformed-state increment — matched-work control
+
+Artifact ID: `fuel-state-matched-work`. Family: Matched-update data-size comparison.
+
+50k/200k nested rows, fixed 50k training-only scalers. Same seeded 4x800 GELU, FP32 L1, 6000 updates, batch 10k, 60M presentations. Three 2000-update LR stages; reset Adam. Final checkpoint, stable FP64 inverse. Not the original epoch schedule; compare sizes within each recipe.
+
+```mermaid
+flowchart TD
+  n0["Nested 50k or 200k training rows"]
+  n1["Freeze input and target scaling fitted on 50k"]
+  n2["Same seeded 61 to 800x4 to 58 GELU network"]
+  n3["6000 updates; 10k rows per update"]
+  n4["Stable physical reconstruction"]
+  n5["Same development states; both error policies"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="fuel-power-matched-work"></a>
+### Direct signed-power increment — matched-work control
+
+Artifact ID: `fuel-power-matched-work`. Family: Matched-update data-size comparison.
+
+50k/200k nested rows, fixed 50k training-only scalers. Same seeded 4x800 GELU, FP32 L1, 6000 updates, batch 10k, 60M presentations. Four 1500-update LR stages; retain Adam. Final checkpoint, stable FP64 inverse. Not the original epoch schedule; compare sizes within each recipe.
+
+```mermaid
+flowchart TD
+  n0["Nested 50k or 200k training rows"]
+  n1["Freeze input and target scaling fitted on 50k"]
+  n2["Same seeded 61 to 800x4 to 58 GELU network"]
+  n3["6000 updates; 10k rows per update"]
+  n4["Stable physical reconstruction"]
+  n5["Same development states; both error policies"]
   n0 --> n1
   n1 --> n2
   n2 --> n3

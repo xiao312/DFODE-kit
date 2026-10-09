@@ -6,6 +6,7 @@ import { ReviewGuide } from "./ReviewGuide.jsx";
 import { PairedAccuracy } from "./PairedAccuracy.jsx";
 import { FuelBaseline } from "./FuelBaseline.jsx";
 import { FuelScale } from "./FuelScale.jsx";
+import { FuelMatchedWork } from "./FuelMatchedWork.jsx";
 import { targetNames } from "./method-catalogue.mjs";
 import { policyBinTable } from "./policy-bins.mjs";
 import { largestPrimaryComparison } from "./validation-selection.mjs";
@@ -102,6 +103,7 @@ export function ReportContent() {
       <h1 data-data-app-title contentEditable={canEdit && mode === "edit"} suppressContentEditableWarning onBlur={canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined}>{appTitle}</h1>
       <RichNarrative id="flame:introduction" className="report-deck" value="We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver." />
     </header>
+    <FuelMatchedWork />
     <FuelScale />
     <FuelBaseline />
     <PairedAccuracy />

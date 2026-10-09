@@ -8,6 +8,15 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`FuelMatchedWork.jsx` consumes `fuel_matched_models`, `fuel_matched_history`
+and `fuel_matched_pairs` from `paper_baseline.matched_work.review`. It compares
+50k with 200k at 6,000 updates and 60M presentations, with frozen 50k scalers.
+Keep all eight fits and both scoring policies. Recipe IDs end in `-matched-work`
+in the review, to distinguish these schedules from the source epoch recipes.
+Curves show full-pool training and development diagnostics at fixed updates.
+Compare sizes within each recipe; do not attribute between-recipe differences
+to coordinates alone. Equal updates are not equal diagnostic wall time.
+
 `FuelScale.jsx` consumes `fuel_scale_models` and `fuel_label_throughput` from
 `paper_baseline.scale_review`. It compares every completed size, recipe and seed
 under both pass rules. It explains rows, batches, updates and epochs. Never

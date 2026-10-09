@@ -300,3 +300,64 @@ Before a million-row stage, separate the effect of more updates from more unique
 rows, and audit broader source coverage. The current size comparison still uses
 four training and two development snapshots from one flame. Finding more saved
 snapshot directories is not proof of independent cases or valid split lineage.
+
+## 9. Verified 200k fixed-epoch result
+
+`fuel-recipe-200k-20261009` completed at source revision `1e7a0dfe`.
+Eight-worker preparation reused 50,100 candidates and labeled 150,400 new ones.
+It accepted 200,363 of 200,500 candidates in 526.6 seconds. A fresh 32-state,
+1,888-component CVODE/Radau subset check passed before the four GPU fits.
+All fits passed saved-weight replay and independent metric checks.
+
+| Recipe | Training acceptance, both seeds | Development acceptance, both seeds | Updates / presentations |
+| --- | --- | --- | --- |
+| Transformed-state, Fuel source recipe | 62.26–62.32% | 61.32–61.48% | 15,000 / 300M |
+| Direct signed-power, Fuel source recipe | 47.82–49.20% | 45.12–46.13% | 20,000 / 400M |
+
+These use the same primary increment rule and 1,023 development states.
+No complete development state passes. Direct-power predictions still give
+negative endpoint components (about 3.3%). Transformed-state predictions have
+no negative endpoints after the declared inverse-domain corrections; these
+corrections are not evidence that the raw predicted coordinate is always valid.
+The improvement includes more data, more updates and newly fitted scales.
+It is not proof that data size alone produced the gain.
+
+## 10. Matched-work data-size control
+
+`fuel-matched-work-20261009` completed eight GPU fits at clean source revision
+`396e547a`. Each uses 6,000 updates, batch 10k and 60M presentations. Freeze each
+recipe/seed's 50k preprocessing and pair initial weights. Compare the nested
+50k and 200k selections. Keep the same 1,023 development states and final-checkpoint
+rule. No independent test or new reference generation is part of this control.
+
+Primary increment development acceptance:
+
+| Recipe | Seed | 50k rows | 200k rows | Change, percentage points |
+| --- | --- | --- | --- | --- |
+| Transformed-state, matched work | 20261011 | 49.79% | 52.68% | +2.89 |
+| Transformed-state, matched work | 20261012 | 49.52% | 52.03% | +2.50 |
+| Direct signed-power, matched work | 20261011 | 20.70% | 23.29% | +2.59 |
+| Direct signed-power, matched work | 20261012 | 21.37% | 23.56% | +2.19 |
+
+More unique rows help under this fixed-work protocol, but the gain is modest.
+At 200k, training acceptance is 51.81–52.43% for transformed-state and
+23.46–23.78% for power, close to development. There is no large generalization
+gap that alone explains the remaining failures. This is not a saturation test.
+No complete development state passes. The transformed-state normalized-error
+p99 is about 54k–57k allowance units; power is about 156–197. Power still gives
+about 5% negative endpoint components. Better component acceptance does not
+mean better tails or a physically valid solver substitute.
+
+The earlier 200k fixed-epoch scores are not invalidated or replaced. Their
+updates, batches and preprocessing differ. Next, test more updates at fixed
+200k data and fixed preprocessing before a 1M expansion. Do not attribute a
+between-recipe gap to representation alone; schedules and normalization differ.
+
+All eight saved-weight, independent-count, physical-metric and frozen-scaler
+checks passed. Campaign verification confirms equal work, identical paired
+initial weights, nested row IDs and common development identities. Fourteen
+focused experiment tests passed on the server GPU; five review-compiler tests
+and nine report/catalogue tests passed locally. Full server `make verify`
+still reports the same seven unrelated failures listed in section 7.
+Browser inspection was unavailable; report builds and published-byte checks
+are separate from visual acceptance. The draft PR remains a draft.
