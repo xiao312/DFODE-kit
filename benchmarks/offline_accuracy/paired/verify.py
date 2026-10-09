@@ -6,10 +6,9 @@ from benchmarks.flame_conditioning.extract import sha256
 from benchmarks.flame_conditioning.train import network
 from benchmarks.flame_conditioning.verify_physical import recompute, assert_scores
 from benchmarks.offline_accuracy.refinement.run import inputs
-from benchmarks.offline_accuracy.refinement.fit import weight_hash
 from benchmarks.offline_accuracy.evaluate import audit_subset
 from benchmarks.offline_accuracy.metrics import ABSOLUTE_FLOORS, RELATIVE_TOLERANCES, MAGNITUDE_EDGES
-from .fit import preprocessing, prediction, reload_model
+from .fit import preprocessing, prediction, reload_model, weight_hash
 from .plan import configuration, POLICIES
 
 

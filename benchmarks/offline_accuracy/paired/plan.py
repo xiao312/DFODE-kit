@@ -10,7 +10,7 @@ def configuration(name, seed):
     if len(matches) != 1 or seed not in (20261011, 20261012):
         raise ValueError("Select a declared target, objective and seed")
     target, objective = matches[0]
-    return dict(name=name, target=target, objective=objective, seed=seed,
+    return dict(name=name, target=target, objective=objective, seed=seed, device="cuda",
                 widths=[800]*4, updates=4000, warmup=2000, batch_size=256,
                 atol=1e-15, rtol=.1, interval=1e-6, lambda_a=.1, lambda_b=.5,
                 learning_rate=.001, final_learning_rate=.00001,

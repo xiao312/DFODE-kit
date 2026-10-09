@@ -9,9 +9,10 @@ from benchmarks.flame_conditioning.extract import sha256, source_revision
 from benchmarks.flame_conditioning.metrics import physical_scores
 from benchmarks.offline_accuracy.refinement.run import inputs, save
 from benchmarks.offline_accuracy.evaluate import audit_subset
-from .fit import fit, prediction
+from .fit import fit, prediction, synchronize
 from .metrics import summarize
 from .plan import configuration
+from .runtime import configure
 
 
 def evaluate(model, prep, training, validation, physics, audit, config, destination):
@@ -30,8 +31,10 @@ def evaluate(model, prep, training, validation, physics, audit, config, destinat
                                         validation["states"][:, 2:], physics["species_names"])
     repeats = []
     for _ in range(5):
+        synchronize(config)
         wall, cpu = time.perf_counter(), time.process_time()
         predict(validation["states"])
+        synchronize(config)
         repeats.append(dict(wall_seconds=time.perf_counter()-wall, process_seconds=time.process_time()-cpu))
     result["inference"] = dict(states=len(validation["states"]), repeats=repeats,
         median_process_seconds=float(np.median([r["process_seconds"] for r in repeats])),
@@ -51,27 +54,24 @@ def main():
     config = configuration(args.variant, args.seed)
     if args.output.exists():
         parser.error("Output exists; choose a new directory")
-    if torch.__version__ != "2.5.1+cpu":
-        raise ValueError("Use the existing pinned Torch image")
-    torch.set_num_threads(1)
-    torch.set_num_interop_threads(1)
-    torch.use_deterministic_algorithms(True)
+    runtime = configure()
     training, validation, physics, audit, _, _, hashes = inputs(args.dataset, args.audit, args.base, args.seed)
     if physics["interval"] != config["interval"]:
         raise ValueError("The declared interval must match the dataset")
     print(json.dumps(dict(config=config, hashes=hashes)), flush=True)
     if args.dry_run:
         return
+    source = source_revision()
     args.output.mkdir(parents=True)
-    result = dict(status="running", config=config, hashes=hashes, source=source_revision(),
-                  runtime=dict(torch=torch.__version__, threads=1, learning="float32", reconstruction="float64"))
+    result = dict(status="running", config=config, hashes=hashes, source=source, runtime=runtime)
+    save(args.output / "environment.json", runtime)
     save(args.output / "result.json", result)
     try:
         model, prep, fitted = fit(training, physics["species_names"], config, args.output)
         result.update(fitted)
         result.update(evaluate(model, prep, training, validation, physics, audit, config, args.output))
         result["artifacts"] = {name: sha256(args.output / name) for name in (
-            "weights.pt", "optimizer.pt", "preprocessing.npz", "training-indices.npy",
+            "environment.json", "weights.pt", "optimizer.pt", "preprocessing.npz", "training-indices.npy",
             "training-predictions.npz", "validation-predictions.npz")}
         result["status"] = "complete"
         save(args.output / "result.json", result)

@@ -21,6 +21,9 @@ export const representations = [
   {id:"budget-asinh", name:"Tolerance-scale asinh increment", formula:"z = asinh(r * d / a) / r",
     detail:"Use a=1e-15 and r=0.1. The derivative is 1/sqrt(a^2+r^2*d^2), not exactly the additive acceptance rule.",
     flow:["Reference increment d", "Fixed tolerance scales a and r", "Signed asinh", "Coordinate z"]},
+  {id:"gbct", name:"GBCT transformed-state rate", formula:"z = sign(q) * abs(q)^0.5 / 0.5; q = [B(Y+d)-B(Y)]/h; B power = 0.1",
+    detail:"Matched target adaptation of GBCT, with h=1e-6 s. Stable state difference, signed square-root rate, then train-only mean/RMS normalization. Not a reproduction of the published network, dataset or loader normalization.",
+    flow:["Initial state Y and reference increment d", "Stable Box-Cox difference, exponent 0.1", "Divide by h = 1e-6 s", "Signed power, exponent 0.5", "Train-only mean/RMS scaling"]},
 ];
 export const targetNames = Object.fromEntries(representations.map(row=>[row.id,row.name]));
 targetNames.zero = "Zero-increment control";
@@ -32,6 +35,11 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...["state-boxcox","gbct"].flatMap(target=>["coordinate","increment","state"].map(objective=>({
+    id:`${target}-${objective}`, name:`${targetNames[target]} — paired ${objective} loss`, target, family:"Paired target and error-scale comparison",
+    detail:`Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k ${objective} updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.`,
+    flow:["Same 10k training states and seed", `Predict ${targetNames[target]}`, "2k coordinate warmup", `2k ${objective}-loss updates`, "Stable physical increment inverse", "Score BOTH increment and state allowances"],
+  }))),
   ...representations.slice(0,4).flatMap(target=>[
     {id:`original-${target.id}`, name:`${target.name} — 2k updates`, target:target.id, family:"Matched dense networks",
       detail:"4x800 GELU, FP32, L1 coordinate loss, Adam, 2,000 updates. Training-only output standardization. State count and seed belong to the run.", flow:denseFlow(target.name)},

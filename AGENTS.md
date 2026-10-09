@@ -34,6 +34,11 @@ This repository contains DFODE-kit, a Python toolkit for sampling combustion sta
 - `tests/`: lightweight harness tests; keep them fast
 
 ## Rules
+- Use GPU for neural training when available. Use CPU only for a documented
+  requirement, such as chemistry reference integration or small verification.
+  For training, use a project-local, version-recorded environment; preserve shared
+  environments. Record hardware and numerical settings with each run. Keep CPU
+  and GPU cost comparisons separate.
 - Do not put large architecture essays in this file; add them under `docs/agents/` and link here.
 - Prefer deterministic, non-interactive commands.
 - Prefer explicit exceptions over bare asserts for runtime validation changes.

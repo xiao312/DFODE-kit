@@ -19,7 +19,7 @@ export function renderCatalogue() {
     "1. **Representation:** the coordinate system for a signed physical increment.",
     "2. **Method recipe:** input features, representation, approximator, loss and optimization.",
     "3. **Run:** recipe plus dataset, split, seed, precision and work budget.", "",
-    "Changing a seed does not create a new method. Sharing an asinh transform does not make two recipes identical. The historical `arrhenius-*` IDs mean inverse-temperature and log-partial-pressure features, not an exact Arrhenius law. GBCT, full ISAT and spectrum-informed MSNN are not implemented by these recipes.", "",
+    "Changing a seed does not create a new method. Sharing an asinh transform does not make two recipes identical. The historical `arrhenius-*` IDs mean inverse-temperature and log-partial-pressure features, not an exact Arrhenius law. A matched GBCT target adaptation is implemented; full GBCTNet reproduction, ISAT and spectrum-informed MSNN are not. See the [GBCT source check](agents/gbct-source-and-adaptation.md).", "",
     "## Data split sequence", "",
     diagram(["Split source cases or snapshots before augmentation", "Training: fit weights and learned scales", "Development: compare and revise recipes", "Freeze recipe and acceptance rule", "Independent-case test: evaluate once"]), "",
     "Current campaign: 10,000 selected training states per seed from 10,010 accepted rows; 1,023 development states. Four training and two development snapshots come from one flame realization. Development has been inspected repeatedly. Current independent-test performance is **not evaluated**, not zero. Older CFD test results concern older models. Local-table training scores are resubstitution scores, not leave-one-out validation.", "",
@@ -39,6 +39,7 @@ export function renderCatalogue() {
     "- [Refinement plan](../benchmarks/offline_accuracy/refinement/plan.py) and [coordinates](../benchmarks/offline_accuracy/refinement/coordinates.py).",
     "- [Adaptation plan](../benchmarks/offline_accuracy/improve/plan.py), [neural fitting](../benchmarks/offline_accuracy/improve/neural.py), [local fitting](../benchmarks/offline_accuracy/improve/local.py), and [input/head adaptation](../benchmarks/offline_accuracy/improve/arrhenius.py).",
     "- [Non-learned controls](../benchmarks/offline_accuracy/improve/physics_prior.py).", "",
+    "- [GBCT and paired-scaling plan](../benchmarks/offline_accuracy/paired/README.md), [configuration](../benchmarks/offline_accuracy/paired/plan.py), and [stable coordinates](../benchmarks/offline_accuracy/paired/coordinates.py).", "",
     "Executable plans and saved run configurations own numerical parameters. This registry owns review names, diagrams and alias mappings. A display-name change never rewrites a run artifact.", "");
   return lines.join("\n");
 }

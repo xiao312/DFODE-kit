@@ -37,6 +37,7 @@ def test_scaling_uses_reference_and_identical_error():
 
 def test_declared_plan():
     assert configuration("gbct-state", 20261011)["lambda_b"] == .5
+    assert configuration("gbct-state", 20261011)["device"] == "cuda"
     with pytest.raises(ValueError):
         configuration("gbct-state", 3)
 
@@ -66,3 +67,24 @@ def test_independent_verifier_catches_changed_counts():
     result[POLICIES[1]]["grid"][0]["component_pass_count"] = 0
     with pytest.raises(AssertionError):
         check_summary(predicted, truth, initial, ["H2", "AR"], result)
+
+
+def test_gpu_fit_replays(tmp_path):
+    torch = pytest.importorskip("torch")
+    if not torch.cuda.is_available():
+        pytest.skip("Requires GPU; no CPU fallback for training")
+    from benchmarks.offline_accuracy.paired.fit import fit, prediction, reload_model
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+    torch.use_deterministic_algorithms(True)
+    states = np.array([[1000., 101325., .1, .9], [1200., 102000., .2, .8], [1300., 103000., .3, .7]])
+    training = dict(states=states, delta=np.array([[1e-6, 0.], [-1e-7, 0.], [2e-6, 0.]]), source_indices=np.arange(3))
+    config = dict(configuration("gbct-increment", 20261011), widths=[8, 8], updates=4,
+                  warmup=2, validation_every=2, batch_size=2)
+    model, prep, fitted = fit(training, ["H2", "AR"], config, tmp_path)
+    expected, correction = prediction(model, prep, states, config)
+    restored, restored_prep = reload_model(tmp_path, config)
+    actual, actual_correction = prediction(restored, restored_prep, states, config)
+    np.testing.assert_array_equal(actual, expected)
+    np.testing.assert_array_equal(actual_correction, correction)
+    assert fitted["peak_gpu_bytes"] > 0

@@ -1,11 +1,21 @@
 """Matched two-phase fit; train-only scales and fixed final checkpoints."""
 import time
+import hashlib
 import numpy as np
 import torch
 from benchmarks.flame_conditioning.coordinates import input_features, standardization
 from benchmarks.flame_conditioning.train import network
-from benchmarks.offline_accuracy.refinement.fit import weight_hash
 from .coordinates import encode, decode, differentiable_decode
+
+
+def weight_hash(model):
+    return hashlib.sha256(b"".join(p.detach().cpu().double().numpy().tobytes()
+                                  for p in model.parameters())).hexdigest()
+
+
+def synchronize(config):
+    if config["device"] == "cuda":
+        torch.cuda.synchronize()
 
 
 def preprocessing(training, species, config):
@@ -20,7 +30,7 @@ def preprocessing(training, species, config):
 def prediction(model, prep, states, config):
     x = (input_features(states)-prep["x_offset"])/prep["x_scale"]
     with torch.no_grad():
-        parts = [model(torch.as_tensor(chunk, dtype=torch.float32)).double().numpy()
+        parts = [model(torch.as_tensor(chunk, dtype=torch.float32, device=config["device"])).double().cpu().numpy()
                  for chunk in np.array_split(x, max(1, int(np.ceil(len(x)/1024))))]
     coordinate = np.concatenate(parts)*prep["y_scale"]+prep["y_offset"]
     predicted, correction = decode(states[:, 2:], coordinate, config["target"], config["interval"])
@@ -35,23 +45,28 @@ def reload_model(directory, config):
     model = network(len(prep["x_offset"]), len(prep["active"]), config["widths"],
                     config["seed"], torch.float32, "gelu")
     model.load_state_dict(torch.load(directory / "weights.pt", map_location="cpu", weights_only=True))
+    model.to(config["device"])
     model.eval()
     return model, prep
 
 
 def fit(training, species, config, destination):
+    synchronize(config)
     wall, cpu = time.monotonic(), time.process_time()
     states, delta = training["states"], training["delta"]
     prep = preprocessing(training, species, config)
-    x = torch.as_tensor((input_features(states)-prep["x_offset"])/prep["x_scale"], dtype=torch.float32)
+    device = config["device"]
+    x = torch.as_tensor((input_features(states)-prep["x_offset"])/prep["x_scale"], dtype=torch.float32, device=device)
     encoded = encode(states[:, 2:], delta, config["target"], config["interval"])
-    y = torch.as_tensor((encoded-prep["y_offset"])/prep["y_scale"], dtype=torch.float32)
-    truth = torch.as_tensor(delta, dtype=torch.float64)
-    initial = torch.as_tensor(states[:, 2:], dtype=torch.float64)
-    offset, scale = torch.as_tensor(prep["y_offset"]), torch.as_tensor(prep["y_scale"])
-    mask = torch.as_tensor(prep["active"])
+    y = torch.as_tensor((encoded-prep["y_offset"])/prep["y_scale"], dtype=torch.float32, device=device)
+    truth = torch.as_tensor(delta, dtype=torch.float64, device=device)
+    initial = torch.as_tensor(states[:, 2:], dtype=torch.float64, device=device)
+    offset, scale = (torch.as_tensor(prep[k], device=device) for k in ("y_offset", "y_scale"))
+    mask = torch.as_tensor(prep["active"], device=device)
     model = network(x.shape[1], y.shape[1], config["widths"], config["seed"], torch.float32, "gelu")
     initial_hash = weight_hash(model)
+    model.to(device)
+    torch.cuda.reset_peak_memory_stats()
     rng = np.random.default_rng(config["seed"])
     history = []
     warmup_hash = None
@@ -66,7 +81,7 @@ def fit(training, species, config, destination):
         prefix = "phase_two_" if second else ""
         low, high = config[prefix+"final_learning_rate"], config[prefix+"learning_rate"]
         optimizer.param_groups[0]["lr"] = low+.5*(high-low)*(1+np.cos(np.pi*(phase_step-1)/(phase_length-1)))
-        indices = rng.integers(0, len(states), config["batch_size"])
+        indices = torch.as_tensor(rng.integers(0, len(states), config["batch_size"]), device=device)
         optimizer.zero_grad(set_to_none=True)
         output = model(x[indices])
         coordinate_loss = (output[:, mask]-y[indices][:, mask]).abs().mean()
@@ -96,7 +111,9 @@ def fit(training, species, config, destination):
     torch.save(optimizer.state_dict(), destination / "optimizer.pt")
     np.savez(destination / "preprocessing.npz", **prep)
     np.save(destination / "training-indices.npy", training["source_indices"])
+    synchronize(config)
     result = dict(updates_completed=step, initial_weights_sha256=initial_hash, warmup_weights_sha256=warmup_hash,
         history=history, parameter_count=sum(p.numel() for p in model.parameters()),
+        peak_gpu_bytes=torch.cuda.max_memory_allocated(),
         training_wall_seconds=time.monotonic()-wall, training_process_seconds=time.process_time()-cpu)
     return model, prep, result

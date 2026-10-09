@@ -12,7 +12,7 @@ The [accuracy protocol](agents/representation-accuracy-success-sources.md#requir
 2. **Method recipe:** input features, representation, approximator, loss and optimization.
 3. **Run:** recipe plus dataset, split, seed, precision and work budget.
 
-Changing a seed does not create a new method. Sharing an asinh transform does not make two recipes identical. The historical `arrhenius-*` IDs mean inverse-temperature and log-partial-pressure features, not an exact Arrhenius law. GBCT, full ISAT and spectrum-informed MSNN are not implemented by these recipes.
+Changing a seed does not create a new method. Sharing an asinh transform does not make two recipes identical. The historical `arrhenius-*` IDs mean inverse-temperature and log-partial-pressure features, not an exact Arrhenius law. A matched GBCT target adaptation is implemented; full GBCTNet reproduction, ISAT and spectrum-informed MSNN are not. See the [GBCT source check](agents/gbct-source-and-adaptation.md).
 
 ## Data split sequence
 
@@ -151,12 +151,40 @@ flowchart TD
   n2 --> n3
 ```
 
+<a id="representation-gbct"></a>
+### GBCT transformed-state rate
+
+Representation ID: `gbct`.
+
+`z = sign(q) * abs(q)^0.5 / 0.5; q = [B(Y+d)-B(Y)]/h; B power = 0.1`
+
+Matched target adaptation of GBCT, with h=1e-6 s. Stable state difference, signed square-root rate, then train-only mean/RMS normalization. Not a reproduction of the published network, dataset or loader normalization.
+
+```mermaid
+flowchart TD
+  n0["Initial state Y and reference increment d"]
+  n1["Stable Box-Cox difference, exponent 0.1"]
+  n2["Divide by h = 1e-6 s"]
+  n3["Signed power, exponent 0.5"]
+  n4["Train-only mean/RMS scaling"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
 ## Method index
 
 Click a method name for its steps. Diagrams summarize the recipe, including fitting where labelled; they are not per-query cost diagrams.
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `state-boxcox-coordinate` | [Transformed-state increment — paired coordinate loss](#state-boxcox-coordinate) | Paired target and error-scale comparison |
+| `state-boxcox-increment` | [Transformed-state increment — paired increment loss](#state-boxcox-increment) | Paired target and error-scale comparison |
+| `state-boxcox-state` | [Transformed-state increment — paired state loss](#state-boxcox-state) | Paired target and error-scale comparison |
+| `gbct-coordinate` | [GBCT transformed-state rate — paired coordinate loss](#gbct-coordinate) | Paired target and error-scale comparison |
+| `gbct-increment` | [GBCT transformed-state rate — paired increment loss](#gbct-increment) | Paired target and error-scale comparison |
+| `gbct-state` | [GBCT transformed-state rate — paired state loss](#gbct-state) | Paired target and error-scale comparison |
 | `original-state-boxcox` | [Transformed-state increment — 2k updates](#original-state-boxcox) | Matched dense networks |
 | `long-state-boxcox` | [Transformed-state increment — 4k updates](#long-state-boxcox) | Matched dense networks |
 | `original-signed-power` | [Direct signed-power increment — 2k updates](#original-signed-power) | Matched dense networks |
@@ -189,6 +217,138 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="state-boxcox-coordinate"></a>
+### Transformed-state increment — paired coordinate loss
+
+Artifact ID: `state-boxcox-coordinate`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k coordinate updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict Transformed-state increment"]
+  n2["2k coordinate warmup"]
+  n3["2k coordinate-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="state-boxcox-increment"></a>
+### Transformed-state increment — paired increment loss
+
+Artifact ID: `state-boxcox-increment`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k increment updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict Transformed-state increment"]
+  n2["2k coordinate warmup"]
+  n3["2k increment-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="state-boxcox-state"></a>
+### Transformed-state increment — paired state loss
+
+Artifact ID: `state-boxcox-state`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k state updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict Transformed-state increment"]
+  n2["2k coordinate warmup"]
+  n3["2k state-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="gbct-coordinate"></a>
+### GBCT transformed-state rate — paired coordinate loss
+
+Artifact ID: `gbct-coordinate`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k coordinate updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict GBCT transformed-state rate"]
+  n2["2k coordinate warmup"]
+  n3["2k coordinate-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="gbct-increment"></a>
+### GBCT transformed-state rate — paired increment loss
+
+Artifact ID: `gbct-increment`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k increment updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict GBCT transformed-state rate"]
+  n2["2k coordinate warmup"]
+  n3["2k increment-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="gbct-state"></a>
+### GBCT transformed-state rate — paired state loss
+
+Artifact ID: `gbct-state`. Family: Paired target and error-scale comparison.
+
+Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k state updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.
+
+```mermaid
+flowchart TD
+  n0["Same 10k training states and seed"]
+  n1["Predict GBCT transformed-state rate"]
+  n2["2k coordinate warmup"]
+  n3["2k state-loss updates"]
+  n4["Stable physical increment inverse"]
+  n5["Score BOTH increment and state allowances"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="original-state-boxcox"></a>
 ### Transformed-state increment — 2k updates
@@ -716,5 +876,7 @@ flowchart TD
 - [Refinement plan](../benchmarks/offline_accuracy/refinement/plan.py) and [coordinates](../benchmarks/offline_accuracy/refinement/coordinates.py).
 - [Adaptation plan](../benchmarks/offline_accuracy/improve/plan.py), [neural fitting](../benchmarks/offline_accuracy/improve/neural.py), [local fitting](../benchmarks/offline_accuracy/improve/local.py), and [input/head adaptation](../benchmarks/offline_accuracy/improve/arrhenius.py).
 - [Non-learned controls](../benchmarks/offline_accuracy/improve/physics_prior.py).
+
+- [GBCT and paired-scaling plan](../benchmarks/offline_accuracy/paired/README.md), [configuration](../benchmarks/offline_accuracy/paired/plan.py), and [stable coordinates](../benchmarks/offline_accuracy/paired/coordinates.py).
 
 Executable plans and saved run configurations own numerical parameters. This registry owns review names, diagrams and alias mappings. A display-name change never rewrites a run artifact.
