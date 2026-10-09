@@ -35,6 +35,11 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...["state-boxcox","signed-power","scaled-asinh","gbct"].flatMap(target=>["coordinate","increment","state"].map(objective=>({
+    id:`matched200k-${target}-${objective}`, name:`${targetNames[target]} — matched 200k ${objective} loss`, target, family:"Matched 200k targets and losses",
+    detail:"Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.",
+    flow:["Same 200k training rows and seed", "Freeze common input and target scaling on 50k prefix", `Predict ${targetNames[target]}`, "12k identical coordinate-loss warmup within each target", `6k ${objective}-loss updates under common schedule`, "FP64 physical reconstruction; score BOTH error scales and tails"],
+  }))),
   {id:"fuel-state", name:"Transformed-state increment — Fuel source recipe", target:"state-boxcox", family:"Fuel source-recipe replication",
     detail:"4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only centered sample-standard-deviation scaling. 1500 shuffled epochs; requested batch 20k capped at training count. Adam resets before epochs 502 and 1002 with tenfold LR drops. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.",
     flow:["Same checked training states", "Sample-standard-deviation input and target scaling", "61 to 800x4 to 58 GELU network", "1500 epochs; source Adam resets", "Stable transformed-state inverse", "Both error budgets and SSPI"]},

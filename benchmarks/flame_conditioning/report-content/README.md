@@ -6,6 +6,10 @@ Present the reviewed flame experiments in a step-by-step HTML report. This
 directory contains authored content only, not a fork of the Data app runtime.
 It does not run experiments, fetch private artifacts, or select models.
 
+The registry also reserves `matched200k-<target>-<objective>` for the common
+18k target/loss matrix. These are distinct from historical Fuel recipes and the
+10k paired campaign. Registration is not evidence that a fit has completed.
+
 ## Interface and configuration
 
 `FuelBudget.jsx` consumes `fuel_budget_models`, `fuel_budget_history` and

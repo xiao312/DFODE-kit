@@ -19,17 +19,18 @@ from .fit import fit, prediction, reload_model
 
 
 def evaluate_and_verify(model, prep, training, validation, physics, audit, config, destination, dataset,
-                        normalization_training=None):
-    restored, saved_prep = reload_model(destination, config)
-    rebuilt = preprocessing(training if normalization_training is None else normalization_training,
+                        normalization_training=None, preprocess_fn=preprocessing,
+                        predict_fn=prediction, reload_fn=reload_model):
+    restored, saved_prep = reload_fn(destination, config)
+    rebuilt = preprocess_fn(training if normalization_training is None else normalization_training,
                             physics["species_names"], config)
     for key in rebuilt:
         np.testing.assert_array_equal(saved_prep[key], rebuilt[key])
     np.testing.assert_array_equal(np.load(destination / "training-indices.npy"), training["source_indices"])
     result = {}
     for name, rows in (("training", training), ("development", validation)):
-        predicted, corrected = prediction(model, prep, rows["states"], config)
-        replay, replay_corrected = prediction(restored, saved_prep, rows["states"], config)
+        predicted, corrected = predict_fn(model, prep, rows["states"], config)
+        replay, replay_corrected = predict_fn(restored, saved_prep, rows["states"], config)
         np.testing.assert_array_equal(predicted, replay)
         np.testing.assert_array_equal(corrected, replay_corrected)
         result[name] = summarize(predicted, rows["delta"], rows["states"][:, 2:], physics["species_names"])
@@ -52,7 +53,7 @@ def evaluate_and_verify(model, prep, training, validation, physics, audit, confi
     for _ in range(5):
         torch.cuda.synchronize()
         started = time.perf_counter()
-        prediction(model, prep, validation["states"], config)
+        predict_fn(model, prep, validation["states"], config)
         torch.cuda.synchronize()
         timings.append(time.perf_counter()-started)
     result["inference"] = dict(states=len(validation["states"]), wall_seconds=timings,

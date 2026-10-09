@@ -74,6 +74,14 @@ summaries remain separate from the original fixed-epoch evidence.
 budget on the checked 200k pool; `budget_review -> fuel_budget_* -> FuelBudget.jsx`
 retains the earlier evidence. It changes neither chemistry labels nor production code.
 
+`paper_baseline.matched_targets.campaign -> run -> fit/model/coordinates/plan`
+owns the 200k four-target, three-objective, two-seed comparison. It reads checked
+data through `matched_work.run.inputs` and uses explicit adapters for
+`paper_baseline.run.evaluate_and_verify`. The latter keeps its original defaults.
+Coordinate code reuses stable flame/paired/improve transforms. Campaign checks
+bind all results, common inputs/initial weights and objective-paired warmup hashes.
+No production code depends on this experiment; review is a one-way artifact consumer.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and

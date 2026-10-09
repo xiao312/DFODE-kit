@@ -179,6 +179,18 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `matched200k-state-boxcox-coordinate` | [Transformed-state increment — matched 200k coordinate loss](#matched200k-state-boxcox-coordinate) | Matched 200k targets and losses |
+| `matched200k-state-boxcox-increment` | [Transformed-state increment — matched 200k increment loss](#matched200k-state-boxcox-increment) | Matched 200k targets and losses |
+| `matched200k-state-boxcox-state` | [Transformed-state increment — matched 200k state loss](#matched200k-state-boxcox-state) | Matched 200k targets and losses |
+| `matched200k-signed-power-coordinate` | [Direct signed-power increment — matched 200k coordinate loss](#matched200k-signed-power-coordinate) | Matched 200k targets and losses |
+| `matched200k-signed-power-increment` | [Direct signed-power increment — matched 200k increment loss](#matched200k-signed-power-increment) | Matched 200k targets and losses |
+| `matched200k-signed-power-state` | [Direct signed-power increment — matched 200k state loss](#matched200k-signed-power-state) | Matched 200k targets and losses |
+| `matched200k-scaled-asinh-coordinate` | [Empirical-scale asinh increment — matched 200k coordinate loss](#matched200k-scaled-asinh-coordinate) | Matched 200k targets and losses |
+| `matched200k-scaled-asinh-increment` | [Empirical-scale asinh increment — matched 200k increment loss](#matched200k-scaled-asinh-increment) | Matched 200k targets and losses |
+| `matched200k-scaled-asinh-state` | [Empirical-scale asinh increment — matched 200k state loss](#matched200k-scaled-asinh-state) | Matched 200k targets and losses |
+| `matched200k-gbct-coordinate` | [GBCT transformed-state rate — matched 200k coordinate loss](#matched200k-gbct-coordinate) | Matched 200k targets and losses |
+| `matched200k-gbct-increment` | [GBCT transformed-state rate — matched 200k increment loss](#matched200k-gbct-increment) | Matched 200k targets and losses |
+| `matched200k-gbct-state` | [GBCT transformed-state rate — matched 200k state loss](#matched200k-gbct-state) | Matched 200k targets and losses |
 | `fuel-state` | [Transformed-state increment — Fuel source recipe](#fuel-state) | Fuel source-recipe replication |
 | `fuel-power` | [Direct signed-power increment — Fuel source recipe](#fuel-power) | Fuel source-recipe replication |
 | `fuel-state-matched-work` | [Transformed-state increment — matched-work control](#fuel-state-matched-work) | Matched-update data-size comparison |
@@ -223,6 +235,270 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="matched200k-state-boxcox-coordinate"></a>
+### Transformed-state increment — matched 200k coordinate loss
+
+Artifact ID: `matched200k-state-boxcox-coordinate`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Transformed-state increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k coordinate-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-state-boxcox-increment"></a>
+### Transformed-state increment — matched 200k increment loss
+
+Artifact ID: `matched200k-state-boxcox-increment`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Transformed-state increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k increment-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-state-boxcox-state"></a>
+### Transformed-state increment — matched 200k state loss
+
+Artifact ID: `matched200k-state-boxcox-state`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Transformed-state increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k state-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-signed-power-coordinate"></a>
+### Direct signed-power increment — matched 200k coordinate loss
+
+Artifact ID: `matched200k-signed-power-coordinate`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Direct signed-power increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k coordinate-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-signed-power-increment"></a>
+### Direct signed-power increment — matched 200k increment loss
+
+Artifact ID: `matched200k-signed-power-increment`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Direct signed-power increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k increment-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-signed-power-state"></a>
+### Direct signed-power increment — matched 200k state loss
+
+Artifact ID: `matched200k-signed-power-state`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Direct signed-power increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k state-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-scaled-asinh-coordinate"></a>
+### Empirical-scale asinh increment — matched 200k coordinate loss
+
+Artifact ID: `matched200k-scaled-asinh-coordinate`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Empirical-scale asinh increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k coordinate-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-scaled-asinh-increment"></a>
+### Empirical-scale asinh increment — matched 200k increment loss
+
+Artifact ID: `matched200k-scaled-asinh-increment`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Empirical-scale asinh increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k increment-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-scaled-asinh-state"></a>
+### Empirical-scale asinh increment — matched 200k state loss
+
+Artifact ID: `matched200k-scaled-asinh-state`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict Empirical-scale asinh increment"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k state-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-gbct-coordinate"></a>
+### GBCT transformed-state rate — matched 200k coordinate loss
+
+Artifact ID: `matched200k-gbct-coordinate`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict GBCT transformed-state rate"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k coordinate-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-gbct-increment"></a>
+### GBCT transformed-state rate — matched 200k increment loss
+
+Artifact ID: `matched200k-gbct-increment`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict GBCT transformed-state rate"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k increment-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="matched200k-gbct-state"></a>
+### GBCT transformed-state rate — matched 200k state loss
+
+Artifact ID: `matched200k-gbct-state`. Family: Matched 200k targets and losses.
+
+Fixed 200k rows, mean/sample-standard-deviation scalers fitted on the same 50k prefix. Fresh 4x800 GELU, 58 non-AR outputs, batch 10k. Common 18k schedule: 6k each at 1e-3/1e-4/1e-5, with Adam reset each stage. First 12k coordinate L1, last 6k selected loss. Physical loss is mean log1p(error/allowance), a=1e-15 and r=.1; increment scale abs(d), state scale abs(Y+d). Asinh scale 1e-14; GBCT a=.1,b=.5,h=1e-6. FP32 fit/FP64 inverse, final checkpoint. Not an original paper recipe.
+
+```mermaid
+flowchart TD
+  n0["Same 200k training rows and seed"]
+  n1["Freeze common input and target scaling on 50k prefix"]
+  n2["Predict GBCT transformed-state rate"]
+  n3["12k identical coordinate-loss warmup within each target"]
+  n4["6k state-loss updates under common schedule"]
+  n5["FP64 physical reconstruction; score BOTH error scales and tails"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="fuel-state"></a>
 ### Transformed-state increment — Fuel source recipe

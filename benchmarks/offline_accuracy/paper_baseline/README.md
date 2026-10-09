@@ -117,6 +117,12 @@ audit and four sequential GPU fits retain the existing external time limits.
 
 ## Review output
 
+The [matched-target experiment](matched_targets/README.md) reuses the fixed 200k
+pool for a four-target, three-objective comparison under one common 18k schedule.
+Its normalized-coordinate and physical losses remain separate named factors.
+`evaluate_and_verify` accepts explicit preprocessing/prediction/reload callables
+for this experiment; omitted callables preserve the original recipe evaluator.
+
 The separate [matched-work experiment](matched_work/README.md) compares nested
 50k and 200k pools with equal updates, batch sizes and row presentations. It
 freezes 50k preprocessing and indexes the schedule by updates. Its results are
