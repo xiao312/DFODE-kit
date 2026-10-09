@@ -58,6 +58,8 @@ adds a bounded 50k preparation/audit stage; `paper_baseline.data` gates training
 on a preserved original training prefix and byte-value-identical development
 arrays. It depends on `flame_conditioning.prepare/audit_labels/data` and stops
 before training on any reference or identity failure.
+`paper_baseline.review -> fuel_* queries -> report-content/FuelBaseline.jsx`
+adds verified evidence to the same report, using the shared method registry.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

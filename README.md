@@ -22,8 +22,10 @@ In practice, DFODE-kit sits between:
 3. [Accuracy definitions and next-run protocol](docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs):
    state-based versus increment-based scaling, and the required paired comparison.
 
-The research remains experimental. The next dual-scaling comparison is planned,
-not a completed result. Existing reports retain their original scoring rules.
+The research remains experimental. The paired GPU comparison and the first
+reduced-data Fuel source-recipe fits are complete. The larger Fuel recipe
+campaign has separate reference and data-identity gates. See the live review
+for measured results; existing reports retain their original scoring rules.
 
 ## What DFODE-kit does
 

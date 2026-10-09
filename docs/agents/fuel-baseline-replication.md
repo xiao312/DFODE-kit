@@ -251,3 +251,23 @@ The first run can answer whether the source training recipe gives stronger
 baselines on our fixed domain. It cannot establish eight-million-state
 reproduction, independent-case generalization, solver-level error control, or
 CFD speedup. Those claims require separate evidence.
+
+## 7. Implemented first stage and verification
+
+The four 10k GPU fits are complete at source revision `dc970970`. The run
+identity is `fuel-recipe-20261009`. Each recipe uses the final scheduled
+checkpoint. Both seeds are retained. The existing live review contains the
+verified summaries and training/development curves; raw artifacts remain
+outside Git. The first stage did **not** improve primary acceptance.
+
+The separate `fuel-recipe-50k-20261009` campaign starts from the same source
+and domain. Its gates require a fresh reference audit, unchanged development
+states and labels, and nested training identities. Its current process status
+is stored with the run; this note is not a live completion indicator.
+
+Focused GPU recipe, paired-metric and repository-index tests pass. The full
+repository verification exposed seven other failures in conservation-model,
+Fluent-export/deployment, and Slurm-launcher tests. The same seven failures
+were reproduced in an isolated worktree at the previous revision `5f22bce6`.
+They were not repaired as part of this experiment. No merge-ready claim follows
+from the focused tests. The new documentation-index failure was fixed.

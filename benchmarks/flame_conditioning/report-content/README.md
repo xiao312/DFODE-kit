@@ -8,6 +8,12 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`FuelBaseline.jsx` consumes verified `fuel_models` and `fuel_history` from
+`offline_accuracy.paper_baseline.review`. It shows the reduced-data source
+recipe results and training/development curves. Preserve both seeds and
+scoring policies. Equal epoch counts do not mean equal update counts or row
+presentations. Do not label 10k source-recipe runs as a full paper reproduction.
+
 `PairedAccuracy.jsx` consumes verified `paired_*` queries from
 `offline_accuracy.paired.review`. It compares both target and objective factors,
 keeps both error policies named, and uses synchronized GPU wall times. Controls

@@ -73,3 +73,15 @@ def test_nested_training_indices():
     expected = np.random.default_rng(20261011).permutation(10010)[:10000]
     np.testing.assert_array_equal(indices[:10000], expected)
     assert len(indices) == len(np.unique(indices)) == 50000
+
+
+def test_campaign_declares_cpu_reference_before_gpu_fits(tmp_path):
+    from benchmarks.offline_accuracy.paper_baseline.campaign import commands
+    stages = commands(tmp_path / "source", tmp_path / "old", tmp_path / "base", tmp_path / "new")
+    assert len(stages) == 6
+    assert [row[0] for row in stages[:2]] == ["prepare", "audit"]
+    assert not (tmp_path / "new").exists()
+    for _, timeout, command in stages[2:]:
+        assert timeout == 1500
+        assert command[command.index("--training-count")+1] == "50000"
+        assert "--comparison-dataset" in command

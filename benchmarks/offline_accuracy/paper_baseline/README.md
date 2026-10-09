@@ -95,3 +95,14 @@ runs them in order, saves separate logs and `campaign-status.json`, and stops
 on any failure. The overall maximum is 3700 + 960 + 4*1500 seconds; actual
 neural fits have their own shorter 1200-second limits. Completion requires all
 four verified model results, not just a completed preparation process.
+
+## Review output
+
+`python -m benchmarks.offline_accuracy.paper_baseline.review <current-snapshot>
+<complete-10k-campaign> --output <new-json>` requires all four verified fits,
+matching dataset/audit identities, environment hashes and declared work counts.
+It adds `fuel_models` and `fuel_history`; it preserves every existing query
+and the report identity. The output has no raw chemistry states, weights,
+credentials or machine paths. The existing report's `FuelBaseline.jsx` uses
+the canonical recipe registry, both scoring rules and both retained seeds.
+The 50k stage is not represented as measured evidence until separately reviewed.
