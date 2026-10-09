@@ -22,6 +22,11 @@ and all models remain in the table. CPU cost uses process seconds. Prior CFD
 evidence stays below, but is not the current experiment's decision gate.
 Stable report and component IDs must survive updates. Update the narrative when
 the experiment status changes; a data-only refresh is not sufficient.
+Optional `refinement_*` queries from `offline_accuracy.refinement.review` add
+the later controlled implementations through `Refinement.jsx`. Preserve the
+original offline queries. Keep both seeds, failed/unknown distinctions, physical
+loss controls, the frozen base cost and the fixed acceptance grid explicit.
+No result-based model selection is permitted in the comparison controls.
 The reserved-snapshot tables use a pre-test display rule: show the largest
 completed matched 4x800/10k-update run, zero baseline, and historical source-formula
 controls. Keep uniform and temperature-balanced populations in separate tables.

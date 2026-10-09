@@ -54,6 +54,8 @@ It reads checked flame datasets and original models without changing them.
 `refinement.verify -> saved models + independent acceptance counts` supplies
 small evidence to the existing report. No production or historical trainer
 depends on this module; its README freezes the comparison and cost boundaries.
+`refinement.review -> verified summary JSON -> refinement_* snapshot queries ->
+report-content/Refinement.jsx` preserves all earlier report evidence and IDs.
 
 The later offline-accuracy stage is owned by `benchmarks/offline_accuracy/`:
 `declared pressure domain -> flame prepare/audit -> matched final-checkpoint

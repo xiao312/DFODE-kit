@@ -55,7 +55,10 @@ Outputs: configuration/provenance JSON, training-only preprocessing, weights,
 optimizer state, exact selected row identities, predictions, learning curves,
 tolerance/SSPI/species/magnitude metrics, audit-subset uncertainty scores and
 physical conservation checks. `verify` reloads weights, independently checks
-acceptance counts and checks frozen-base hashes. Refuse existing output paths.
+acceptance counts, rebuilds training-only scales and checks frozen-base hashes.
+It also evaluates `base + (reference - base)` in FP64 before any learned residual.
+This exposes digits lost by residual formation/reconstruction; FP64 alone does
+not guarantee all small increments survive. Refuse existing output paths.
 No credentials, original mechanism, state arrays or weights enter Git or Pages.
 
 ## Dependencies and dependents
@@ -74,3 +77,8 @@ Expected: signed/zero/extreme-scale round trips, finite zero derivatives,
 NumPy/Torch inverse agreement, finite-difference gradients, fixed comparison
 matrix and failure validation. The pinned server image supplies Torch. A small
 synthetic fit checks save/reload and residual-base preservation before live runs.
+
+`review <existing-snapshot> <results-root> --output <new-json>` requires all 20
+hash-bound verified results and appends `refinement_*` queries. It refuses mixed
+dataset identities and leaves earlier evidence unchanged. Report selection is
+tested with `node --test tests/refinement_report_selection.test.mjs`.

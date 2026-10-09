@@ -8,6 +8,7 @@ torch = pytest.importorskip("torch")
 from benchmarks.offline_accuracy.refinement.coordinates import decode, differentiable_inverse
 from benchmarks.offline_accuracy.refinement.fit import fit, prediction, reload_model
 from benchmarks.offline_accuracy.refinement.plan import configuration
+from benchmarks.offline_accuracy.refinement.verify import check_preprocessing
 
 
 @pytest.mark.parametrize("target", ["budget-log", "budget-asinh"])
@@ -51,6 +52,11 @@ def test_small_fit_replays_and_preserves_base(tmp_path, name):
     assert result["updates_completed"] == 3
     assert len(result["history"]) == 3
     assert np.all(actual[:, 2] == 0)
+    check_preprocessing(rows, ["A", "B", "AR"], config, loaded_prep, frozen, result)
+    changed = {key: value.copy() for key, value in loaded_prep.items()}
+    changed["x_scale"][0] *= 2
+    with pytest.raises(AssertionError):
+        check_preprocessing(rows, ["A", "B", "AR"], config, changed, frozen, result)
     if frozen:
         assert len(set(calls)) == 1
         assert result["frozen_base_training_prediction_sha256"] == calls[0]
