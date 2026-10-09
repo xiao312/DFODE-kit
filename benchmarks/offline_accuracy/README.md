@@ -25,6 +25,8 @@ environments, data, and prior results stay unchanged.
 - Four 800-unit GELU layers, FP32, L1 transformed loss, batch 256, 2000 updates.
   Fixed final checkpoint, no evaluation-based checkpoint selection. Two fixed
   seeds 20261011 and 20261012; retain both, never choose the better seed.
+  Equal transformed-space L1 loss still induces different physical loss geometry.
+  This compares target-plus-loss conditioning, not arithmetic round trips alone.
 - Primary physical increment budget: abs(pred-reference) <= 1e-15 + 0.1*abs(reference).
   The 10% level is an initial research target, not high precision or deployment
   approval. A 1e-12 increment may have about 1e-13 absolute error.

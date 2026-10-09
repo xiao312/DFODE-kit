@@ -11,6 +11,7 @@ export function OfflineAccuracy() {
   const [size, setSize] = useState(10000);
   const [floor, setFloor] = useState(1e-15);
   const [measure, setMeasure] = useState("componentRate");
+  const [cost, setCost] = useState("trainingSeconds");
   const models = snapshot.queries.offline_models?.rows;
   if (!models) return null;
   const contract = snapshot.queries.offline_contract.rows[0];
@@ -35,8 +36,9 @@ export function OfflineAccuracy() {
     {visible("offline-tolerance") && <EvidenceChart id="offline-tolerance" queryId="offline_curves" title={`Acceptance versus relative tolerance — seed ${seed}, ${number(size)} states, floor ${floor.toExponential(0)}`} rows={curveRows} sourceRows={curves} height={340}
       spec={{type:"line",x:"relativeLabel",y:measure,series:"targetName",stackable:false,valueDecimals:2,xLabel:"Allowed relative error",yLabel:"Acceptance"}}/>}
     {source("offline-next", "offline_contract", `The zero-change baseline passes ${percent(contract.zeroComponentRate)} of components and ${percent(contract.zeroStateRate)} of states at the primary tolerance. Its SSPI is ${percent(contract.zeroSspiRate)} because it predicts no large value where the reference is tiny. Thus, SSPI alone cannot establish useful accuracy. Zero change also passes a 100% relative-error allowance by construction.\n\n### 2. Compare accuracy with cost\n\nThe next plot uses all 16 fits at the primary tolerance. Each point is one target, size, and seed. CPU time includes training preparation and periodic evaluations, but excludes label generation and later verification. Wall time also includes CPU throttling. These are not GPU performance estimates.\n\nThe 2k and 10k samples are nested within each seed. More data at the same update count tests data density, not more optimizer work. The four representations use identical sampled batches and initial weights within each size and seed. Both seeds remain visible; we do not select the better one.`)}
-    {visible("offline-cost") && <EvidenceChart id="offline-cost" queryId="offline_models" title="Acceptance versus training CPU seconds — primary tolerance, all sizes and seeds" rows={table} sourceRows={models} height={340}
-      spec={{type:"scatter",x:"trainingSeconds",y:measure,series:"targetName",stackable:false,valueDecimals:2,xLabel:"Training process CPU seconds",yLabel:"Acceptance"}}/>}
+    <label>Cost plot <select value={cost} onChange={event=>setCost(event.target.value)}><option value="trainingSeconds">Training CPU seconds</option><option value="inferenceMs">Inference CPU ms per state</option></select></label>
+    {visible("offline-cost") && <EvidenceChart id="offline-cost" queryId="offline_models" title="Acceptance versus cost — primary tolerance, all sizes and seeds" rows={table} sourceRows={models} height={340}
+      spec={{type:"scatter",x:cost,y:measure,series:"targetName",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Training process CPU seconds" : "Inference process CPU ms per state",yLabel:"Acceptance"}}/>}
     {visible("offline-all-models") && <DataComponent id="offline-all-models" queryId="offline_models" kind="table" title="Every fit: primary tolerance and measured cost" sourceRows={models} displayRows={table}>
       <DataTable rows={table} label="Offline matched comparison" compactNumbers={false} columns={[
         {field:"targetName",label:"Target"},{field:"seed",label:"Seed"},{field:"trainingCount",label:"Training states",renderCell:number},
