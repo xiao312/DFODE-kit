@@ -1,5 +1,9 @@
 # Offline representation accuracy
 
+The acceptance-directed adaptation campaign is in [`improve/README.md`](improve/README.md).
+It keeps the data and pass rule fixed, and tests warm-start physical/tail losses,
+base-relative protected corrections and local approximations.
+
 The next implementation stage is isolated in [`refinement/README.md`](refinement/README.md).
 It preserves the first-stage data and acceptance contract and separates extra
 training, tolerance-derived coordinates, physical loss and residual correction.

@@ -131,6 +131,13 @@ boundary, never on legacy pickle loading in the working solver environment.
 
 ## Current refactor themes
 
+The isolated `offline_accuracy.improve` benchmark adapts acceptance-directed
+losses and local approximation methods. Dependency direction is
+`plan -> run -> neural/local -> coordinates`, with read-only dependencies on
+`refinement.inputs/loaders`, offline metrics and independent verification.
+Verified small summaries feed GitHub review; production training and solvers
+do not depend on this research path. See its module README for the fixed matrix.
+
 
 ### 1. Harness engineering
 The repository now includes:
