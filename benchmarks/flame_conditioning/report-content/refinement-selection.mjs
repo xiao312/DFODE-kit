@@ -31,3 +31,18 @@ export function selectComparison(rows, names, seed) {
   }
   return selected.map(row => ({...row, method:refinementNames[row.name]}));
 }
+
+export function residualBinComparison(original, residual, seed) {
+  const before = original.filter(row=>row.seed === seed && row.trainingCount === 10000 && row.target === "state-boxcox");
+  const after = residual.filter(row=>row.seed === seed && row.name === "residual-state-boxcox");
+  const key = row=>JSON.stringify([row.lower,row.upper]);
+  if (before.length !== after.length || new Set(before.map(key)).size !== before.length || new Set(after.map(key)).size !== after.length) {
+    throw new Error("Residual-bin comparison is incomplete or duplicated");
+  }
+  return before.map(row=>{
+    const next = after.find(candidate=>key(candidate) === key(row));
+    if (!next || next.components !== row.components) throw new Error("Residual-bin populations differ");
+    return {lower:row.lower, upper:row.upper, components:row.components,
+      baseRate:row.pass_fraction, residualRate:next.pass_fraction};
+  });
+}

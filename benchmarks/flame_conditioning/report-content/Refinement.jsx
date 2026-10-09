@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
-import { comparisonNames, refinementNames, selectComparison } from "./refinement-selection.mjs";
+import { comparisonNames, refinementNames, residualBinComparison, selectComparison } from "./refinement-selection.mjs";
 
 const percent = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
 const numeric = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
@@ -41,6 +41,8 @@ export function Refinement() {
   const binRows = bins.map(row=>({...row,method:refinementNames[row.name],range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}));
   const auditRows = audits.map(row=>({...row,method:refinementNames[row.name]}));
   const speciesRows = species.map(row=>({...row,method:refinementNames[row.name]}));
+  const residualBins = residualBinComparison(snapshot.queries.offline_magnitudes.rows, snapshot.queries.refinement_bins.rows, seed)
+    .map(row=>({...row,range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}));
   const text = (id, query, value) => visible(id) && <ReportSection id={id} queryId={query} title={id} showHeading={false} sourceRows={snapshot.queries[query].rows}><RichNarrative id={`${id}:body`} value={value}/></ReportSection>;
   const maxState = Math.max(...models.map(row=>row.stateRate));
   const bestComponent = Math.max(...models.map(row=>row.componentRate));
@@ -83,6 +85,13 @@ export function Refinement() {
     </DataComponent>}
     {visible("refinement-history") && <EvidenceChart id="refinement-history" queryId="refinement_history" title="New-model learning curves — primary tolerance, fixed final checkpoint" rows={histories.map(row=>({...row,method:refinementNames[row.name]}))} sourceRows={histories} height={320}
       spec={{type:"line",x:"step",y:measure,series:"method",stackable:false,valueDecimals:2,xLabel:"Optimizer updates",yLabel:"Evaluation acceptance"}}/>}
+    {group === "residual" && visible("refinement-residual-bins") && <DataComponent id="refinement-residual-bins" queryId="refinement_bins" queryIds={["refinement_bins","offline_magnitudes"]} kind="table" title={`Base versus residual correction by increment size — seed ${seed}, primary tolerance`} displayRows={residualBins}
+      sourceRowsByQuery={{refinement_bins:snapshot.queries.refinement_bins.rows.filter(row=>row.seed === seed && row.name === "residual-state-boxcox"),offline_magnitudes:snapshot.queries.offline_magnitudes.rows.filter(row=>row.seed === seed && row.trainingCount === 10000 && row.target === "state-boxcox")}}>
+      <DataTable rows={residualBins} label="Effect of correction at each magnitude" searchable={false} columns={[
+        {field:"range",label:"|Reference increment|"},{field:"components",label:"Components"},
+        {field:"baseRate",label:"Base pass",renderCell:percent},{field:"residualRate",label:"Base + correction pass",renderCell:percent},
+      ]}/>
+    </DataComponent>}
     {visible("refinement-bins") && <DataComponent id="refinement-bins" queryId="refinement_bins" kind="table" title="New-model acceptance by increment magnitude — primary tolerance" sourceRows={bins} displayRows={binRows}>
       <DataTable rows={binRows} label="Magnitude bins" columns={[
         {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:numeric},{field:"pass_fraction",label:"Pass",renderCell:percent},

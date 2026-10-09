@@ -73,7 +73,7 @@ def extend(snapshot, rows, files, identity):
     if identity != (contract["datasetHash"], contract["auditHash"]):
         raise ValueError("Original and new report evidence must use the same data and audit")
     ids = ["refinement-opening", "refinement-summary", "refinement-method", "refinement-tolerance", "refinement-cost",
-           "refinement-table", "refinement-history", "refinement-bins", "refinement-audit", "refinement-species", "refinement-next"]
+           "refinement-table", "refinement-history", "refinement-bins", "refinement-residual-bins", "refinement-audit", "refinement-species", "refinement-next"]
     now = datetime.now(timezone.utc).isoformat()
     for query, values in rows.items():
         snapshot["queries"][query] = dict(rows=values, source=dict(
