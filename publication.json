@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-09T06:31:57+00:00",
-  "benchmark": "offline_acceptance_adaptations",
+  "generated_at": "2026-10-09T07:47:05+00:00",
+  "benchmark": "paired_gbct_gpu",
   "report_path": "flame-conditioning/",
-  "source_revision": "e7853de",
-  "scope": "Review update only: canonical method registry and flowcharts, explicit train/development/unperformed-test table, tolerance-budget interpretation and proposal. All previous query rows, predictions, primary pass rules and artifact identity preserved. No new experiments or independent-test scoring.",
+  "source_revision": "5f22bce",
+  "scope": "Twelve verified GPU fits: GBCT target adaptation and transformed-state control, three training objectives, two seeds. Paired increment/state scoring, a separate tighter state diagnostic, and synchronized GPU wall costs. All previous queries and report identity preserved. No new independent-test or CFD scoring.",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
