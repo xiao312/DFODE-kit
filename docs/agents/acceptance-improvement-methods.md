@@ -209,3 +209,16 @@ the same coordinate warmup; retain the Adam/log-loss candidate as a comparator.
 Use mean per-species RMS budget error to balance independent output heads, and
 record closure evaluations, memory and CPU cost. This is an optimization-plus-loss
 comparison, not evidence that L-BFGS alone caused any difference.
+
+## Mechanism-informed controls
+
+Cantera exposes net species production and destruction rates in molar units.
+Convert with molecular weight and initial density before predicting mass-fraction
+increments. See the [official kinetics interface](https://www.cantera.org/stable/python/kinetics.html).
+Our proposed controls are `h*f(Y)` and the analytic frozen scalar equation
+`dy/dt = p-k*y`, reconstructed as `h*f(Y)*phi1(-h*k)`. Evaluate phi1 with
+`-expm1(-h*k)/(h*k)` and its limit one at zero. The latter is only a diagonal
+frozen-rate approximation: cross-species rate changes and conservation errors
+remain. This is not the full Jacobian-based exponential Rosenbrock method.
+It tests a possible physical starting point for learned residuals, not a neural
+accuracy gain. Count actual mechanism evaluation in prediction cost.

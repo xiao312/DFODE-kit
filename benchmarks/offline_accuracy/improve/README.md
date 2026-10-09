@@ -108,3 +108,13 @@ requires the exact known verification failure, unchanged artifact hashes and
 original data identities. It preserves the original failed result under
 `result-before-heat-fix.json`, recomputes physical metrics, then reruns all model
 and score checks. It never retrains or edits model predictions or acceptance.
+
+`physics_prior <dataset> --audit <audit> --output <new-directory> --dry-run`
+tests two non-learned controls: one explicit rate step and one frozen production/
+destruction exponential step. Omit dry-run to evaluate. Both use the actual
+mechanism at inference; their cost includes kinetics. The latter treats each
+species destruction coefficient as fixed during the interval. Neither is an
+adaptive solver or accuracy certificate. Keep raw conservation/positivity errors.
+This diagnostic asks whether retaining known kinetics is a useful starting point
+for later learned corrections. It is not a neural representation result.
+It depends on Cantera, the existing dataset/audit loader and independent metrics.

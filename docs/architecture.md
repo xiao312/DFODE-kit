@@ -142,6 +142,9 @@ artifacts; `review` binds their small state-error summaries into the existing ap
 heat-diagnostic cancellation failure, with original results retained. Shared
 physical metrics now contract increment errors before heat-release aggregation;
 the independent Cantera checker remains separate.
+`improve.physics_prior -> Cantera kinetics/dataset/audit/metrics` supplies explicit
+rate and frozen-exponential non-learned controls. No production solver depends on
+these fixed-step diagnostics; mechanism evaluation is included in their cost.
 Verified small summaries feed GitHub review; production training and solvers
 do not depend on this research path. See its module README for the fixed matrix.
 
