@@ -65,24 +65,33 @@ def main():
         parser.add_argument("--"+name, type=Path, required=True)
     parser.add_argument("--recipe", choices=("fuel-state", "fuel-power"), required=True)
     parser.add_argument("--seed", type=int, required=True)
-    parser.add_argument("--training-count", type=int, choices=(10000, 50000), default=10000)
+    parser.add_argument("--training-count", type=int, choices=(10000, 50000, 200000), default=10000)
     parser.add_argument("--comparison-dataset", type=Path)
+    parser.add_argument("--nested-run", type=Path)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     config = configuration(args.recipe, args.seed)
     if args.output.exists():
         parser.error("Output already exists; select a new directory")
     runtime = configure()
+    if (args.training_count == 200000) != (args.nested_run is not None):
+        parser.error("Only the 200k expansion requires --nested-run")
+    if args.nested_run:
+        nested_config = json.loads((args.nested_run / "result.json").read_text())["config"]
+        if nested_config != config:
+            parser.error("Nested run must have the identical seed and recipe")
     if args.training_count == 10000:
         if args.comparison_dataset is not None:
-            parser.error("Comparison dataset is only for the 50k expansion")
+            parser.error("Comparison dataset is only for an expansion")
         training, validation, physics, audit, _, _, hashes = inputs(args.dataset, args.audit, args.base, args.seed)
     else:
         if args.comparison_dataset is None:
-            parser.error("The 50k expansion requires --comparison-dataset")
+            parser.error("An expansion requires --comparison-dataset")
         from .data import expanded_inputs
         training, validation, physics, audit, hashes = expanded_inputs(
-            args.dataset, args.audit, args.comparison_dataset, args.base, args.seed, args.training_count)
+            args.dataset, args.audit, args.comparison_dataset, args.base, args.seed, args.training_count, args.nested_run)
+        if args.nested_run:
+            hashes["nested_50k_result"] = sha256(args.nested_run / "result.json")
     if physics["interval"] != config["interval"] or len(physics["species_names"]) != 59:
         raise ValueError("Require the declared chemistry interval and mechanism")
     plan = dict(config=config, hashes=hashes, training_count=len(training["states"]),

@@ -96,6 +96,25 @@ on any failure. The overall maximum is 3700 + 960 + 4*1500 seconds; actual
 neural fits have their own shorter 1200-second limits. Completion requires all
 four verified model results, not just a completed preparation process.
 
+## Bounded 200k extension
+
+The parallel reference runner prepares 200,500 candidates, reusing the complete
+50k dataset's prefix and development labels. A fresh reference audit is required.
+`--training-count 200000 --comparison-dataset <original-10k-dataset>
+--nested-run <verified-50k-fit>` requires the same seed and recipe. It preserves
+the saved 50k training row IDs as the first 50k selection. Missing or changed
+provenance fails before GPU training. Both recipes and seeds remain required.
+The frozen epoch schedules remain unchanged: 15,000 state-recipe updates and
+20,000 power-recipe updates, with batch size 20,000. This comparison increases
+data AND optimization exposure. It is not a matched-update data-only ablation.
+Do not open the test set or claim a million-row result from this stage.
+
+The existing campaign accepts `--training-count 200000 --previous-campaign
+<complete-50k-campaign> --workers 8 --throughput-benchmark <verified.json>`.
+It remains dry-run by default. Execution requires two exact-parity throughput
+measurements for the selected worker count against that 50k dataset. Preparation,
+audit and four sequential GPU fits retain the existing external time limits.
+
 ## Review output
 
 `python -m benchmarks.offline_accuracy.paper_baseline.review <current-snapshot>

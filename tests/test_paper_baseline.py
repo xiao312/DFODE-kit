@@ -85,3 +85,15 @@ def test_campaign_declares_cpu_reference_before_gpu_fits(tmp_path):
         assert timeout == 1500
         assert command[command.index("--training-count")+1] == "50000"
         assert "--comparison-dataset" in command
+
+
+def test_200k_campaign_reuses_50k_and_keeps_nested_runs(tmp_path):
+    from benchmarks.offline_accuracy.paper_baseline.campaign import commands
+    stages = commands(tmp_path / "source", tmp_path / "old", tmp_path / "base", tmp_path / "new",
+                      200000, tmp_path / "previous", 8)
+    assert stages[0][2][2] == "benchmarks.flame_conditioning.parallel_labels.run"
+    assert stages[0][2][-1] == "--execute"
+    assert stages[0][2][stages[0][2].index("--reuse")+1] == str(tmp_path / "previous" / "dataset")
+    for _, _, command in stages[2:]:
+        assert command[command.index("--training-count")+1] == "200000"
+        assert "--nested-run" in command
