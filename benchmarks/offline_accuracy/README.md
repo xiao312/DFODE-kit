@@ -1,5 +1,9 @@
 # Offline representation accuracy
 
+The next implementation stage is isolated in [`refinement/README.md`](refinement/README.md).
+It preserves the first-stage data and acceptance contract and separates extra
+training, tolerance-derived coordinates, physical loss and residual correction.
+
 ## Responsibility and non-goals
 
 Compare four species-increment representations at matched model/update cost.

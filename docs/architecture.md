@@ -48,6 +48,13 @@ the one-way report dependency. No held-out data enter this training-fit stage.
 
 ## Flame-conditioned research
 
+`offline_accuracy.refinement.plan -> run -> fit -> tolerance coordinates`
+adds isolated longer-training, physical-loss and frozen-residual experiments.
+It reads checked flame datasets and original models without changing them.
+`refinement.verify -> saved models + independent acceptance counts` supplies
+small evidence to the existing report. No production or historical trainer
+depends on this module; its README freezes the comparison and cost boundaries.
+
 The later offline-accuracy stage is owned by `benchmarks/offline_accuracy/`:
 `declared pressure domain -> flame prepare/audit -> matched final-checkpoint
 training -> physical tolerance/SSPI metrics -> acceptance/cost review`.

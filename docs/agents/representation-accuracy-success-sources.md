@@ -94,3 +94,69 @@ Use offline chemistry tests for this first decision. CFD transfer and coupled
 trajectory tests answer later questions. Broader pressure sampling must use a
 declared physical range and fresh labels at the perturbed pressure; it does not
 require a CFD test before the representation comparison can proceed.
+
+## Follow-up: saturation and one residual stage
+
+Checked 2026-10-09 against the two specified arXiv versions. This section
+proposes an offline experiment; it does not authorize or launch training.
+
+### Findings from the papers
+
+The original MSNN paper fits successive residuals after dividing each by its
+training RMS, then adds the scaled predictions. Frequency-aware initialization
+and a periodic first layer are separate ingredients: residual normalization
+alone does not remove spectral bias. Its noiseless demonstrations approach
+double precision, but the discussion explicitly identifies slower convergence
+in higher dimensions and difficulty with steep gradients.
+[Sections 2.2–2.3 and 5](https://arxiv.org/html/2307.08934v1#S2.SS2)
+[Discussion](https://arxiv.org/html/2307.08934v1#S5)
+
+SI-MSNN initializes a Fourier embedding from measured spectral modes,
+amplitudes, and phases. In its 2D comparison, third-stage residuals improve
+from about `1e-8` to `1e-13` at equal iteration counts. Four stages fit a
+2D turbulence stream-function snapshot to about `1e-16`; this is snapshot
+regression, not a learned time integrator. The setup uses a regular `512 x 512`
+grid, Fourier layers up to 10,000 units, an L10 objective, and a reported
+150,000-iteration training setup. These demonstrations do not establish
+accuracy for irregular, high-dimensional, 59-species chemistry inputs.
+[Methods and experiments](https://arxiv.org/html/2407.17213v1#S3)
+[Snapshot experiment](https://arxiv.org/html/2407.17213v1#S4.SS2)
+
+### Proposed chemistry experiment, not a paper result
+
+Comparing 2,000 and 10,000 training rows at a fixed 2,000 optimizer updates
+does not establish saturation of the four target representations. Dataset size
+and optimization budget are different axes. Continuing improvement at the final
+checkpoint argues against an established plateau; lower transformed training
+loss with worse held-out physical errors instead calls for objective and
+generalization checks. Neither observation proves an optimizer-only cause.
+
+The current `asinh-training-q90` scale is a per-species training statistic,
+not a tolerance-derived scale; see
+[the training implementation](../../benchmarks/flame_conditioning/train.py).
+For an increment budget `b_i = a_i + r * abs(d_i)`, compare signed-log and
+asinh targets with crossover `s_i = a_i / r`, keeping `a_i > 0` fixed before
+training. Signed-log `sign(d_i) * log1p(abs(d_i) / s_i)` has local sensitivity
+proportional to `1 / b_i`; asinh provides a smooth approximation. Transformed
+loss is not an exact finite-error acceptance test. Train and evaluate an
+explicit physical-error term `abs(pred_i - d_i) / b_i` as a separate ablation.
+Any chosen relative tolerance, including 10%, still needs a declared absolute
+floor and label-uncertainty check.
+
+First test one frozen-base residual stage with scales fitted only on training
+residuals. Declare whether the correction is added in transformed or physical
+coordinates; evaluate the reconstructed physical increment in either case.
+Keep a common held-out split, seeds, precision, label set, and acceptance
+contract. Compare against continued training of the same base for the added
+update budget, and a single network with comparable total parameter capacity.
+Report wall time and inference cost because equal updates do not imply equal
+compute. Separate changes to target scale, physical loss, residual staging,
+and spectral features, so their effects remain identifiable.
+
+Use per-species and magnitude-bin results, all-non-argon-species state pass fractions,
+tails, and zero baselines. Retain the old state-budget diagnostics with their
+original names; they are not evidence of passing a new increment contract.
+Treat FFT-based initialization as a later experiment requiring justified input
+coordinates and spectral estimation for irregular chemistry samples. A first
+normalized residual stage is a useful bounded test, not a reproduction of the
+papers' complete machine-precision method.
