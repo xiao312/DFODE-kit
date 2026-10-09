@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-09T05:46:53+00:00",
+  "generated_at": "2026-10-09T06:31:57+00:00",
   "benchmark": "offline_acceptance_adaptations",
   "report_path": "flame-conditioning/",
-  "source_revision": "0fd4659",
-  "scope": "20 verified model trials plus two non-learned kinetics controls; fixed 10k training selections, two seeds and unchanged acceptance criterion; physical and tail losses, base-relative corrections, local RBF, inverse-temperature/partial-pressure inputs and species heads with Adam or L-BFGS; all earlier evidence preserved; no complete state passes and no learned CFD deployment",
+  "source_revision": "e7853de",
+  "scope": "Review update only: canonical method registry and flowcharts, explicit train/development/unperformed-test table, tolerance-budget interpretation and proposal. All previous query rows, predictions, primary pass rules and artifact identity preserved. No new experiments or independent-test scoring.",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }
