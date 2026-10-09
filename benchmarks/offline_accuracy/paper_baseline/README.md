@@ -124,4 +124,8 @@ It adds `fuel_models` and `fuel_history`; it preserves every existing query
 and the report identity. The output has no raw chemistry states, weights,
 credentials or machine paths. The existing report's `FuelBaseline.jsx` uses
 the canonical recipe registry, both scoring rules and both retained seeds.
-The 50k stage is not represented as measured evidence until separately reviewed.
+`python -m benchmarks.offline_accuracy.paper_baseline.scale_review <snapshot>
+--campaign <complete-10k-campaign> --campaign <complete-50k-campaign>
+--throughput <verified-benchmark.json> --output <new-json>` adds checked size
+and CPU-throughput evidence. An optional third `--campaign` adds complete 200k
+results only after all four fits pass. Prior queries and app identity stay intact.

@@ -8,6 +8,12 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`FuelScale.jsx` consumes `fuel_scale_models` and `fuel_label_throughput` from
+`paper_baseline.scale_review`. It compares every completed size, recipe and seed
+under both pass rules. It explains rows, batches, updates and epochs. Never
+describe the fixed-epoch expansion as a matched-update data-only experiment.
+Throughput is CPU reference labeling, not neural inference or CFD speedup.
+
 `FuelBaseline.jsx` consumes verified `fuel_models` and `fuel_history` from
 `offline_accuracy.paper_baseline.review`. It shows the reduced-data source
 recipe results and training/development curves. Preserve both seeds and

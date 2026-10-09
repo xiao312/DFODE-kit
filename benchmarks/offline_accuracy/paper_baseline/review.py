@@ -11,7 +11,7 @@ def primary(summary):
     return next(row for row in summary["grid"] if row["atol"] == 1e-15 and row["rtol"] == .1)
 
 
-def collect(root):
+def collect(root, training_count=10000):
     models, history, files = [], [], []
     identity = set()
     for seed in (20261011, 20261012):
@@ -20,22 +20,25 @@ def collect(root):
             result = json.loads((directory / "result.json").read_text())
             check = json.loads((directory / "verification.json").read_text())
             runtime = json.loads((directory / "environment.json").read_text())
+            batch = min(training_count, 20000)
+            batches = training_count//batch if recipe == "fuel-state" else (training_count+batch-1)//batch
+            presentations = batches*batch if recipe == "fuel-state" else training_count
             if (result["status"] != "complete" or check["status"] != "verified"
                     or check["result_sha256"] != sha256(directory / "result.json")
                     or result["artifacts"]["environment.json"] != sha256(directory / "environment.json")
                     or result["config"] != configuration(recipe, seed)
-                    or result["training_count"] != 10000 or result["development_count"] != 1023
+                    or result["training_count"] != training_count or result["development_count"] != 1023
                     or result["epochs_completed"] != result["config"]["epochs"]
-                    or result["updates_completed"] != result["epochs_completed"]
-                    or result["row_presentations"] != result["epochs_completed"]*10000
+                    or result["updates_completed"] != result["epochs_completed"]*batches
+                    or result["row_presentations"] != result["epochs_completed"]*presentations
                     or result["parameter_count"] != 2018458
                     or not all(check.get(k) for k in ("exact_model_replay", "independent_paired_counts",
                                                      "physical_checks", "training_only_preprocessing"))):
-                raise ValueError("Need all four verified frozen 10k fits")
+                raise ValueError("Need all four verified fits with the declared training count and work budget")
             identity.add((result["hashes"]["dataset_manifest"], result["hashes"]["audit_summary"]))
             for policy in ("increment-reference-v1", "state-endpoint-v1"):
                 train, dev = primary(result["training"][policy]), primary(result["development"][policy])
-                models.append(dict(recipe=recipe, seed=seed, policy=policy,
+                models.append(dict(recipe=recipe, seed=seed, policy=policy, trainingCount=training_count,
                     trainingRate=train["component_pass_fraction"], developmentRate=dev["component_pass_fraction"],
                     stateRate=dev["state_pass_fraction"], p99=dev["normalized_quantiles"]["p99"],
                     epochs=result["epochs_completed"], updates=result["updates_completed"],

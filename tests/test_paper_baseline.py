@@ -97,3 +97,46 @@ def test_200k_campaign_reuses_50k_and_keeps_nested_runs(tmp_path):
     for _, _, command in stages[2:]:
         assert command[command.index("--training-count")+1] == "200000"
         assert "--nested-run" in command
+
+
+def test_200k_selection_preserves_verified_50k_prefix(tmp_path, monkeypatch):
+    pytest.importorskip("cantera")
+    import json
+    from benchmarks.offline_accuracy.paper_baseline import data as module
+    from benchmarks.flame_conditioning.extract import sha256
+    seed = 20261011
+    new, old, audit, base, nested = [tmp_path / name for name in ("new", "old", "audit", "base", "nested")]
+    for path in (new, old, audit, base, nested, base / "n10000-float32-state-boxcox"):
+        path.mkdir(exist_ok=True)
+    def write(path, value):
+        path.write_text(json.dumps(value))
+    source = dict(species_names=["H2", "AR"])
+    config = dict(train_count=10000, wall_seconds=3600)
+    old_manifest = dict(config=config, source_manifest=source)
+    new_manifest = dict(config=dict(config, train_count=200500), source_manifest=source,
+                        reused_dataset_manifest_sha256="verified-50k-dataset")
+    write(old / "manifest.json", old_manifest)
+    write(new / "manifest.json", new_manifest)
+    training = dict(states=np.zeros((200000, 4)), delta=np.zeros((200000, 2)),
+                    source_indices=np.arange(200000), snapshot=np.full(200000, "a"))
+    development = dict(states=np.zeros((2, 4)))
+    old_data = dict(train={key:values[:10000] for key, values in training.items()}, validation=development)
+    new_data = dict(train=training, validation=development)
+    monkeypatch.setattr(module, "load_dataset", lambda path: (new_data, {}, new_manifest) if path == new else (old_data, {}, old_manifest))
+    first = np.random.default_rng(seed).permutation(10000)
+    prefix = np.concatenate([first, np.arange(10000, 50000)])
+    np.save(base / "n10000-float32-state-boxcox/training-indices.npy", first)
+    np.save(nested / "training-indices.npy", prefix)
+    write(base / "summary.json", dict(dataset_manifest_sha256=sha256(old / "manifest.json"), plan=dict(config=dict(seed=seed))))
+    write(audit / "summary.json", dict(status="complete", reference_subset_pass=True, dataset_manifest_sha256=sha256(new / "manifest.json")))
+    write(nested / "result.json", dict(status="complete", training_count=50000, config=dict(seed=seed),
+          hashes=dict(dataset_manifest="verified-50k-dataset"), artifacts={"training-indices.npy":sha256(nested / "training-indices.npy")}))
+    write(nested / "verification.json", dict(status="verified", result_sha256=sha256(nested / "result.json")))
+    selected, *_ = module.expanded_inputs(new, audit, old, base, seed, 200000, nested)
+    np.testing.assert_array_equal(selected["source_indices"][:50000], prefix)
+    assert len(np.unique(selected["source_indices"])) == 200000
+    with pytest.raises(ValueError, match="verified nested"):
+        module.expanded_inputs(new, audit, old, base, seed, 200000)
+    np.save(nested / "training-indices.npy", np.zeros(50000, dtype=int))
+    with pytest.raises(ValueError, match="identity"):
+        module.expanded_inputs(new, audit, old, base, seed, 200000, nested)

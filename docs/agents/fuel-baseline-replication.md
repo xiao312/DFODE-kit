@@ -271,3 +271,32 @@ Fluent-export/deployment, and Slurm-launcher tests. The same seven failures
 were reproduced in an isolated worktree at the previous revision `5f22bce6`.
 They were not repaired as part of this experiment. No merge-ready claim follows
 from the focused tests. The new documentation-index failure was fixed.
+
+## 8. Verified 50k result and faster labels
+
+The complete 50k campaign passed its fresh reference audit and all four saved-model
+checks. It prepared 50,100 candidates, accepted 50,060, and selected exactly 50,000
+for each fit. All 1,023 accepted development rows and labels remain unchanged.
+Serial preparation took 1,471.7 seconds. Primary development species acceptance:
+
+| Recipe | 10k, both seeds | 50k, both seeds | 50k updates / presentations |
+| --- | --- | --- | --- |
+| Fuel state | 29.93–30.17% | 42.18–42.83% | 3,000 / 60M |
+| Fuel direct power | 11.27–11.60% | 20.87–21.51% | 6,000 / 100M |
+
+The increment rule stays `abs(error) <= 1e-15 + 0.1*abs(reference)`.
+No complete development state passes it. This improvement does not isolate dataset
+size: fixed epochs also give more updates. The canonical review retains both error
+scales, both seeds, training scores, tails, physical failures and work counts.
+
+A two-repeat, 2,048-row benchmark measured about 39.1, 151.4 and 291.8 rows/s for
+1, 4 and 8 CPU workers. Every increment and acceptance flag matched saved serial
+labels exactly. The 7.5x gain includes worker startup/transport, not augmentation,
+chunk I/O or final export. See `parallel_labels/README.md` for resume and reuse
+contracts. The bounded 200k stage uses eight workers and a fresh reference audit;
+its process status is in its own run manifest, not inferred from this note.
+
+Before a million-row stage, separate the effect of more updates from more unique
+rows, and audit broader source coverage. The current size comparison still uses
+four training and two development snapshots from one flame. Finding more saved
+snapshot directories is not proof of independent cases or valid split lineage.
