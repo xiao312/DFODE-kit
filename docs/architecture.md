@@ -54,6 +54,9 @@ dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
 independently checks both acceptance policies and physical diagnostics. Small
 verified summaries feed review; historical and production modules do not depend
 on this new experiment. See its local README for the predeclared matrix.
+`paired.runtime` validates the project-local GPU environment and captures versions.
+`paired.review -> paired_* queries -> report-content/PairedAccuracy.jsx` is the
+one-way publication path. The canonical registry supplies its method names.
 
 `offline_accuracy.refinement.plan -> run -> fit -> tolerance coordinates`
 adds isolated longer-training, physical-loss and frozen-residual experiments.

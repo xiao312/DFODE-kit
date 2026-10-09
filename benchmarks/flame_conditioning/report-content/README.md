@@ -8,6 +8,12 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`PairedAccuracy.jsx` consumes verified `paired_*` queries from
+`offline_accuracy.paired.review`. It compares both target and objective factors,
+keeps both error policies named, and uses synchronized GPU wall times. Controls
+scope source rows as well as plots. A change in the error rule is not a learning
+gain. The full 12-fit matrix and matching warmup hashes are required for publication.
+
 `method-catalogue.mjs` owns canonical representation and recipe display names,
 historical ID aliases, and diagram steps. The selection helpers import its names.
 Do not rename immutable run IDs or maintain a second display-name dictionary.
