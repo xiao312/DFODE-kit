@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-08T23:03:42+00:00",
-  "benchmark": "flame_conditioning",
+  "generated_at": "2026-10-09T03:15:06+00:00",
+  "benchmark": "offline_accuracy",
   "report_path": "flame-conditioning/",
-  "source_revision": "c5731b5",
-  "scope": "39 verified new fits, six historical controls, and 55 frozen models/policies scored on two separate 2D populations; explicit reference-policy amendment, input-support check, and verified 32-state pressure-only diagnosis; no learned CFD deployment",
+  "source_revision": "8c679c8",
+  "scope": "16 verified offline fits: four targets, 2k/10k nested training sizes, two seeds, explicit pressure domain, fixed final checkpoints, acceptance versus tolerance and training/inference cost; previous flame/CFD evidence preserved; no learned CFD deployment",
   "visual_verification": "Unavailable: no browser was connected. Build and HTTP checks passed.",
   "review_issue": "https://github.com/xiao312/DFODE-kit/issues/3"
 }

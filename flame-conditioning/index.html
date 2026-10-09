@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#ffffff">
-<meta name="data-app-snapshot-sha256" content="c11b10f8c8eace71349a0475d4a27f6296c84c67c72980af47d6f1ef49b7c39e">
+<meta name="data-app-snapshot-sha256" content="9ad19e517148d7cdd9dad798b585a509ea3db291c20da4c9a79e8c747b74f775">
 <meta name="data-app-runtime-sha256" content="9e3ede84b28aded3c7379b6e6a5611f0d95b9977eb0f781e279ceefabfcbd27e">
 <meta name="data-app-bootstrap" content="deferred-content-v1">
 <meta name="data-app-build-layout" content="separate-data-v1">
-<meta name="data-app-local-snapshot" content="snapshot.c11b10f8c8eace71349a0475d4a27f6296c84c67c72980af47d6f1ef49b7c39e.json">
+<meta name="data-app-local-snapshot" content="snapshot.9ad19e517148d7cdd9dad798b585a509ea3db291c20da4c9a79e8c747b74f775.json">
 <meta name="data-app-local-thread" content="01a0c393-dd16-70c1-82b4-b303b15c29ad">
 <title>Flame tests now use the CFD chemistry problem</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuMDMxMjUgOUMyLjAzMTI1IDcuODk1NDMgMi45MjY2OCA3IDQuMDMxMjUgN0g4LjY1NDNWMjEuOTAwNEg0LjAzMTI1QzIuOTI2NjggMjEuOTAwNCAyLjAzMTI1IDIxLjAwNSAyLjAzMTI1IDE5LjkwMDRWOVoiIGZpbGw9IiMwMjg1RkYiLz4KPHBhdGggZD0iTTguNjU0MyA0LjA5OTYxQzguNjU0MyAyLjk5NTA0IDkuNTQ5NzMgMi4wOTk2MSAxMC42NTQzIDIuMDk5NjFIMTMuMjc3M0MxNC4zODE5IDIuMDk5NjEgMTUuMjc3MyAyLjk5NTA0IDE1LjI3NzMgNC4wOTk2MVYyMS45MDA0SDguNjU0M1Y0LjA5OTYxWiIgZmlsbD0iIzAyODVGRiIgZmlsbC1vcGFjaXR5PSIwLjciLz4KPHBhdGggZD0iTTE1LjI3NzMgMTEuMDk5NkgxOS45MDA0QzIxLjAwNSAxMS4wOTk2IDIxLjkwMDQgMTEuOTk1IDIxLjkwMDQgMTMuMDk5NlYxOS45MDA0QzIxLjkwMDQgMjEuMDA1IDIxLjAwNSAyMS45MDA0IDE5LjkwMDQgMjEuOTAwNEgxNS4yNzczVjExLjA5OTZaIiBmaWxsPSIjMDI4NUZGIiBmaWxsLW9wYWNpdHk9IjAuNCIvPgo8L3N2Zz4K">
@@ -55,11 +55,84 @@ const __dataAuthoredModule = {exports:Object.create(null)};
 'use strict';
 
 var jsxRuntime = require('react/jsx-runtime');
-require('react');
+var react = require('react');
 var dataApp = require('@openai/data-app');
 
 // The shared app imports both entrypoints. Keep the inactive dashboard empty.
 function DashboardContent() { return null; }
+
+const names$1 = {"state-boxcox":"Transformed state", "signed-power":"Signed power", "budget-linear":"State-budget linear", "scaled-asinh":"Scaled asinh", zero:"Zero change"};
+const percent$1 = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
+const number = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
+
+function OfflineAccuracy() {
+  const { snapshot, visible } = dataApp.useDataApp();
+  const [seed, setSeed] = react.useState(20261011);
+  const [size, setSize] = react.useState(10000);
+  const [floor, setFloor] = react.useState(1e-15);
+  const [measure, setMeasure] = react.useState("componentRate");
+  const [cost, setCost] = react.useState("trainingSeconds");
+  const models = snapshot.queries.offline_models?.rows;
+  if (!models) return null;
+  const contract = snapshot.queries.offline_contract.rows[0];
+  const audit = snapshot.queries.offline_audit.rows;
+  const magnitude = snapshot.queries.offline_magnitudes.rows.filter(row=>row.seed === seed && row.trainingCount === size);
+  const magnitudeRows = magnitude.map(row=>({...row, targetName:names$1[row.target],
+    range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`}));
+  const curves = snapshot.queries.offline_curves.rows.filter(row => row.atol === floor &&
+    (row.target === "zero" || (row.seed === seed && row.trainingCount === size)));
+  const curveRows = curves.map(row => ({...row, targetName:names$1[row.target]})).sort((a,b)=>a.rtol-b.rtol);
+  const table = models.map(row => ({...row, targetName:names$1[row.target], inferenceMs:1000*row.inferenceSeconds/row.states}));
+  const seedRange = (target, count) => {
+    const values = models.filter(row=>row.target === target && row.trainingCount === count).map(row=>row.componentRate);
+    return `${percent$1(Math.min(...values))}–${percent$1(Math.max(...values))}`;
+  };
+  const sizeRows = Object.keys(names$1).filter(target=>target !== "zero").map(target=>({
+    targetName:names$1[target], small:seedRange(target, 2000), large:seedRange(target, 10000),
+  }));
+  const maxState = Math.max(...models.map(row=>row.stateRate));
+  const minimum = Math.min(...models.map(row=>row.componentRate));
+  const maximum = Math.max(...models.map(row=>row.componentRate));
+  const source = (id, query, text) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, queryId: query, title: id, showHeading: false, sourceRows: snapshot.queries[query].rows, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: text,})});
+  return jsxRuntime.jsxs('section', { 'aria-label': "Offline representation accuracy"  , children: [
+    source("offline-opening", "offline_models", `## Current stage: measure representation accuracy before CFD\n\nAll 16 fits completed: four target representations, two nested training sizes, and two fixed seeds. At the primary tolerance, species-component acceptance ranges from ${percent$1(minimum)} to ${percent$1(maximum)}. The best observed complete-state acceptance is ${percent$1(maxState)}; the predeclared research target is 99%. This is a descriptive range over all fits, not a selected deployment model.\n\nA complete state passes only when every non-argon species passes. A high component score can therefore coexist with a low state score. These offline comparisons do not establish CFD accuracy or a guarantee on every prediction.`)
+    , source("offline-contract", "offline_contract", `### 1. Define an acceptable answer\n\nFor a reference increment d, require |prediction − d| ≤ 10⁻¹⁵ + 0.1 × |d|. At d = 10⁻¹², this permits 1.01 × 10⁻¹³ absolute error. The proposed 10⁻¹⁴ error is about 1% and remains a stretch target. This is our research criterion, not a CVODE error guarantee.\n\nPressure now covers 0.95–1.05 atm. Its input uses that declared physical range, not the narrow spread of the old samples. Temperature and composition retain the existing augmentation. Each fit uses four 800-unit GELU layers, FP32, L1 loss, batch size 256, and exactly 2,000 updates. We save the final update, with no evaluation-based checkpoint selection. Target scales use training data only.\n\nCVODE produced ${number(contract.accepted)} accepted training labels and ${number(contract.evaluation_states)} evaluation labels. ${contract.excluded.train} training and ${contract.excluded.validation} evaluation candidates were excluded; no failed label became zero. Label generation took ${number(contract.label_generation_wall_seconds)} wall seconds. The two evaluation snapshots come from the same flame realization as training, not an independent flame case.`)
+    , source("offline-floor", "offline_contract", "The absolute floor does not require accurate relative digits for changes far below 10⁻¹⁵. Use the tighter floors and magnitude table to inspect that limitation. Also, the same L1 loss in different target coordinates gives different physical error weights. This experiment compares target-plus-loss conditioning, not transform round-trip arithmetic alone.")
+    , source("offline-result", "offline_models", "All four representations improve component acceptance from 2k to 10k rows in both seeds. Transformed-state targets perform best at the primary tolerance in this small, fixed-update experiment. Direct power has better small-increment preservation at 10k, but much lower overall component acceptance. Thus, a good SSPI score and a good general accuracy score are different results. This does not establish a universal ranking of transformations or reproduce the paper's much larger training campaign.")
+    , visible("offline-size-summary") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-size-summary", queryId: "offline_models", kind: "table", title: "Component acceptance: range across the two seeds, not a confidence interval"          , sourceRows: models, displayRows: sizeRows, children: 
+      jsxRuntime.jsx(dataApp.DataTable, { rows: sizeRows, label: "Controlled data-size comparison"  , searchable: false, columns: [{field:"targetName",label:"Target"},{field:"small",label:"2,000 states"},{field:"large",label:"10,000 states"}],})
+    })
+    , jsxRuntime.jsxs('div', { style: {display:"flex",gap:"1rem",flexWrap:"wrap",marginBlock:"1rem"}, 'aria-label': "Tolerance plot controls"  , children: [
+      jsxRuntime.jsxs('label', { children: ["Seed " , jsxRuntime.jsxs('select', { value: seed, onChange: event=>setSeed(Number(event.target.value)), children: [jsxRuntime.jsx('option', { value: 20261011, children: "20261011"}), jsxRuntime.jsx('option', { value: 20261012, children: "20261012"})]})]})
+      , jsxRuntime.jsxs('label', { children: ["Training states "  , jsxRuntime.jsxs('select', { value: size, onChange: event=>setSize(Number(event.target.value)), children: [jsxRuntime.jsx('option', { value: 2000, children: "2,000"}), jsxRuntime.jsx('option', { value: 10000, children: "10,000"})]})]})
+      , jsxRuntime.jsxs('label', { children: ["Absolute floor "  , jsxRuntime.jsx('select', { value: floor, onChange: event=>setFloor(Number(event.target.value)), children: [1e-12,1e-15,1e-18].map(value=>jsxRuntime.jsx('option', { value: value, children: value.toExponential(0)}, value))})]})
+      , jsxRuntime.jsxs('label', { children: ["Acceptance " , jsxRuntime.jsxs('select', { value: measure, onChange: event=>setMeasure(event.target.value), children: [jsxRuntime.jsx('option', { value: "componentRate", children: "Species components" }), jsxRuntime.jsx('option', { value: "stateRate", children: "Complete states" })]})]})
+    ]})
+    , visible("offline-tolerance") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "offline-tolerance", queryId: "offline_curves", title: `Acceptance versus relative tolerance — seed ${seed}, ${number(size)} states, floor ${floor.toExponential(0)}`, rows: curveRows, sourceRows: curves, height: 340,
+      spec: {type:"line",x:"relativeLabel",y:measure,series:"targetName",stackable:false,valueDecimals:2,xLabel:"Allowed relative error",yLabel:"Acceptance"},})
+    , source("offline-next", "offline_contract", `The zero-change baseline passes ${percent$1(contract.zeroComponentRate)} of components and ${percent$1(contract.zeroStateRate)} of states at the primary tolerance. Its SSPI is ${percent$1(contract.zeroSspiRate)} because it predicts no large value where the reference is tiny. Thus, SSPI alone cannot establish useful accuracy. Zero change also passes a 100% relative-error allowance by construction.\n\n### 2. Compare accuracy with cost\n\nThe next plot uses all 16 fits at the primary tolerance. Each point is one target, size, and seed. CPU time includes training preparation and periodic evaluations, but excludes label generation and later verification. Wall time also includes CPU throttling. These are not GPU performance estimates.\n\nThe 2k and 10k samples are nested within each seed. More data at the same update count tests data density, not more optimizer work. The four representations use identical sampled batches and initial weights within each size and seed. Both seeds remain visible; we do not select the better one.`)
+    , jsxRuntime.jsxs('label', { children: ["Cost plot "  , jsxRuntime.jsxs('select', { value: cost, onChange: event=>setCost(event.target.value), children: [jsxRuntime.jsx('option', { value: "trainingSeconds", children: "Training CPU seconds"  }), jsxRuntime.jsx('option', { value: "inferenceMs", children: "Inference CPU ms per state"    })]})]})
+    , visible("offline-cost") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "offline-cost", queryId: "offline_models", title: "Acceptance versus cost — primary tolerance, all sizes and seeds"         , rows: table, sourceRows: models, height: 340,
+      spec: {type:"scatter",x:cost,y:measure,series:"targetName",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Training process CPU seconds" : "Inference process CPU ms per state",yLabel:"Acceptance"},})
+    , visible("offline-all-models") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-all-models", queryId: "offline_models", kind: "table", title: "Every fit: primary tolerance and measured cost"      , sourceRows: models, displayRows: table, children: 
+      jsxRuntime.jsx(dataApp.DataTable, { rows: table, label: "Offline matched comparison"  , compactNumbers: false, columns: [
+        {field:"targetName",label:"Target"},{field:"seed",label:"Seed"},{field:"trainingCount",label:"Training states",renderCell:number},
+        {field:"componentRate",label:"Components pass",renderCell:percent$1},{field:"stateRate",label:"States pass",renderCell:percent$1},
+        {field:"sspiRate",label:"SSPI",renderCell:percent$1},{field:"trainingSeconds",label:"CPU s",renderCell:number},
+        {field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value.toPrecision(3)},
+        {field:"negativeComponentRate",label:"Negative endpoints",renderCell:percent$1},
+        {field:"inverseCorrectionRate",label:"Inverse corrections",renderCell:percent$1},
+      ],})
+    })
+    , visible("offline-magnitudes") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-magnitudes", queryId: "offline_magnitudes", kind: "table", title: `Acceptance by increment magnitude — seed ${seed}, ${number(size)} training states, primary tolerance`, sourceRows: magnitude, displayRows: magnitudeRows, children: 
+      jsxRuntime.jsx(dataApp.DataTable, { rows: magnitudeRows, label: "Magnitude-specific acceptance" , compactNumbers: false, columns: [
+        {field:"targetName",label:"Target"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number},
+        {field:"pass_fraction",label:"Pass",renderCell:percent$1},{field:"absolute_error_p99",label:"Absolute error p99",renderCell:value=>value == null ? "No observations" : value.toExponential(2)},
+      ],})
+    })
+    , source("offline-audit", "offline_audit", `### 3. Keep uncertainty separate from model error\n\nThe independent reference check covers ${contract.audited_evaluation_states} evaluation states, not all ${contract.evaluation_states}. It compares tighter and step-limited CVODE with direct-increment Radau solves. A checked component is qualified only when estimated uncertainty is at most 10% of its tolerance budget. Its prediction must then pass with that uncertainty added to the error. This is an empirical margin, not a rigorous bound.\n\nAt the primary tolerance, ${audit[0].qualified_components} of ${audit[0].components} audited components and ${audit[0].qualified_states} of ${audit[0].states} audited states qualify. The remaining ${audit[0].unknown_components} components are unknown at this precision. Full-population plots are nominal scores against CVODE labels, not certified acceptance.\n\nThe next increase in data size must keep the pressure domain, held-out rows, and tolerance grid fixed. Compare the accuracy gain with added label and training cost. If more rows do not help at fixed updates, test a larger update budget separately. Do not add residual stages or return to CFD until the offline error pattern gives a reason.\n\nThe following sections preserve the earlier experiments. Their CFD transfer failure is not a pass/fail gate for this new representation stage.`)
+  ]});
+}
 
 // Present fixed BC/PT/hybrid policies without selecting by measured performance.
 function policyBinTable(allRows, population, runName, temperature) {
@@ -164,7 +237,11 @@ function ReportContent() {
   const selected = models.filter(row => row.precision === "float32" && row.trainingCount > 9000);
   const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
   const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
-  const prose = (id, title, queryId, rows, text) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, title: title, queryId: queryId, sourceRows: rows, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: text, sourcePreviews: sourcePreviews,} )});
+  const prose = (id, title, queryId, rows, text) => {
+    const prior = snapshot.queries.offline_models && ["flame-decision", "flame-next"].includes(id);
+    const display = prior ? `### Prior-stage record\n\nThis section preserves the earlier application assessment. The current offline representation experiment above takes priority; CFD transfer comes later.\n\n${text}` : text;
+    return visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, title: title, queryId: queryId, sourceRows: rows, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: display, sourcePreviews: sourcePreviews,} )});
+  };
   const testTable = (population, title) => {
     const id = `flame-heldout-${population}`;
     const rows = testRows(population);
@@ -197,6 +274,7 @@ function ReportContent() {
       jsxRuntime.jsx('h1', { 'data-data-app-title': true, contentEditable: canEdit && mode === "edit", suppressContentEditableWarning: true, onBlur: canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined, children: appTitle})
       , jsxRuntime.jsx(dataApp.RichNarrative, { id: "flame:introduction", className: "report-deck", value: "We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver."                                    ,} )
     ]})
+    , jsxRuntime.jsx(OfflineAccuracy, {} )
     , prose("flame-decision", "Current decision", "models", models,
       `## What this means now\n\nThe flame-based experiment is complete through a frozen offline 2D test. It uses the chemistry step that CFD calls, not only a small reactor exercise. This is progress toward the application in the [Fuel study](${paper}), not a reproduction of its accuracy.\n\nMore data helped on the 1D validation states: all four targets improved species p99 and heat-release RMS from 10k to 50k to 200k candidates. The conventional model reached 8.3% heat-release relative RMS at 200k. However, the separate 2D test exposed a major transfer failure. The new models are not ready to replace CVODE.\n\nA post-score input check found pressure and cold-mixture values outside training coverage. This is evidence to repair input scaling and source coverage before a larger density campaign. The test-reference policy also needed an explicit numerical-sign-noise amendment before model scoring; its original failure and all raw signed labels are preserved below.`)
     , prose("flame-problem", "The problem we now learn", "models", models,
