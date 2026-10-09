@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#ffffff">
-<meta name="data-app-snapshot-sha256" content="1801b89a69b845c10407cd59d93a7db4eec95da7626dbe8f11167e4490369a6d">
+<meta name="data-app-snapshot-sha256" content="9cb08cf437dbc4b21ff0dbcacb4e78aa164d4c2c441c3682d6116a24273689da">
 <meta name="data-app-runtime-sha256" content="9e3ede84b28aded3c7379b6e6a5611f0d95b9977eb0f781e279ceefabfcbd27e">
 <meta name="data-app-bootstrap" content="deferred-content-v1">
 <meta name="data-app-build-layout" content="separate-data-v1">
-<meta name="data-app-local-snapshot" content="snapshot.1801b89a69b845c10407cd59d93a7db4eec95da7626dbe8f11167e4490369a6d.json">
+<meta name="data-app-local-snapshot" content="snapshot.9cb08cf437dbc4b21ff0dbcacb4e78aa164d4c2c441c3682d6116a24273689da.json">
 <meta name="data-app-local-thread" content="01a0c393-dd16-70c1-82b4-b303b15c29ad">
 <title>Chemistry acceptance: tested methods, accuracy and cost</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIuMDMxMjUgOUMyLjAzMTI1IDcuODk1NDMgMi45MjY2OCA3IDQuMDMxMjUgN0g4LjY1NDNWMjEuOTAwNEg0LjAzMTI1QzIuOTI2NjggMjEuOTAwNCAyLjAzMTI1IDIxLjAwNSAyLjAzMTI1IDE5LjkwMDRWOVoiIGZpbGw9IiMwMjg1RkYiLz4KPHBhdGggZD0iTTguNjU0MyA0LjA5OTYxQzguNjU0MyAyLjk5NTA0IDkuNTQ5NzMgMi4wOTk2MSAxMC42NTQzIDIuMDk5NjFIMTMuMjc3M0MxNC4zODE5IDIuMDk5NjEgMTUuMjc3MyAyLjk5NTA0IDE1LjI3NzMgNC4wOTk2MVYyMS45MDA0SDguNjU0M1Y0LjA5OTYxWiIgZmlsbD0iIzAyODVGRiIgZmlsbC1vcGFjaXR5PSIwLjciLz4KPHBhdGggZD0iTTE1LjI3NzMgMTEuMDk5NkgxOS45MDA0QzIxLjAwNSAxMS4wOTk2IDIxLjkwMDQgMTEuOTk1IDIxLjkwMDQgMTMuMDk5NlYxOS45MDA0QzIxLjkwMDQgMjEuMDA1IDIxLjAwNSAyMS45MDA0IDE5LjkwMDQgMjEuOTAwNEgxNS4yNzczVjExLjA5OTZaIiBmaWxsPSIjMDI4NUZGIiBmaWxsLW9wYWNpdHk9IjAuNCIvPgo8L3N2Zz4K">
@@ -98,6 +98,12 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 const recipes = [
+  {id:"fuel-state", name:"Transformed-state increment — Fuel source recipe", target:"state-boxcox", family:"Fuel source-recipe replication",
+    detail:"4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only centered sample-standard-deviation scaling. 1500 shuffled epochs; requested batch 20k capped at training count. Adam resets before epochs 502 and 1002 with tenfold LR drops. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.",
+    flow:["Same checked training states", "Sample-standard-deviation input and target scaling", "61 to 800x4 to 58 GELU network", "1500 epochs; source Adam resets", "Stable transformed-state inverse", "Both error budgets and SSPI"]},
+  {id:"fuel-power", name:"Direct signed-power increment — Fuel source recipe", target:"signed-power", family:"Fuel source-recipe replication",
+    detail:"4x800 GELU, 58 non-argon outputs, FP32 L1. Train-only population-standard-deviation scaling; zero target center, not RMS. 2000 shuffled epochs; requested batch 20k capped at training count. Tenfold LR drop every 500 epochs; retain Adam state. Stable FP64 inverse. Reduced-data diagnostic, not full paper reproduction.",
+    flow:["Same checked training states", "Signed tenth-root increment; zero target center", "Population-standard-deviation scaling", "61 to 800x4 to 58 GELU network", "2000 epochs; StepLR with Adam state retained", "Direct power inverse; both budgets and SSPI"]},
   ...["state-boxcox","gbct"].flatMap(target=>["coordinate","increment","state"].map(objective=>({
     id:`${target}-${objective}`, name:`${targetNames[target]} — paired ${objective} loss`, target, family:"Paired target and error-scale comparison",
     detail:`Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k ${objective} updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.`,
@@ -157,8 +163,8 @@ function methodLink(id) {
 }
 
 const names$1 = Object.fromEntries(["state-boxcox", "signed-power", "budget-linear", "scaled-asinh", "zero"].map(id=>[id,targetNames[id]]));
-const percent$5 = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
-const number$2 = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
+const percent$6 = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
+const number$3 = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
 
 function OfflineAccuracy() {
   const { snapshot, visible } = dataApp.useDataApp();
@@ -180,7 +186,7 @@ function OfflineAccuracy() {
   const table = models.map(row => ({...row, targetName:names$1[row.target], inferenceMs:1000*row.inferenceSeconds/row.states}));
   const seedRange = (target, count) => {
     const values = models.filter(row=>row.target === target && row.trainingCount === count).map(row=>row.componentRate);
-    return `${percent$5(Math.min(...values))}–${percent$5(Math.max(...values))}`;
+    return `${percent$6(Math.min(...values))}–${percent$6(Math.max(...values))}`;
   };
   const sizeRows = Object.keys(names$1).filter(target=>target !== "zero").map(target=>({
     targetName:names$1[target], small:seedRange(target, 2000), large:seedRange(target, 10000),
@@ -194,8 +200,8 @@ function OfflineAccuracy() {
     return visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, queryId: query, title: id, showHeading: false, sourceRows: snapshot.queries[query].rows, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: display,})});
   };
   return jsxRuntime.jsxs('section', { 'aria-label': "Offline representation accuracy"  , children: [
-    source("offline-opening", "offline_models", `## Current stage: measure representation accuracy before CFD\n\nAll 16 fits completed: four target representations, two nested training sizes, and two fixed seeds. At the primary tolerance, species-component acceptance ranges from ${percent$5(minimum)} to ${percent$5(maximum)}. The best observed complete-state acceptance is ${percent$5(maxState)}; the predeclared research target is 99%. This is a descriptive range over all fits, not a selected deployment model.\n\nA complete state passes only when every non-argon species passes. A high component score can therefore coexist with a low state score. These offline comparisons do not establish CFD accuracy or a guarantee on every prediction.`)
-    , source("offline-contract", "offline_contract", `### 1. Define an acceptable answer\n\nFor a reference increment d, require |prediction − d| ≤ 10⁻¹⁵ + 0.1 × |d|. At d = 10⁻¹², this permits 1.01 × 10⁻¹³ absolute error. The proposed 10⁻¹⁴ error is about 1% and remains a stretch target. This is our research criterion, not a CVODE error guarantee.\n\nPressure now covers 0.95–1.05 atm. Its input uses that declared physical range, not the narrow spread of the old samples. Temperature and composition retain the existing augmentation. Each fit uses four 800-unit GELU layers, FP32, L1 loss, batch size 256, and exactly 2,000 updates. We save the final update, with no evaluation-based checkpoint selection. Target scales use training data only.\n\nCVODE produced ${number$2(contract.accepted)} accepted training labels and ${number$2(contract.evaluation_states)} evaluation labels. ${contract.excluded.train} training and ${contract.excluded.validation} evaluation candidates were excluded; no failed label became zero. Label generation took ${number$2(contract.label_generation_wall_seconds)} wall seconds. The two evaluation snapshots come from the same flame realization as training, not an independent flame case.`)
+    source("offline-opening", "offline_models", `## Current stage: measure representation accuracy before CFD\n\nAll 16 fits completed: four target representations, two nested training sizes, and two fixed seeds. At the primary tolerance, species-component acceptance ranges from ${percent$6(minimum)} to ${percent$6(maximum)}. The best observed complete-state acceptance is ${percent$6(maxState)}; the predeclared research target is 99%. This is a descriptive range over all fits, not a selected deployment model.\n\nA complete state passes only when every non-argon species passes. A high component score can therefore coexist with a low state score. These offline comparisons do not establish CFD accuracy or a guarantee on every prediction.`)
+    , source("offline-contract", "offline_contract", `### 1. Define an acceptable answer\n\nFor a reference increment d, require |prediction − d| ≤ 10⁻¹⁵ + 0.1 × |d|. At d = 10⁻¹², this permits 1.01 × 10⁻¹³ absolute error. The proposed 10⁻¹⁴ error is about 1% and remains a stretch target. This is our research criterion, not a CVODE error guarantee.\n\nPressure now covers 0.95–1.05 atm. Its input uses that declared physical range, not the narrow spread of the old samples. Temperature and composition retain the existing augmentation. Each fit uses four 800-unit GELU layers, FP32, L1 loss, batch size 256, and exactly 2,000 updates. We save the final update, with no evaluation-based checkpoint selection. Target scales use training data only.\n\nCVODE produced ${number$3(contract.accepted)} accepted training labels and ${number$3(contract.evaluation_states)} evaluation labels. ${contract.excluded.train} training and ${contract.excluded.validation} evaluation candidates were excluded; no failed label became zero. Label generation took ${number$3(contract.label_generation_wall_seconds)} wall seconds. The two evaluation snapshots come from the same flame realization as training, not an independent flame case.`)
     , source("offline-floor", "offline_contract", "The absolute floor does not require accurate relative digits for changes far below 10⁻¹⁵. Use the tighter floors and magnitude table to inspect that limitation. Also, the same L1 loss in different target coordinates gives different physical error weights. This experiment compares target-plus-loss conditioning, not transform round-trip arithmetic alone.")
     , source("offline-result", "offline_models", "All four representations improve component acceptance from 2k to 10k rows in both seeds. Transformed-state targets perform best at the primary tolerance in this small, fixed-update experiment. Direct power has better small-increment preservation at 10k, but much lower overall component acceptance. Thus, a good SSPI score and a good general accuracy score are different results. This does not establish a universal ranking of transformations or reproduce the paper's much larger training campaign.")
     , visible("offline-size-summary") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-size-summary", queryId: "offline_models", kind: "table", title: "Component acceptance: range across the two seeds, not a confidence interval"          , sourceRows: models, displayRows: sizeRows, children: 
@@ -207,26 +213,26 @@ function OfflineAccuracy() {
       , jsxRuntime.jsxs('label', { children: ["Absolute floor "  , jsxRuntime.jsx('select', { value: floor, onChange: event=>setFloor(Number(event.target.value)), children: [1e-12,1e-15,1e-18].map(value=>jsxRuntime.jsx('option', { value: value, children: value.toExponential(0)}, value))})]})
       , jsxRuntime.jsxs('label', { children: ["Acceptance " , jsxRuntime.jsxs('select', { value: measure, onChange: event=>setMeasure(event.target.value), children: [jsxRuntime.jsx('option', { value: "componentRate", children: "Species components" }), jsxRuntime.jsx('option', { value: "stateRate", children: "Complete states" })]})]})
     ]})
-    , visible("offline-tolerance") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "offline-tolerance", queryId: "offline_curves", title: `Acceptance versus relative tolerance — seed ${seed}, ${number$2(size)} states, floor ${floor.toExponential(0)}`, rows: curveRows, sourceRows: curves, height: 340,
+    , visible("offline-tolerance") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "offline-tolerance", queryId: "offline_curves", title: `Acceptance versus relative tolerance — seed ${seed}, ${number$3(size)} states, floor ${floor.toExponential(0)}`, rows: curveRows, sourceRows: curves, height: 340,
       spec: {type:"line",x:"relativeLabel",y:measure,series:"targetName",stackable:false,valueDecimals:2,xLabel:"Allowed relative error",yLabel:"Acceptance"},})
-    , source("offline-next", "offline_contract", `The zero-change baseline passes ${percent$5(contract.zeroComponentRate)} of components and ${percent$5(contract.zeroStateRate)} of states at the primary tolerance. Its SSPI is ${percent$5(contract.zeroSspiRate)} because it predicts no large value where the reference is tiny. Thus, SSPI alone cannot establish useful accuracy. Zero change also passes a 100% relative-error allowance by construction.\n\n### 2. Compare accuracy with cost\n\nThe next plot uses all 16 fits at the primary tolerance. Each point is one target, size, and seed. CPU time includes training preparation and periodic evaluations, but excludes label generation and later verification. Wall time also includes CPU throttling. These are not GPU performance estimates.\n\nThe 2k and 10k samples are nested within each seed. More data at the same update count tests data density, not more optimizer work. The four representations use identical sampled batches and initial weights within each size and seed. Both seeds remain visible; we do not select the better one.`)
+    , source("offline-next", "offline_contract", `The zero-change baseline passes ${percent$6(contract.zeroComponentRate)} of components and ${percent$6(contract.zeroStateRate)} of states at the primary tolerance. Its SSPI is ${percent$6(contract.zeroSspiRate)} because it predicts no large value where the reference is tiny. Thus, SSPI alone cannot establish useful accuracy. Zero change also passes a 100% relative-error allowance by construction.\n\n### 2. Compare accuracy with cost\n\nThe next plot uses all 16 fits at the primary tolerance. Each point is one target, size, and seed. CPU time includes training preparation and periodic evaluations, but excludes label generation and later verification. Wall time also includes CPU throttling. These are not GPU performance estimates.\n\nThe 2k and 10k samples are nested within each seed. More data at the same update count tests data density, not more optimizer work. The four representations use identical sampled batches and initial weights within each size and seed. Both seeds remain visible; we do not select the better one.`)
     , jsxRuntime.jsxs('label', { children: ["Cost plot "  , jsxRuntime.jsxs('select', { value: cost, onChange: event=>setCost(event.target.value), children: [jsxRuntime.jsx('option', { value: "trainingSeconds", children: "Training CPU seconds"  }), jsxRuntime.jsx('option', { value: "inferenceMs", children: "Inference CPU ms per state"    })]})]})
     , visible("offline-cost") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "offline-cost", queryId: "offline_models", title: "Acceptance versus cost — primary tolerance, all sizes and seeds"         , rows: table, sourceRows: models, height: 340,
       spec: {type:"scatter",x:cost,y:measure,series:"targetName",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Training process CPU seconds" : "Inference process CPU ms per state",yLabel:"Acceptance"},})
     , visible("offline-all-models") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-all-models", queryId: "offline_models", kind: "table", title: "Every fit: primary tolerance and measured cost"      , sourceRows: models, displayRows: table, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: table, label: "Offline matched comparison"  , compactNumbers: false, columns: [
-        {field:"targetName",label:"Target"},{field:"seed",label:"Seed"},{field:"trainingCount",label:"Training states",renderCell:number$2},
-        {field:"componentRate",label:"Components pass",renderCell:percent$5},{field:"stateRate",label:"States pass",renderCell:percent$5},
-        {field:"sspiRate",label:"SSPI",renderCell:percent$5},{field:"trainingSeconds",label:"CPU s",renderCell:number$2},
+        {field:"targetName",label:"Target"},{field:"seed",label:"Seed"},{field:"trainingCount",label:"Training states",renderCell:number$3},
+        {field:"componentRate",label:"Components pass",renderCell:percent$6},{field:"stateRate",label:"States pass",renderCell:percent$6},
+        {field:"sspiRate",label:"SSPI",renderCell:percent$6},{field:"trainingSeconds",label:"CPU s",renderCell:number$3},
         {field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value.toPrecision(3)},
-        {field:"negativeComponentRate",label:"Negative endpoints",renderCell:percent$5},
-        {field:"inverseCorrectionRate",label:"Inverse corrections",renderCell:percent$5},
+        {field:"negativeComponentRate",label:"Negative endpoints",renderCell:percent$6},
+        {field:"inverseCorrectionRate",label:"Inverse corrections",renderCell:percent$6},
       ],})
     })
-    , visible("offline-magnitudes") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-magnitudes", queryId: "offline_magnitudes", kind: "table", title: `Acceptance by increment magnitude — seed ${seed}, ${number$2(size)} training states, primary tolerance`, sourceRows: magnitude, displayRows: magnitudeRows, children: 
+    , visible("offline-magnitudes") && jsxRuntime.jsx(dataApp.DataComponent, { id: "offline-magnitudes", queryId: "offline_magnitudes", kind: "table", title: `Acceptance by increment magnitude — seed ${seed}, ${number$3(size)} training states, primary tolerance`, sourceRows: magnitude, displayRows: magnitudeRows, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: magnitudeRows, label: "Magnitude-specific acceptance" , compactNumbers: false, columns: [
-        {field:"targetName",label:"Target"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number$2},
-        {field:"pass_fraction",label:"Pass",renderCell:percent$5},{field:"absolute_error_p99",label:"Absolute error p99",renderCell:value=>value == null ? "No observations" : value.toExponential(2)},
+        {field:"targetName",label:"Target"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number$3},
+        {field:"pass_fraction",label:"Pass",renderCell:percent$6},{field:"absolute_error_p99",label:"Absolute error p99",renderCell:value=>value == null ? "No observations" : value.toExponential(2)},
       ],})
     })
     , source("offline-audit", "offline_audit", `### 3. Keep uncertainty separate from model error\n\nThe independent reference check covers ${contract.audited_evaluation_states} evaluation states, not all ${contract.evaluation_states}. It compares tighter and step-limited CVODE with direct-increment Radau solves. A checked component is qualified only when estimated uncertainty is at most 10% of its tolerance budget. Its prediction must then pass with that uncertainty added to the error. This is an empirical margin, not a rigorous bound.\n\nAt the primary tolerance, ${audit[0].qualified_components} of ${audit[0].components} audited components and ${audit[0].qualified_states} of ${audit[0].states} audited states qualify. The remaining ${audit[0].unknown_components} components are unknown at this precision. Full-population plots are nominal scores against CVODE labels, not certified acceptance.\n\nThe next increase in data size must keep the pressure domain, held-out rows, and tolerance grid fixed. Compare the accuracy gain with added label and training cost. If more rows do not help at fixed updates, test a larger update budget separately. Do not add residual stages or return to CFD until the offline error pattern gives a reason.\n\nThe following sections preserve the earlier experiments. Their CFD transfer failure is not a pass/fail gate for this new representation stage.`)
@@ -266,7 +272,7 @@ function residualBinComparison(original, residual, seed) {
   });
 }
 
-const percent$4 = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
+const percent$5 = value => value == null ? "Unknown" : `${(100*value).toFixed(2)}%`;
 const numeric = value => value == null ? "Unknown" : value.toLocaleString("en-US", {maximumFractionDigits:2});
 
 function Refinement() {
@@ -311,7 +317,7 @@ function Refinement() {
   const maxState = Math.max(...models.map(row=>row.stateRate));
   const range = name => {
     const values = all.filter(row=>row.name === name).map(row=>row.componentRate);
-    return `${percent$4(Math.min(...values))}–${percent$4(Math.max(...values))}`;
+    return `${percent$5(Math.min(...values))}–${percent$5(Math.max(...values))}`;
   };
   const outcomes = [
     `Longer conventional training: ${range("original-state-boxcox")} → ${range("long-state-boxcox")}.`,
@@ -320,7 +326,7 @@ function Refinement() {
     `Frozen-base residual: ${range("residual-state-boxcox")}; larger single-model control: ${range("deep-state-boxcox")}.`,
   ];
   return jsxRuntime.jsxs('section', { 'aria-label': "Representation refinement" , children: [
-    text("refinement-opening", "refinement_models", `## Current stage: test how to recover more accurate predictions\n\nTwenty new fits completed: ten fixed methods for each of two seeds. The highest complete-state acceptance is ${percent$4(maxState)}. The required whole-state research milestone remains 99%; no deployment decision follows from these results.\n\nThe dataset and the pass rule did not change. Every prediction is judged against |error| ≤ 10⁻¹⁵ + 0.1 × |reference increment|. We have not started a new CFD test.`)
+    text("refinement-opening", "refinement_models", `## Current stage: test how to recover more accurate predictions\n\nTwenty new fits completed: ten fixed methods for each of two seeds. The highest complete-state acceptance is ${percent$5(maxState)}. The required whole-state research milestone remains 99%; no deployment decision follows from these results.\n\nThe dataset and the pass rule did not change. Every prediction is judged against |error| ≤ 10⁻¹⁵ + 0.1 × |reference increment|. We have not started a new CFD test.`)
     , visible("refinement-summary") && jsxRuntime.jsx(dataApp.ReportSection, { id: "refinement-summary", queryId: "refinement_models", queryIds: ["refinement_models","offline_models"], sourceRowsByQuery: {refinement_models:models,offline_models:snapshot.queries.offline_models.rows.filter(row=>row.trainingCount === 10000)}, showHeading: false, title: "Executive Summary" , children: 
       jsxRuntime.jsx(dataApp.RichNarrative, { id: "refinement-summary:body", value: `### Executive Summary\n\nThese are component pass rates at the unchanged primary tolerance. Each range retains both seeds; it is not a confidence interval.\n\n${outcomes.map(value=>`- ${value}`).join("\n")}\n\nMore training helped three original targets, but signed-power acceptance fell slightly. The tolerance-derived targets remained weak even on their training rows. The added physical penalty gave only small gains. The first residual recipe damaged small-increment accuracy; adding depth did not beat the original base either.\n\n**Implication:** better numerical coordinates and more model capacity do not automatically produce more accurate predictions. These are results for fixed short recipes, not the best possible performance of each family. Keep the conventional model as the control. Before adding residual stages, test a correction loss or scale that protects the base model's accurate small increments. A later 50k experiment should keep its data-size effect separate from such a method change.\n\nNo component result alone establishes a usable full-state chemistry solver. The plots below show the tolerance and cost trade-offs.`,})
     })
@@ -339,11 +345,11 @@ function Refinement() {
       spec: {type:"scatter",x:cost,y:measure,series:"method",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Training CPU seconds" : "Inference CPU ms per state",yLabel:"Acceptance"},})
     , visible("refinement-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "refinement-table", queryId: "refinement_models", kind: "table", title: "All new fits — primary tolerance; both seeds retained"        , sourceRows: models, displayRows: models.map(row=>({...row,method:recipeNames[row.name]})), children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: models.map(row=>({...row,method:recipeNames[row.name]})), label: "All refinement fits"  , compactNumbers: false, columns: [
-        {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"trainingComponentRate",label:"Train components",renderCell:percent$4},
-        {field:"componentRate",label:"Evaluation components",renderCell:percent$4},{field:"stateRate",label:"Evaluation states",renderCell:percent$4},
-        {field:"sspiRate",label:"SSPI",renderCell:percent$4},{field:"trainingSeconds",label:"CPU s incl. base",renderCell:numeric},
+        {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"trainingComponentRate",label:"Train components",renderCell:percent$5},
+        {field:"componentRate",label:"Evaluation components",renderCell:percent$5},{field:"stateRate",label:"Evaluation states",renderCell:percent$5},
+        {field:"sspiRate",label:"SSPI",renderCell:percent$5},{field:"trainingSeconds",label:"CPU s incl. base",renderCell:numeric},
         {field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value.toPrecision(3)},
-        {field:"parameters",label:"Total parameters",renderCell:numeric},{field:"negativeRate",label:"Negative endpoints",renderCell:percent$4},
+        {field:"parameters",label:"Total parameters",renderCell:numeric},{field:"negativeRate",label:"Negative endpoints",renderCell:percent$5},
       ],})
     })
     , visible("refinement-history") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "refinement-history", queryId: "refinement_history", title: "New-model learning curves — primary tolerance, fixed final checkpoint"        , rows: histories.map(row=>({...row,method:recipeNames[row.name]})), sourceRows: histories, height: 320,
@@ -352,24 +358,24 @@ function Refinement() {
       sourceRowsByQuery: {refinement_bins:snapshot.queries.refinement_bins.rows.filter(row=>row.seed === seed && row.name === "residual-state-boxcox"),offline_magnitudes:snapshot.queries.offline_magnitudes.rows.filter(row=>row.seed === seed && row.trainingCount === 10000 && row.target === "state-boxcox")}, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: residualBins, label: "Effect of correction at each magnitude"     , searchable: false, columns: [
         {field:"range",label:"|Reference increment|"},{field:"components",label:"Components"},
-        {field:"baseRate",label:"Base pass",renderCell:percent$4},{field:"residualRate",label:"Base + correction pass",renderCell:percent$4},
+        {field:"baseRate",label:"Base pass",renderCell:percent$5},{field:"residualRate",label:"Base + correction pass",renderCell:percent$5},
       ],})
     })
     , visible("refinement-bins") && jsxRuntime.jsx(dataApp.DataComponent, { id: "refinement-bins", queryId: "refinement_bins", kind: "table", title: "New-model acceptance by increment magnitude — primary tolerance"       , sourceRows: bins, displayRows: binRows, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: binRows, label: "Magnitude bins" , columns: [
-        {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:numeric},{field:"pass_fraction",label:"Pass",renderCell:percent$4},
+        {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:numeric},{field:"pass_fraction",label:"Pass",renderCell:percent$5},
       ],})
     })
     , visible("refinement-audit") && jsxRuntime.jsx(dataApp.DataComponent, { id: "refinement-audit", queryId: "refinement_audit", kind: "table", title: "Independent-reference subset — 16 evaluation states, primary tolerance"       , sourceRows: audits, displayRows: auditRows, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: auditRows, label: "Audited subset" , columns: [
         {field:"method",label:"Method"},{field:"qualified_components",label:"Qualified components"},{field:"unknown_components",label:"Unknown"},
-        {field:"qualified_pass_fraction",label:"Qualified components pass",renderCell:percent$4},{field:"qualified_state_pass_fraction",label:"Qualified states pass",renderCell:percent$4},
+        {field:"qualified_pass_fraction",label:"Qualified components pass",renderCell:percent$5},{field:"qualified_state_pass_fraction",label:"Qualified states pass",renderCell:percent$5},
       ],})
     })
     , visible("refinement-species") && jsxRuntime.jsx(dataApp.DataComponent, { id: "refinement-species", queryId: "refinement_species", kind: "table", title: "New-model acceptance for each species — primary tolerance"       , sourceRows: species, displayRows: speciesRows, children: 
       jsxRuntime.jsx(dataApp.DataTable, { rows: speciesRows, label: "Species acceptance" , columns: [
         {field:"method",label:"Method"},{field:"species",label:"Species"},{field:"components",label:"Components"},
-        {field:"component_pass_fraction",label:"Pass",renderCell:percent$4},
+        {field:"component_pass_fraction",label:"Pass",renderCell:percent$5},
         {field:"normalized_error_p99",label:"Error / budget p99",renderCell:value=>value.toExponential(2)},
       ],})
     })
@@ -392,8 +398,8 @@ function improvementSelection(rows, group, seed) {
   return rows.filter(row=>row.seed === seed && names.includes(row.name));
 }
 
-const percent$3 = value => value == null ? "Not available" : `${(100*value).toFixed(2)}%`;
-const number$1 = value => value == null ? "Not available" : value.toLocaleString("en-US", {maximumFractionDigits:2});
+const percent$4 = value => value == null ? "Not available" : `${(100*value).toFixed(2)}%`;
+const number$2 = value => value == null ? "Not available" : value.toLocaleString("en-US", {maximumFractionDigits:2});
 
 function Improvement() {
   const {snapshot, visible} = dataApp.useDataApp();
@@ -416,22 +422,22 @@ function Improvement() {
   const modelSources = {improve_models:chosen("improve_models"),refinement_models:bases.filter(row=>row.seed === seed)};
   const rowRange = name => {
     const rows = all.filter(row=>row.name === name && row.status === "verified");
-    return rows.length === 2 ? `${percent$3(Math.min(...rows.map(row=>row.componentRate)))}–${percent$3(Math.max(...rows.map(row=>row.componentRate)))}` : "Incomplete across seeds";
+    return rows.length === 2 ? `${percent$4(Math.min(...rows.map(row=>row.componentRate)))}–${percent$4(Math.max(...rows.map(row=>row.componentRate)))}` : "Incomplete across seeds";
   };
   const maximumState = Math.max(...models.filter(row=>row.status === "verified").map(row=>row.stateRate));
   const physics = snapshot.queries.physics_models?.rows || [];
   const text = (id, value) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, queryId: "improve_models", queryIds: ["improve_models","refinement_models"], sourceRowsByQuery: {improve_models:models,refinement_models:bases}, title: id, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: value,})});
   return jsxRuntime.jsxs('section', { 'aria-label': "Acceptance-directed adaptations" , children: [
     text("improve-opening", "# Can targeted changes raise acceptance?\n\nThis stage adapts the model to the numerical error rule. It keeps the data, all 58 scored species, and the primary tolerance unchanged. Earlier experiments remain below.")
-    , text("improve-summary", `## Executive Summary\n\n- The starting model reaches ${rowRange("base")} component acceptance. Continued coordinate training reaches ${rowRange("continue-coordinate")}; direct physical fine-tuning reaches ${rowRange("finetune-physical")}; adding a tail term reaches ${rowRange("finetune-tail")}.\n- Relative corrections reach ${rowRange("relative-correction")}; the protected version reaches ${rowRange("protected-correction")}. Check gains and losses separately below.\n- Local interpolation reaches ${rowRange("local-state")} in transformed-state coordinates and ${rowRange("local-asinh")} in asinh coordinates. This is not a neural result; its per-query solve and storage costs matter.\n- The later inverse-temperature/log-pressure input candidates reach ${rowRange("arrhenius-heads")} with separate species networks plus Adam, ${rowRange("arrhenius-lbfgs")} with L-BFGS/RMS, and ${rowRange("arrhenius-local")} with local interpolation. They change multiple design factors, so any gain cannot be attributed to input coordinates alone.\n\nThe highest complete-state score among individual new runs is ${percent$3(maximumState)}. This maximum is descriptive, not a best-seed deployment choice. The target remains 99% complete-state acceptance. Both seeds and every trial are retained.`)
+    , text("improve-summary", `## Executive Summary\n\n- The starting model reaches ${rowRange("base")} component acceptance. Continued coordinate training reaches ${rowRange("continue-coordinate")}; direct physical fine-tuning reaches ${rowRange("finetune-physical")}; adding a tail term reaches ${rowRange("finetune-tail")}.\n- Relative corrections reach ${rowRange("relative-correction")}; the protected version reaches ${rowRange("protected-correction")}. Check gains and losses separately below.\n- Local interpolation reaches ${rowRange("local-state")} in transformed-state coordinates and ${rowRange("local-asinh")} in asinh coordinates. This is not a neural result; its per-query solve and storage costs matter.\n- The later inverse-temperature/log-pressure input candidates reach ${rowRange("arrhenius-heads")} with separate species networks plus Adam, ${rowRange("arrhenius-lbfgs")} with L-BFGS/RMS, and ${rowRange("arrhenius-local")} with local interpolation. They change multiple design factors, so any gain cannot be attributed to input coordinates alone.\n\nThe highest complete-state score among individual new runs is ${percent$4(maximumState)}. This maximum is descriptive, not a best-seed deployment choice. The target remains 99% complete-state acceptance. Both seeds and every trial are retained.`)
     , text("improve-methods", "## What changed, step by step\n\n1. Start with the verified 4,000-update conventional model. One control continues coordinate loss. Two variants instead optimize physical error divided by the unchanged reference-based budget; one adds the worst eight species in each state.\n2. Freeze the base for correction models. Predict a correction in a local asinh coordinate with scale `1e-14 + abs(base prediction)`. The scale is available at inference. A zero correction exactly preserves the base. The protected variant also penalizes loss of previously correct training components; this is not a guarantee on new states.\n3. Test local cubic RBF interpolation with 128 neighbors and a training-only numerical-rank input basis. This asks whether local approximation is easier than one global network. It is not ISAT and has no runtime acceptance certificate.\n4. After the first physical fine-tuning results, add three physically motivated input candidates: inverse temperature and log-like partial pressures. Train independent two-layer, 32-unit species networks for 4,000 coordinate-loss updates and then 4,000 physical-loss updates. A second neural version uses the same warmup and then 80 full-batch L-BFGS steps on a species-RMS objective. Each step can require several full-data evaluations; compare measured cost, not step count. Compare both with a local asinh table using the same new inputs. This is inspired by [latent-asinh surface kinetics](https://pubs.rsc.org/en/content/articlehtml/2023/re/d3re00212h), not a reproduction of that different chemistry task. The local control uses [SciPy RBF interpolation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RBFInterpolator.html).\n\nThe first five neural adaptations each receive 4,000 additional updates. The later species networks start fresh. Every checkpoint is the fixed final checkpoint. The 1,023 evaluation rows are inspected development snapshots from one flame, not an untouched test. The primary rule is `abs(error) <= 1e-15 + 0.1*abs(reference)`. A state must pass every non-argon species.")
     , physics.length > 0 && visible("improve-physics") && jsxRuntime.jsxs(dataApp.ReportSection, { id: "improve-physics", queryId: "physics_models", sourceRows: physics, title: "Could known kinetics give a better starting point?"       , children: [
       jsxRuntime.jsx(dataApp.RichNarrative, { id: "improve-physics:body", value: "These two controls do not learn. They call the actual reaction mechanism. The first predicts interval times the initial net rate. The second solves a scalar production/destruction equation for each species, with its coefficients frozen over the interval. It uses expm1 to preserve small changes. Neither has adaptive error control. The second can lose conservation because each species is treated separately.\n\nThis tests a possible starting point for later learned corrections. Higher acceptance here is not a neural-model gain. Inference cost includes kinetics, but excludes one-time mechanism parsing. Both controls use all 1,023 development states; there is no seed selection. [Cantera kinetics interface](https://www.cantera.org/stable/python/kinetics.html).",})
       , jsxRuntime.jsx(dataApp.DataTable, { rows: physics, label: "Non-learned kinetics controls"  , columns: [
-        {field:"name",label:"Control",renderCell:value=>jsxRuntime.jsx('a', { href: methodLink(value), children: recipeNames[value]})},{field:"componentRate",label:"Species pass",renderCell:percent$3},
-        {field:"stateRate",label:"Complete states",renderCell:percent$3},{field:"qualifiedRate",label:"Audited components pass",renderCell:percent$3},
+        {field:"name",label:"Control",renderCell:value=>jsxRuntime.jsx('a', { href: methodLink(value), children: recipeNames[value]})},{field:"componentRate",label:"Species pass",renderCell:percent$4},
+        {field:"stateRate",label:"Complete states",renderCell:percent$4},{field:"qualifiedRate",label:"Audited components pass",renderCell:percent$4},
         {field:"inferenceMs",label:"CPU ms/state",renderCell:value=>value.toPrecision(3)},
-        {field:"negativeRate",label:"Negative endpoints",renderCell:percent$3},
+        {field:"negativeRate",label:"Negative endpoints",renderCell:percent$4},
         {field:"massDriftP99",label:"Mass drift p99",renderCell:value=>value.toExponential(2)},
         {field:"heatRelativeRms",label:"Heat error / reference RMS",renderCell:value=>value.toExponential(2)}],})
     ]})
@@ -446,27 +452,27 @@ function Improvement() {
     , visible("improve-cost") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "improve-cost", queryId: "improve_models", queryIds: ["improve_models","refinement_models"], title: "Acceptance versus cost — primary tolerance"     , rows: withNames(selected.filter(row=>row.status === "verified")), displayRows: withNames(selected), sourceRowsByQuery: modelSources, height: 340, spec: {type:"scatter",x:cost,y:measure,series:"method",stackable:false,valueDecimals:3,xLabel:cost === "trainingSeconds" ? "Total training CPU seconds" : "Inference CPU ms/state",yLabel:"Acceptance"},})
     , visible("improve-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-table", queryId: "improve_models", kind: "table", title: "Every declared trial — both seeds, primary tolerance"       , sourceRows: models, displayRows: withNames(models), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(models), label: "Acceptance adaptation results"  , columns: [
       {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"status",label:"Status"},
-      {field:"trainingComponentRate",label:"Train components",renderCell:percent$3},{field:"componentRate",label:"Development components",renderCell:percent$3},
-      {field:"stateRate",label:"Complete states",renderCell:percent$3},{field:"normalizedErrorP99",label:"Error / budget p99",renderCell:value=>value == null ? "Unknown" : value.toExponential(2)},
-      {field:"negativeRate",label:"Negative endpoints",renderCell:percent$3},{field:"correctedRate",label:"Inverse corrections",renderCell:percent$3},
-      {field:"trainingSeconds",label:"CPU s incl. base",renderCell:number$1},{field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value == null ? "Unknown" : value.toPrecision(3)},
+      {field:"trainingComponentRate",label:"Train components",renderCell:percent$4},{field:"componentRate",label:"Development components",renderCell:percent$4},
+      {field:"stateRate",label:"Complete states",renderCell:percent$4},{field:"normalizedErrorP99",label:"Error / budget p99",renderCell:value=>value == null ? "Unknown" : value.toExponential(2)},
+      {field:"negativeRate",label:"Negative endpoints",renderCell:percent$4},{field:"correctedRate",label:"Inverse corrections",renderCell:percent$4},
+      {field:"trainingSeconds",label:"CPU s incl. base",renderCell:number$2},{field:"inferenceMs",label:"Inference CPU ms/state",renderCell:value=>value == null ? "Unknown" : value.toPrecision(3)},
     ],})})
     , visible("improve-transitions") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-transitions", queryId: "improve_models", kind: "table", title: "New passes and new failures versus the frozen base"        , sourceRows: chosen("improve_models"), displayRows: withNames(chosen("improve_models")), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(chosen("improve_models")), searchable: false, label: "Correction damage and gain"   , columns: 
-      [{field:"method",label:"Method"},{field:"newlyPassing",label:"Fail → pass",renderCell:number$1},{field:"newlyFailing",label:"Pass → fail",renderCell:number$1},{field:"components",label:"Scored components",renderCell:number$1}],})})
+      [{field:"method",label:"Method"},{field:"newlyPassing",label:"Fail → pass",renderCell:number$2},{field:"newlyFailing",label:"Pass → fail",renderCell:number$2},{field:"components",label:"Scored components",renderCell:number$2}],})})
     , visible("improve-history") && group !== "local" && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "improve-history", queryId: "improve_history", title: "Learning curves — fixed final checkpoints"     , rows: withNames(chosen("improve_history")), sourceRows: chosen("improve_history"), height: 320, spec: {type:"line",x:"step",y:measure,series:"method",stackable:false,valueDecimals:2,xLabel:"Recorded optimizer steps (not equal work)",yLabel:"Evaluation acceptance"},})
     , snapshot.queries.improve_state_errors && visible("improve-state-errors") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-state-errors", queryId: "improve_state_errors", kind: "table", title: "How far are states from passing all species?"       , sourceRows: chosen("improve_state_errors"), displayRows: withNames(chosen("improve_state_errors")), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(chosen("improve_state_errors")), label: "Failed species per state"   , columns: 
       [{field:"method",label:"Method"},{field:"split",label:"Population"},{field:"minimum_failing_species",label:"Minimum failing"},{field:"median_failing_species",label:"Median failing"},{field:"maximum_failing_species",label:"Maximum failing"},{field:"state_max_error_median",label:"Median worst error / budget",renderCell:value=>value.toExponential(2)}],})})
     , visible("improve-bins") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-bins", queryId: "improve_bins", kind: "table", title: "Acceptance by increment size — primary tolerance"      , sourceRows: chosen("improve_bins"), displayRows: withNames(chosen("improve_bins")).map(row=>({...row,range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`})), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(chosen("improve_bins")).map(row=>({...row,range:`[${row.lower.toExponential(0)}, ${row.upper == null ? "∞" : row.upper.toExponential(0)})`})), label: "Magnitude-resolved acceptance" , columns: 
-      [{field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number$1},{field:"pass_fraction",label:"Pass",renderCell:percent$3}],})})
+      [{field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components",renderCell:number$2},{field:"pass_fraction",label:"Pass",renderCell:percent$4}],})})
     , visible("improve-audit") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-audit", queryId: "improve_audit", kind: "table", title: "Independent reference subset — 16 states"     , sourceRows: chosen("improve_audit"), displayRows: withNames(chosen("improve_audit")), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(chosen("improve_audit")), label: "Qualified reference accuracy"  , columns: 
-      [{field:"method",label:"Method"},{field:"qualified_components",label:"Qualified components"},{field:"qualified_pass_fraction",label:"Qualified components pass",renderCell:percent$3},{field:"qualified_state_pass_fraction",label:"Qualified states pass",renderCell:percent$3}],})})
+      [{field:"method",label:"Method"},{field:"qualified_components",label:"Qualified components"},{field:"qualified_pass_fraction",label:"Qualified components pass",renderCell:percent$4},{field:"qualified_state_pass_fraction",label:"Qualified states pass",renderCell:percent$4}],})})
     , visible("improve-species") && jsxRuntime.jsx(dataApp.DataComponent, { id: "improve-species", queryId: "improve_species", kind: "table", title: "Acceptance for each species — primary tolerance"      , sourceRows: chosen("improve_species"), displayRows: withNames(chosen("improve_species")), children: jsxRuntime.jsx(dataApp.DataTable, { rows: withNames(chosen("improve_species")), label: "Species error tails"  , columns: 
-      [{field:"method",label:"Method"},{field:"species",label:"Species"},{field:"component_pass_fraction",label:"Pass",renderCell:percent$3},{field:"normalized_error_p99",label:"Error / budget p99",renderCell:value=>value.toExponential(2)}],})})
+      [{field:"method",label:"Method"},{field:"species",label:"Species"},{field:"component_pass_fraction",label:"Pass",renderCell:percent$4},{field:"normalized_error_p99",label:"Error / budget p99",renderCell:value=>value.toExponential(2)}],})})
     , text("improve-next", "## What the result means, step by step\n\n1. The requested large acceptance gain was not achieved. Base-relative corrections give a small improvement over the starting model, but no complete state passes. Keep the primary rule unchanged.\n2. Excellent training fit is not enough: local interpolation fits almost all training components but performs poorly on development states. This is evidence of a generalization problem for these local recipes, not proof that every local method fails.\n3. A smaller tail error is not the same as more passes. The new input/species heads reduce normalized p99 sharply; the L-BFGS/RMS finish reduces it further while losing acceptance. The zero-change control also has normalized error below 10, yet fails most components. Its earlier score remains in the offline section.\n4. The conventional neural models still fail many training components. These runs do not establish a capacity ceiling, a data-size ceiling, or saturated performance of any target formulation.\n\nNext, test a training-only acceptance curriculum or species-wise optimization on the retained baseline, then use a controlled 50k data-size factor. Do not stack more identical residual stages or select one seed. Freeze the recipe before a new independent-case test. CFD remains later.\n\nTraining cost includes the base where reused. Local table solves occur during prediction; include their query and storage cost. Five-repeat full-batch CPU timings are not single-state latency or CVODE speedup. The two kinetics controls are not learned gains.\n\nAll full-population scores are nominal: only 16 development states have independent reference-uncertainty checks. Exact replay verifies the evidence, not numerical accuracy. Four local runs were rechecked after fixing cancellation in the auxiliary heat-error metric; original failed records were preserved and acceptance predictions did not change. Earlier sections retain their historical recommendations.")
   ]});
 }
 
-const percent$2 = value => value == null ? "Not evaluated" : `${(100*value).toFixed(2)}%`;
+const percent$3 = value => value == null ? "Not evaluated" : `${(100*value).toFixed(2)}%`;
 
 function ReviewGuide() {
   const {snapshot, visible} = dataApp.useDataApp();
@@ -482,19 +488,19 @@ function ReviewGuide() {
       jsxRuntime.jsx(dataApp.DataTable, { rows: rows, label: "Final checkpoint split scores"   , columns: [
         {field:"method",label:"Canonical method",renderCell:(_,row)=>jsxRuntime.jsx('a', { href: methodLink(row.name), children: recipeNames[row.name]})},
         {field:"seed",label:"Seed"},
-        {field:"trainingComponentRate",label:"Train components",renderCell:percent$2},
-        {field:"componentRate",label:"Development components",renderCell:percent$2},
-        {field:"trainingStateRate",label:"Train complete states",renderCell:percent$2},
-        {field:"stateRate",label:"Development complete states",renderCell:percent$2},
-        {field:"testRate",label:"Independent test",renderCell:percent$2},
+        {field:"trainingComponentRate",label:"Train components",renderCell:percent$3},
+        {field:"componentRate",label:"Development components",renderCell:percent$3},
+        {field:"trainingStateRate",label:"Train complete states",renderCell:percent$3},
+        {field:"stateRate",label:"Development complete states",renderCell:percent$3},
+        {field:"testRate",label:"Independent test",renderCell:percent$3},
       ],})
     })
     , text("review-tolerance-guide", "### What do the tolerance terms mean?\n\nThe historical increment rule remains **allowed absolute error = 1e-15 + 0.1 × |reference increment|**. It permits 1.01e-13 at an increment of 1e-12, 2e-15 at 1e-14, and 1.01e-15 at 1e-16. Below the crossover of 1e-14, the absolute floor dominates. A zero prediction passes for |increment| ≤ approximately 1.11e-15. Passing does not establish accurate significant digits for extremely small changes.\n\nIn standard CVODE terminology, atol and rtol are fixed parameters. The **relative contribution**, rtol × |state|, and the **total allowance**, atol + rtol × |state|, vary with the state. CVODE uses an estimated local error and a weighted RMS test; our every-species surrogate acceptance is a different test.\n\nThe paired campaign above evaluates both increment-reference and state-endpoint scaling. It uses the reference endpoint Y + d, not the predicted endpoint. Both numerators use the saved signed increment error, so endpoint rounding cannot hide it. The full grid and zero control keep the effect of a changed scoring rule visible.\n\nA separate custom policy can vary **both** parameters: tau_i(m) = a_i(m) + r_i(m) × m. This is not standard CVODE automatic behavior. No numerical curve for this policy has been selected or tested. Define its total allowance, units and zero behavior from the required accuracy before evaluating it; do not tune the allowance to make existing model errors pass.\n\nOnly 16 development states have independent reference-uncertainty checks. Full-population rates remain nominal. Unknown reference accuracy is not a pass. Neither one-step metric establishes trajectory accuracy. See the [canonical accuracy protocol](https://github.com/xiao312/DFODE-kit/blob/research/precision-conditioned-increments/docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs) for the fixed definitions.")
   ]});
 }
 
-const percent$1 = v => v == null ? "Not evaluated" : `${(100*v).toFixed(2)}%`;
-const number = v => v == null ? "Not available" : v.toPrecision(4);
+const percent$2 = v => v == null ? "Not evaluated" : `${(100*v).toFixed(2)}%`;
+const number$1 = v => v == null ? "Not available" : v.toPrecision(4);
 const policies = ["increment-reference-v1", "state-endpoint-v1"];
 
 function PairedAccuracy() {
@@ -510,7 +516,7 @@ function PairedAccuracy() {
   const selected = models.filter(r=>r.seed === seed && r.policy === policy);
   const range = (name, scoring=policies[0], field="componentRate") => {
     const values = models.filter(r=>r.name === name && r.policy === scoring).map(r=>r[field]);
-    return `${percent$1(Math.min(...values))}–${percent$1(Math.max(...values))}`;
+    return `${percent$2(Math.min(...values))}–${percent$2(Math.max(...values))}`;
   };
   const text = (id, value) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, queryId: "paired_models", sourceRows: models, title: id, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: value,})});
   const curves = snapshot.queries.paired_curves.rows.filter(r=>r.seed === seed && r.policy === policy && r.target === target && r.atol === floor && r.role === "paired-grid");
@@ -534,25 +540,69 @@ function PairedAccuracy() {
     , visible("paired-cost") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "paired-cost", queryId: "paired_models", sourceRows: selected, title: `Acceptance versus GPU fit time — both targets, ${policy}, seed ${seed}`, rows: selected.map(label), height: 330, spec: {type:"scatter",x:"trainingSeconds",y:measure,series:"objective",stackable:false,valueDecimals:3,xLabel:"Synchronized fit wall seconds",yLabel:"Acceptance"},})
     , visible("paired-table") && jsxRuntime.jsx(dataApp.DataComponent, { id: "paired-table", queryId: "paired_models", kind: "table", title: `Both targets and both seeds — ${policy}, a=1e-15, r=0.1`, sourceRows: models.filter(r=>r.policy === policy), displayRows: models.filter(r=>r.policy === policy).map(label), children: jsxRuntime.jsx(dataApp.DataTable, { rows: models.filter(r=>r.policy === policy).map(label), label: "Paired train and development scores"    , columns: [
       {field:"method",label:"Method",renderCell:(_,r)=>jsxRuntime.jsx('a', { href: methodLink(r.name), children: recipeNames[r.name]})},{field:"seed",label:"Seed"},
-      {field:"trainingComponentRate",label:"Train components",renderCell:percent$1},{field:"componentRate",label:"Development components",renderCell:percent$1},
-      {field:"trainingStateRate",label:"Train complete states",renderCell:percent$1},{field:"stateRate",label:"Development complete states",renderCell:percent$1},
-      {field:"testRate",label:"Independent test",renderCell:percent$1},{field:"normalizedP99",label:"Error / allowance p99",renderCell:number},
-      {field:"trainingSeconds",label:"GPU fit wall s",renderCell:number},{field:"inferenceMs",label:"Batched end-to-end ms/state",renderCell:number},
-      {field:"correctionRate",label:"Inverse corrections",renderCell:percent$1},{field:"negativeRate",label:"Negative endpoints",renderCell:percent$1},{field:"massDriftP99",label:"Mass drift p99",renderCell:number},
+      {field:"trainingComponentRate",label:"Train components",renderCell:percent$2},{field:"componentRate",label:"Development components",renderCell:percent$2},
+      {field:"trainingStateRate",label:"Train complete states",renderCell:percent$2},{field:"stateRate",label:"Development complete states",renderCell:percent$2},
+      {field:"testRate",label:"Independent test",renderCell:percent$2},{field:"normalizedP99",label:"Error / allowance p99",renderCell:number$1},
+      {field:"trainingSeconds",label:"GPU fit wall s",renderCell:number$1},{field:"inferenceMs",label:"Batched end-to-end ms/state",renderCell:number$1},
+      {field:"correctionRate",label:"Inverse corrections",renderCell:percent$2},{field:"negativeRate",label:"Negative endpoints",renderCell:percent$2},{field:"massDriftP99",label:"Mass drift p99",renderCell:number$1},
     ],})})
     , visible("paired-application") && jsxRuntime.jsx(dataApp.DataComponent, { id: "paired-application", queryId: "paired_models", kind: "table", title: "Separate application-state diagnostic: a=1e-12, r=1e-6"    , sourceRows: models.filter(r=>r.policy === policies[1]), displayRows: app, children: jsxRuntime.jsx(dataApp.DataTable, { rows: app, label: "Stricter state-relative allowance"  , columns: [
-      {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"applicationComponentRate",label:"Development components",renderCell:percent$1},{field:"applicationStateRate",label:"Development complete states",renderCell:percent$1},
+      {field:"method",label:"Method"},{field:"seed",label:"Seed"},{field:"applicationComponentRate",label:"Development components",renderCell:percent$2},{field:"applicationStateRate",label:"Development complete states",renderCell:percent$2},
     ],})})
     , visible("paired-audit") && jsxRuntime.jsx(dataApp.DataComponent, { id: "paired-audit", queryId: "paired_audit", kind: "table", title: `Reference qualification — ${policy}, 16 states`, sourceRows: audit, displayRows: audit.map(label), children: jsxRuntime.jsx(dataApp.DataTable, { rows: audit.map(label), label: "Empirical reference qualification"  , columns: [
       {field:"method",label:"Method"},{field:"components",label:"Qualified / 928 components"},{field:"passed_components",label:"Qualified passes"},{field:"states",label:"Qualified / 16 states"},{field:"passed_states",label:"Qualified state passes"},
     ],})})
     , visible("paired-bins") && jsxRuntime.jsx(dataApp.DataComponent, { id: "paired-bins", queryId: "paired_bins", kind: "table", title: `Acceptance by increment size — ${policy}`, sourceRows: detail("paired_bins"), displayRows: binRows, children: jsxRuntime.jsx(dataApp.DataTable, { rows: binRows, label: "Magnitude-bin acceptance" , columns: [
-      {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components"},{field:"componentRate",label:"Pass",renderCell:percent$1},
+      {field:"method",label:"Method"},{field:"range",label:"|Reference increment|"},{field:"components",label:"Components"},{field:"componentRate",label:"Pass",renderCell:percent$2},
     ],})})
     , visible("paired-species") && jsxRuntime.jsx(dataApp.DataComponent, { id: "paired-species", queryId: "paired_species", kind: "table", title: `Species errors — ${policy}`, sourceRows: detail("paired_species"), displayRows: detail("paired_species").map(label), children: jsxRuntime.jsx(dataApp.DataTable, { rows: detail("paired_species").map(label), label: "Species acceptance and error tails"    , columns: [
-      {field:"method",label:"Method"},{field:"species",label:"Species"},{field:"componentRate",label:"Pass",renderCell:percent$1}, ...["p50","p95","p99","max"].map(field=>({field,label:`Error / allowance ${field}`,renderCell:number})),
+      {field:"method",label:"Method"},{field:"species",label:"Species"},{field:"componentRate",label:"Pass",renderCell:percent$2}, ...["p50","p95","p99","max"].map(field=>({field,label:`Error / allowance ${field}`,renderCell:number$1})),
     ],})})
     , text("paired-next", "## What this result can decide\n\nCompare targets within the same training objective and scoring rule. Compare objectives within the same target. A change in the scoring rule alone is not an accuracy improvement. The separate application-state table uses a different, tighter relative allowance than the paired 10% rule; do not merge its scores with the primary benchmark.\n\nThe next controlled factor is dataset size, with the selected recipes and sufficient training work held explicit. A fresh independent-case test comes only after the recipe is fixed. These one-step development scores do not establish trajectory accuracy, saturation, or solver-level reliability.")
+  ]});
+}
+
+const percent$1 = value => value == null ? "Not evaluated" : `${(100*value).toFixed(2)}%`;
+const number = value => value == null ? "Not available" : value.toPrecision(4);
+
+function FuelBaseline() {
+  const {snapshot, visible} = dataApp.useDataApp();
+  const [policy, setPolicy] = react.useState("increment-reference-v1");
+  const [seed, setSeed] = react.useState(20261011);
+  const [recipe, setRecipe] = react.useState("fuel-state");
+  const models = snapshot.queries.fuel_models?.rows;
+  if (!models) return null;
+  const source = models.filter(r=>r.policy === policy);
+  const rows = source.map(r=>({...r, method:recipeNames[r.recipe]}));
+  const history = snapshot.queries.fuel_history.rows.filter(r=>r.policy === policy && r.seed === seed && r.recipe === recipe);
+  const range = id => {
+    const values = models.filter(r=>r.policy === "increment-reference-v1" && r.recipe === id).map(r=>r.developmentRate);
+    return `${percent$1(Math.min(...values))}–${percent$1(Math.max(...values))}`;
+  };
+  const old = snapshot.queries.paired_models.rows.filter(r=>r.name === "state-boxcox-coordinate" && r.policy === "increment-reference-v1");
+  const text = (id, value) => visible(id) && jsxRuntime.jsx(dataApp.ReportSection, { id: id, queryId: "fuel_models", queryIds: id === "fuel-opening" ? ["fuel_models","paired_models"] : ["fuel_models"], sourceRowsByQuery: id === "fuel-opening" ? {fuel_models:models,paired_models:old} : {fuel_models:models}, title: id, showHeading: false, children: jsxRuntime.jsx(dataApp.RichNarrative, { id: `${id}:body`, value: value, sourcePreviews: {
+    "https://arxiv.org/html/2507.08277v2": {title:"Fuel study: physics-aware augmentation and scale separation",summary:"The author manuscript defines flame-based data preparation, two target transformations, and temperature-dependent deployment.",approvedForReport:true},
+    "https://arxiv.org/html/2512.05685v1": {title:"GBCT: an output scaling layer for multiscale ODEs",summary:"The author manuscript specifies a transformed-state rate target and a two-stage large-batch training schedule.",approvedForReport:true},
+  },})});
+  return jsxRuntime.jsxs('section', { 'aria-label': "Fuel source-recipe baseline"  , children: [
+    text("fuel-opening", `# The source training recipes need more than matching epoch counts\n\nThe first **reduced-data Fuel recipe replication did not improve acceptance**. On the same 10k training rows, transformed-state development acceptance is **${range("fuel-state")}**, versus 33.49–33.69% for the prior 4k-update coordinate control. Direct-power acceptance is ${range("fuel-power")}. Both seeds are retained. No complete state passes the primary increment rule.\n\nThe recovered state training log used 7.6M training rows, 20k batches, and 1.5k epochs: **570k updates and 11.4B row presentations**. With only 10k rows, our capped batch covers the entire training set. The same epoch count gives only 1.5k updates and 15M presentations. Copying the epoch count does not reproduce the training budget.\n\nThis result does not refute the Fuel paper. Our data are much smaller, our development split is different, and our error contract is not its paper metric.`)
+    , text("fuel-method", `## What changed, and what stayed fixed\n\n1. Read the [Fuel manuscript](https://arxiv.org/html/2507.08277v2), the [GBCT manuscript](https://arxiv.org/html/2512.05685v1), and the saved Fuel training scripts. The [source audit](https://github.com/xiao312/DFODE-kit/blob/research/precision-conditioned-increments/docs/agents/fuel-baseline-replication.md) lists verified settings and unresolved data lineage.\n2. Match the Fuel network: 61 inputs, four 800-unit GELU layers, and 58 outputs. Match each script's normalization, L1 loss, epoch schedule, and Adam reset policy. Direct power has **zero target center and a standard-deviation scale**, not centered Z-score or RMS scaling.\n3. Keep the same training row IDs, development rows, references, seeds, and acceptance rules. Keep train-only statistics, stable FP64 reconstruction, and visible invalid-domain corrections. Do not copy validation leakage or silent clipping.\n4. Run all four fits on an RTX 4090 in the project GPU environment. Reload saved weights and check exact predictions, independent acceptance counts, and physical diagnostics.\n\nThe [canonical method catalogue](${catalogueUrl}) contains both recipe flowcharts. GBCT has separate paper/code discrepancies; no unchanged upstream training command is treated as a verified reproduction.`)
+    , jsxRuntime.jsxs('div', { style: {display:"flex",flexWrap:"wrap",gap:"1rem",marginBlock:"1rem"}, 'aria-label': "Fuel result controls"  , children: [
+      jsxRuntime.jsxs('label', { children: ["Error scale "  , jsxRuntime.jsx('select', { value: policy, onChange: e=>setPolicy(e.target.value), children: ["increment-reference-v1","state-endpoint-v1"].map(v=>jsxRuntime.jsx('option', { children: v}, v))})]})
+      , jsxRuntime.jsxs('label', { children: ["Curve seed "  , jsxRuntime.jsx('select', { value: seed, onChange: e=>setSeed(Number(e.target.value)), children: [20261011,20261012].map(v=>jsxRuntime.jsx('option', { children: v}, v))})]})
+      , jsxRuntime.jsxs('label', { children: ["Curve recipe "  , jsxRuntime.jsx('select', { value: recipe, onChange: e=>setRecipe(e.target.value), children: ["fuel-state","fuel-power"].map(v=>jsxRuntime.jsx('option', { value: v, children: recipeNames[v]}, v))})]})
+    ]})
+    , visible("fuel-results") && jsxRuntime.jsx(dataApp.DataComponent, { id: "fuel-results", queryId: "fuel_models", kind: "table", title: `Final 10k fits — ${policy}, a=1e-15, r=0.1`, sourceRows: source, displayRows: rows, children: jsxRuntime.jsx(dataApp.DataTable, { rows: rows, label: "Fuel train and development results"    , columns: [
+      {field:"method",label:"Recipe",renderCell:(_,r)=>jsxRuntime.jsx('a', { href: methodLink(r.recipe), children: r.method})},{field:"seed",label:"Seed"},
+      {field:"trainingRate",label:"Training pass",renderCell:percent$1},{field:"developmentRate",label:"Development pass",renderCell:percent$1},
+      {field:"stateRate",label:"Complete states",renderCell:percent$1},{field:"p99",label:"Error / allowance p99",renderCell:number},
+      {field:"sspi",label:"SSPI, tiny subset only",renderCell:percent$1},{field:"epochs",label:"Epochs"},{field:"updates",label:"Updates"},
+      {field:"presentations",label:"Row presentations"},{field:"fitSeconds",label:"GPU fit wall s",renderCell:number},
+      {field:"correctionRate",label:"Inverse corrections",renderCell:percent$1},{field:"negativeRate",label:"Negative endpoints",renderCell:percent$1},
+      {field:"independentTest",label:"Independent test",renderCell:percent$1},
+    ],})})
+    , visible("fuel-history") && jsxRuntime.jsx(dataApp.EvidenceChart, { id: "fuel-history", queryId: "fuel_history", title: `Training and development acceptance — ${recipeNames[recipe]}, seed ${seed}`, rows: history, sourceRows: history, height: 340, spec: {type:"line",x:"epoch",y:"acceptanceRate",series:"split",stackable:false,xLabel:"Completed epochs (one update per epoch at 10k)",yLabel:"Acceptance",valueDecimals:2},})
+    , text("fuel-next", "## Next gate: increase data without changing the development cases\n\nA separate 50k campaign is prepared with the same pressure range, source groups and reference tolerances. The runner requires an independent reference-subset audit and exact preservation of the original development states and labels. The original 10k training rows remain in each seed's larger training set. Both recipes and seeds must complete.\n\nThis page reports completed 10k results only. It does not show a live job status or claim a 50k result. CPU is used for Cantera/SciPy references; neural fits require GPU. The 50k stage still does not reproduce the paper's full source coverage or eight-million-state dataset. Those data-preparation differences remain explicit follow-up work.")
   ]});
 }
 
@@ -696,6 +746,7 @@ function ReportContent() {
       jsxRuntime.jsx('h1', { 'data-data-app-title': true, contentEditable: canEdit && mode === "edit", suppressContentEditableWarning: true, onBlur: canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined, children: appTitle})
       , jsxRuntime.jsx(dataApp.RichNarrative, { id: "flame:introduction", className: "report-deck", value: "We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver."                                    ,} )
     ]})
+    , jsxRuntime.jsx(FuelBaseline, {} )
     , jsxRuntime.jsx(PairedAccuracy, {} )
     , jsxRuntime.jsx(ReviewGuide, {} )
     , jsxRuntime.jsx(Improvement, {} )
