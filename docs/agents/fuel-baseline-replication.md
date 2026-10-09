@@ -361,3 +361,48 @@ and nine report/catalogue tests passed locally. Full server `make verify`
 still reports the same seven unrelated failures listed in section 7.
 Browser inspection was unavailable; report builds and published-byte checks
 are separate from visual acceptance. The draft PR remains a draft.
+
+## 11. Fixed 200k data, threefold training budget
+
+`fuel-budget-18k-20261009` completed four fresh GPU fits at clean source revision
+`12eda710`. Reuse the verified 6k-update 200k fits as controls. Keep the same
+training/development row IDs, batch 10k, original 50k scalers, initial weights,
+architecture, precision and pass rules. Increase updates from 6k to 18k and
+presentations from 60M to 180M. Stretch learning-rate stages threefold; preserve
+each recipe's Adam reset policy. This is not checkpoint continuation or a
+schedule-isolated experiment. Retain both seeds and the final checkpoint.
+
+| Recipe | 6k development pass | 18k development pass | Paired change | Fit wall ratio |
+| --- | --- | --- | --- | --- |
+| Transformed-state | 52.03–52.68% | 62.88–63.11% | +10.44–10.85 points | 2.83–2.85x |
+| Direct signed-power | 23.29–23.56% | 42.41–42.81% | +18.85–19.51 points | 2.90–2.92x |
+
+These are primary increment-rule results. At 18k, training acceptance is
+63.87–63.98% and 44.67–45.41%, respectively. No complete development state passes.
+Both recipes can use more training work; the 6k result was not an established
+ceiling. These two work budgets do not prove saturation. Improvements from the
+larger training protocol exceed the previous equal-work data-size gains on this
+domain; this is not a universal scaling law.
+
+Error tails remain unacceptable for a solver replacement. Transformed-state
+development p99 is 32,530–34,610 allowance units. Power p99 is 25.18–27.44, with
+3.35–3.49% negative endpoint components. The zero control passes 5.08% under
+the primary rule, with p99 about 10. Passing more components does not mean
+controlling the worst errors. State-policy scores remain separately available.
+
+Use these stronger fits as controls for the next matched representation/loss
+experiment on 200k data. Keep the independent test unopened and do not infer
+solver accuracy or authorize a 1M/CFD run from these results.
+
+All four model replay, metric and physical checks passed. The campaign also
+checks the original baseline hashes, equal row IDs, scalers and initial weights.
+Raw outputs remain outside Git. The existing review retains all prior queries
+and adds both budgets, both seeds, both error scales and learning curves against
+updates or measured fit wall time. Full repository checks retain the seven
+known failures; report visual inspection remains unavailable.
+
+Requested housekeeping moved only checked transfer bundles, duplicate exports
+and disposable pytest caches into each project's ignored `.trash/` directory.
+Original relative paths, move records and recovery guidance are retained there.
+No reference data, experiment checkpoints, active environments or solver assets
+were deleted or moved. There is no automatic purge.

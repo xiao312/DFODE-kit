@@ -85,6 +85,10 @@ weights are checked again before the result is accepted. `budget_campaign`
 binds all four new results and the original eight-result campaign verification.
 `budget_review` emits sanitized `fuel_budget_models` and `fuel_budget_history`
 queries; it never replaces matched-work or earlier source-recipe evidence.
+Use `python -m benchmarks.offline_accuracy.paper_baseline.matched_work.budget_review
+<current-snapshot> <completed-budget-campaign> <verified-matched-work-root>
+--output <new-snapshot>`. It also emits `fuel_budget_pairs`, retaining both seeds
+and policies. Missing results, altered work or baseline identities fail closed.
 
 ## Dependencies and verification
 
@@ -98,7 +102,7 @@ Torch dependency and preserves every unrelated query and the report ID.
 `budget_review -> review / plan` supplies the fixed-data review, without training.
 
 `python -m pytest tests/test_matched_work.py tests/test_matched_review.py
-tests/test_paper_baseline.py -q`
+tests/test_budget_work.py tests/test_paper_baseline.py -q`
 
 Expected: exact schedule/reset boundaries, equal presentations, unchanged pools,
 common normalization, GPU reload parity, refusal of invalid saved identities,

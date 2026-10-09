@@ -47,6 +47,12 @@ export const recipes = [
     detail:`50k/200k nested rows, fixed 50k training-only scalers. Same seeded 4x800 GELU, FP32 L1, 6000 updates, batch 10k, 60M presentations. ${recipe === "fuel-state" ? "Three 2000-update LR stages; reset Adam." : "Four 1500-update LR stages; retain Adam."} Final checkpoint, stable FP64 inverse. Not the original epoch schedule; compare sizes within each recipe.`,
     flow:["Nested 50k or 200k training rows", "Freeze input and target scaling fitted on 50k", "Same seeded 61 to 800x4 to 58 GELU network", "6000 updates; 10k rows per update", "Stable physical reconstruction", "Same development states; both error policies"],
   })),
+  ...["fuel-state", "fuel-power"].map(recipe=>({
+    id:`${recipe}-budget`, name:`${recipe === "fuel-state" ? "Transformed-state increment" : "Direct signed-power increment"} — fixed-data budget control`,
+    target:recipe === "fuel-state" ? "state-boxcox" : "signed-power", family:"Fixed-data training-budget comparison",
+    detail:"Same 200k rows, original 50k scalers, seed and first 6k batches. Fresh 6k/18k update fits, batch 10k, 60M/180M presentations. Stretch source-derived learning-rate stages threefold; keep recipe Adam policy. Same 4x800 GELU, FP32 L1 and FP64 inverse. Final checkpoint only; not continuation or pure schedule-isolated effect.",
+    flow:["Same checked 200k training pool", "Freeze original 50k preprocessing", "Same seeded 61 to 800x4 to 58 network", "Fresh 6k or 18k update fit; proportional LR stages", "Stable FP64 physical reconstruction", "Same development rows; both error scales and zero control"],
+  })),
   ...["state-boxcox","gbct"].flatMap(target=>["coordinate","increment","state"].map(objective=>({
     id:`${target}-${objective}`, name:`${targetNames[target]} — paired ${objective} loss`, target, family:"Paired target and error-scale comparison",
     detail:`Fresh seeded 4x800 GELU. 2k coordinate warmup, then 2k ${objective} updates, fresh Adam for all arms. Physical objectives use a=1e-15, r=0.1; increment uses abs(d), state uses abs(Y+d). Same batches and final checkpoint. FP32 model, FP64 inverse. Both scoring policies required.`,

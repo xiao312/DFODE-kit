@@ -27,6 +27,12 @@ reduced-data Fuel source-recipe fits are complete. The larger Fuel recipe
 campaign has separate reference and data-identity gates. See the live review
 for measured results; existing reports retain their original scoring rules.
 
+Keep reproducible experiment evidence and active environments under `runs/`.
+Disposable transfer files and superseded exports can be moved to the ignored
+project-root `.trash/`, with original relative paths and checksum manifests.
+Do not trash reference data, model checkpoints, active report source or shared
+environments merely because a newer run exists. No automatic purge is configured.
+
 ## What DFODE-kit does
 
 DFODE-kit currently supports the core workflow below:

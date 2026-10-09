@@ -8,6 +8,12 @@ It does not run experiments, fetch private artifacts, or select models.
 
 ## Interface and configuration
 
+`FuelBudget.jsx` consumes `fuel_budget_models`, `fuel_budget_history` and
+`fuel_budget_pairs` from `matched_work.budget_review`. It compares fresh 6k/18k
+update fits at fixed 200k data and frozen 50k scalers. Both seeds and policies
+are mandatory. Schedules stretch proportionally: this is not continuation.
+Keep training cost distinct from inference cost, and retain prior queries.
+
 `FuelMatchedWork.jsx` consumes `fuel_matched_models`, `fuel_matched_history`
 and `fuel_matched_pairs` from `paper_baseline.matched_work.review`. It compares
 50k with 200k at 6,000 updates and 60M presentations, with frozen 50k scalers.

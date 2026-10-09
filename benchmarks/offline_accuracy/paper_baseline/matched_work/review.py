@@ -6,14 +6,17 @@ from pathlib import Path
 
 from benchmarks.flame_conditioning.extract import sha256
 from ..review import primary
-from .plan import configuration, update_policy
+from .plan import configuration, extended_configuration, update_policy
 
 
 POLICIES = ("increment-reference-v1", "state-endpoint-v1")
 
 
-def validate_result(result, check, result_hash, environment_hash, recipe, seed, count):
-    config = configuration(recipe, seed)
+def validate_result(result, check, result_hash, environment_hash, recipe, seed, count, extended=False):
+    if extended and count != 200000:
+        raise ValueError("Extended work requires fixed 200k data")
+    config = (extended_configuration if extended else configuration)(recipe, seed)
+    updates = config["updates"]
     expected_schedule = []
     last_rate = None
     for completed in range(config["updates"]):
@@ -26,11 +29,11 @@ def validate_result(result, check, result_hash, environment_hash, recipe, seed, 
             or result["artifacts"]["environment.json"] != environment_hash
             or result["config"] != config or result["training_count"] != count
             or result["development_count"] != 1023 or result["independent_test_count"] != 0
-            or result["updates_completed"] != 6000 or result["row_presentations"] != 60000000
+            or result["updates_completed"] != updates or result["row_presentations"] != updates*10000
             or result["effective_batch_size"] != 10000 or result["parameter_count"] != 2018458
-            or result["completed_pool_passes"] != 60000000//count
+            or result["completed_pool_passes"] != updates*10000//count
             or result["schedule"] != expected_schedule
-            or [r["updates"] for r in result["history"]] != list(range(1000, 6001, 1000))
+            or [r["updates"] for r in result["history"]] != list(range(1000, updates+1, 1000))
             or not all(check.get(k) for k in ("exact_model_replay", "independent_paired_counts",
                                              "physical_checks", "frozen_50k_preprocessing"))):
         raise ValueError("Matched-work result failed configuration, work or verification checks")

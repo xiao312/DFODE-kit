@@ -183,6 +183,8 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 | `fuel-power` | [Direct signed-power increment — Fuel source recipe](#fuel-power) | Fuel source-recipe replication |
 | `fuel-state-matched-work` | [Transformed-state increment — matched-work control](#fuel-state-matched-work) | Matched-update data-size comparison |
 | `fuel-power-matched-work` | [Direct signed-power increment — matched-work control](#fuel-power-matched-work) | Matched-update data-size comparison |
+| `fuel-state-budget` | [Transformed-state increment — fixed-data budget control](#fuel-state-budget) | Fixed-data training-budget comparison |
+| `fuel-power-budget` | [Direct signed-power increment — fixed-data budget control](#fuel-power-budget) | Fixed-data training-budget comparison |
 | `state-boxcox-coordinate` | [Transformed-state increment — paired coordinate loss](#state-boxcox-coordinate) | Paired target and error-scale comparison |
 | `state-boxcox-increment` | [Transformed-state increment — paired increment loss](#state-boxcox-increment) | Paired target and error-scale comparison |
 | `state-boxcox-state` | [Transformed-state increment — paired state loss](#state-boxcox-state) | Paired target and error-scale comparison |
@@ -303,6 +305,50 @@ flowchart TD
   n3["6000 updates; 10k rows per update"]
   n4["Stable physical reconstruction"]
   n5["Same development states; both error policies"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="fuel-state-budget"></a>
+### Transformed-state increment — fixed-data budget control
+
+Artifact ID: `fuel-state-budget`. Family: Fixed-data training-budget comparison.
+
+Same 200k rows, original 50k scalers, seed and first 6k batches. Fresh 6k/18k update fits, batch 10k, 60M/180M presentations. Stretch source-derived learning-rate stages threefold; keep recipe Adam policy. Same 4x800 GELU, FP32 L1 and FP64 inverse. Final checkpoint only; not continuation or pure schedule-isolated effect.
+
+```mermaid
+flowchart TD
+  n0["Same checked 200k training pool"]
+  n1["Freeze original 50k preprocessing"]
+  n2["Same seeded 61 to 800x4 to 58 network"]
+  n3["Fresh 6k or 18k update fit; proportional LR stages"]
+  n4["Stable FP64 physical reconstruction"]
+  n5["Same development rows; both error scales and zero control"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="fuel-power-budget"></a>
+### Direct signed-power increment — fixed-data budget control
+
+Artifact ID: `fuel-power-budget`. Family: Fixed-data training-budget comparison.
+
+Same 200k rows, original 50k scalers, seed and first 6k batches. Fresh 6k/18k update fits, batch 10k, 60M/180M presentations. Stretch source-derived learning-rate stages threefold; keep recipe Adam policy. Same 4x800 GELU, FP32 L1 and FP64 inverse. Final checkpoint only; not continuation or pure schedule-isolated effect.
+
+```mermaid
+flowchart TD
+  n0["Same checked 200k training pool"]
+  n1["Freeze original 50k preprocessing"]
+  n2["Same seeded 61 to 800x4 to 58 network"]
+  n3["Fresh 6k or 18k update fit; proportional LR stages"]
+  n4["Stable FP64 physical reconstruction"]
+  n5["Same development rows; both error scales and zero control"]
   n0 --> n1
   n1 --> n2
   n2 --> n3
