@@ -62,6 +62,11 @@ limits apply only to the retained interrupted CPU campaign.
 The tested GPU environment is a copied project-local Conda environment with
 Python 3.12.7, Torch 2.8.0+cu128, NumPy 2.2.6, SciPy 1.15.3, Cantera 3.2.0 and
 pytest 8.3.5. Record all installed package versions in each `environment.json`.
+After a setup-only change, use `python -m benchmarks.offline_accuracy.paired.runtime
+--output <new-environment-record.json>` to retain a separate current record.
+Keep the per-fit records unchanged. The benchmark imports its own local modules;
+it does not depend on a legacy editable DFODE installation. The final environment
+binds the editable package to this project, with PyYAML 6.0.2 for its CLI dependency.
 Use `CUDA_VISIBLE_DEVICES=<free-index>` and `CUBLAS_WORKSPACE_CONFIG=:4096:8`.
 Set `PAIRED_PYTHON=<project-env>/bin/python` and `PAIRED_OUTPUT=<new-campaign>`;
 `sh benchmarks/offline_accuracy/paired/queue.sh 20261011 --dry-run` previews one

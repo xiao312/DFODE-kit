@@ -36,3 +36,18 @@ def configure():
                 reconstruction="float64", tf32=False, autocast=False, deterministic=True,
                 cublas_workspace_config=":4096:8", visible_devices=os.environ.get("CUDA_VISIBLE_DEVICES"),
                 timing="Synchronized end-to-end wall time; process time is host CPU consumption only")
+
+
+if __name__ == "__main__":
+    import argparse
+    import hashlib
+    import json
+    from pathlib import Path
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    if args.output.exists():
+        parser.error("Environment record must be new")
+    record = json.dumps(configure(), indent=2, allow_nan=False)
+    args.output.write_text(record, encoding="utf-8")
+    print(json.dumps(dict(status="recorded", sha256=hashlib.sha256(record.encode()).hexdigest())))
