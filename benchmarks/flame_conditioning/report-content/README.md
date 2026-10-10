@@ -12,6 +12,11 @@ The registry also reserves `matched200k-<target>-<objective>` for the common
 
 ## Interface and configuration
 
+`MatchedTargets.jsx` consumes checked `matched_targets_models/history/curves`
+and species/bin queries. It retains the full 24-fit matrix, both seeds and both
+evaluation policies. Its baseline is the completed 18k matched-target campaign;
+adaptive follow-ups must not overwrite these rows or loosen their acceptance rule.
+
 `FuelBudget.jsx` consumes `fuel_budget_models`, `fuel_budget_history` and
 `fuel_budget_pairs` from `matched_work.budget_review`. It compares fresh 6k/18k
 update fits at fixed 200k data and frozen 50k scalers. Both seeds and policies

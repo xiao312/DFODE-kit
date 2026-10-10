@@ -86,3 +86,14 @@ Expected: fixed schedule and batches, transform round trips including zero,
 NumPy/Torch inverse parity and finite gradients, correct physical loss scales,
 GPU saved-model replay, fixed warmup and refusal of changed paired identities.
 Torch-free local tests may skip GPU checks; run those on the server before launch.
+
+## Baseline review
+
+`python -m benchmarks.offline_accuracy.paper_baseline.matched_targets.review
+<current-snapshot> <complete-campaign> --output <new-snapshot>` checks all 24 bound
+result/verification/environment records and the common initialization/warmup
+identities. It emits sanitized `matched_targets_*` queries for the existing HTML.
+Remote saved-array checks remain identified as remote checks, not local replay.
+All prior queries and the report ID stay unchanged. Both seeds and both error
+scales remain visible. These development results are the frozen comparison
+baseline, not independent-test evidence or a deployable chemistry solver.

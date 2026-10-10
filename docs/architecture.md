@@ -81,6 +81,8 @@ data through `matched_work.run.inputs` and uses explicit adapters for
 Coordinate code reuses stable flame/paired/improve transforms. Campaign checks
 bind all results, common inputs/initial weights and objective-paired warmup hashes.
 No production code depends on this experiment; review is a one-way artifact consumer.
+`matched_targets.review -> matched_targets_* -> report-content/MatchedTargets.jsx`
+binds the complete factorial results into the same review while preserving history.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
