@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "seeds": [20261008, 20261009, 20261010],
+  "hidden_widths": [64, 64],
+  "parent_temperature_K": 1400,
+  "interval_s": 0.000001,
+  "narrow_rows": 8,
+  "methods": ["adam-decay", "lbfgs", "linear-head"],
+  "warmup_updates": 200,
+  "learning_rate": 0.001,
+  "adam_updates": 5000,
+  "adam_final_rate": 0.0000001,
+  "lbfgs_steps": 1000,
+  "lbfgs_history": 50,
+  "stop_budget_max": 0.5,
+  "fit_seconds": 60,
+  "wall_time_seconds": 900
+}

@@ -1,0 +1,225 @@
+import React from "react";
+import { OfflineAccuracy } from "./OfflineAccuracy.jsx";
+import { Refinement } from "./Refinement.jsx";
+import { Improvement } from "./Improvement.jsx";
+import { ReviewGuide } from "./ReviewGuide.jsx";
+import { PairedAccuracy } from "./PairedAccuracy.jsx";
+import { FuelBaseline } from "./FuelBaseline.jsx";
+import { FuelScale } from "./FuelScale.jsx";
+import { FuelMatchedWork } from "./FuelMatchedWork.jsx";
+import { FuelBudget } from "./FuelBudget.jsx";
+import { MatchedTargets } from "./MatchedTargets.jsx";
+import { targetNames } from "./method-catalogue.mjs";
+import { policyBinTable } from "./policy-bins.mjs";
+import { largestPrimaryComparison } from "./validation-selection.mjs";
+import { DataComponent, DataTable, EvidenceChart, ReportSection, RichNarrative, useDataApp } from "../../data-app-public.jsx";
+
+const paper = "https://arxiv.org/html/2507.08277v2";
+const names = Object.fromEntries(["state-boxcox", "signed-power", "budget-linear", "scaled-asinh"].map(id=>[id,targetNames[id]]));
+const percent = value => `${value !== 0 && Math.abs(value) < 0.0001 ? (100 * value).toPrecision(3) : (100 * value).toFixed(2)}%`;
+const integer = value => Math.round(value).toLocaleString("en-US");
+const budgetNumber = value => value == null ? "Not recorded" : value !== 0 && Math.abs(value) < 100 ? value.toPrecision(3) : integer(value);
+const speciesColumns = ["NH3", "CH4", "NO", "OH"].map(name => ({field:`${name}BudgetP99`,label:`${name} budget p99 ↓`,renderCell:budgetNumber}));
+
+export function ReportContent() {
+  const { snapshot, visible, appTitle, canEdit, mode, setAppTitle } = useDataApp();
+  const models = snapshot.queries.models.rows;
+  const reference = snapshot.queries.reference.rows;
+  const cfd = snapshot.queries.cfd.rows;
+  const parity = snapshot.queries.runtime_parity?.rows;
+  const tolerance = snapshot.queries.cfd_tolerance?.rows;
+  const profile = snapshot.queries.flame_profile?.rows;
+  const historical = snapshot.queries.historical?.rows;
+  const datasets = snapshot.queries.datasets?.rows;
+  const expanded = snapshot.queries.expanded_reference?.rows;
+  const scaling = snapshot.queries.scaling?.rows?.[0];
+  const filterAudit = snapshot.queries.filter_audit?.rows;
+  const heldout = snapshot.queries.heldout?.rows;
+  const testSampling = snapshot.queries.heldout_sampling?.rows;
+  const testReference = snapshot.queries.heldout_reference?.rows;
+  const recovery = snapshot.queries.reference_recovery?.rows;
+  const support = snapshot.queries.input_support?.rows;
+  const pressure = snapshot.queries.pressure_diagnostic?.rows;
+  const pressureRows = pressure?.map(row => ({...row, targetName:names[row.target] || (row.target === "fixed-hybrid" ? "Fixed hybrid" : "Zero change")}));
+  const supportRows = (support || []).filter(row => ["P_Pa", "H2O"].includes(row.feature)).map(row => ({...row,
+    trainingRange: row.feature === "P_Pa" ? `${integer(row.trainingMin)}–${integer(row.trainingMax)}` : `${row.trainingMin.toExponential(2)}–${row.trainingMax.toExponential(2)}`,
+    observedRange: row.feature === "P_Pa" ? `${integer(row.observedMin)}–${integer(row.observedMax)}` : `${row.observedMin.toExponential(2)}–${row.observedMax.toExponential(2)}`,
+  }));
+  const testRuns = [...new Set((heldout || []).filter(row => row.name.startsWith("training-backbone-longer")).map(row => row.name.split("--")[0]))];
+  const testRunSize = name => Number(name.match(/longer(\d+)k/)?.[1] || 0);
+  const largestTestRun = testRuns.sort((a, b) => testRunSize(b) - testRunSize(a))[0];
+  const testSelection = (heldout || []).filter(row => row.name === "zero-baseline" || (largestTestRun && row.name.startsWith(largestTestRun + "--")) || (row.historical && row.name.endsWith("--source-formula")));
+  const testRows = population => testSelection.filter(row => row.population === population).map(row => ({
+    ...row,
+    targetName:row.name === "zero-baseline" ? "Zero change" : row.name.includes("fixed-hybrid") ? "Fixed temperature hybrid" : names[Object.keys(names).find(target => row.name.includes(target))] || row.name,
+    control:row.historical ? "Historical / unequal cost" : row.name === "zero-baseline" ? "Baseline" : `${integer(testRunSize(largestTestRun) * 1000)} candidates / matched updates`,
+  }));
+  const gap = models.find(row=>row.seed === 20261009 && row.target === "state-boxcox" && row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount < 11000);
+  const backbone = models.filter(row => row.seed === 20261009 && row.architecture === "800x800x800x800" && row.updates === 10000 && row.trainingCount > 40000 && row.trainingCount < 60000);
+  const density = backbone.find(row => row.target === "state-boxcox");
+  const densityTable = models.filter(row => row.seed === 20261009 && row.target === "state-boxcox" && row.precision === "float32" && row.architecture === "800x800x800x800" && row.updates === 10000).sort((a, b) => a.trainingCount - b.trainingCount);
+  const seedRepeats = models.filter(row => row.seed === 20261010 && row.target === "state-boxcox");
+  const repeatSmall = seedRepeats.find(row => row.trainingCount < 11000);
+  const repeatLarge = seedRepeats.find(row => row.trainingCount > 40000 && row.trainingCount < 60000);
+  const repeat200k = seedRepeats.find(row => row.trainingCount > 150000);
+  const chartComparison = largestPrimaryComparison(models);
+  const chartCount = chartComparison[0]?.trainingCount;
+  const chartRows = chartComparison.map(row => ({...row, targetName:names[row.target]}));
+  const selected = models.filter(row => row.precision === "float32" && row.trainingCount > 9000);
+  const tableRows = selected.map(row => ({...row, targetName:names[row.target], recipe:`${row.architecture.startsWith("800") ? "Large GELU / L1" : "Small tanh / MSE"}; ${integer(row.updates)} updates`}));
+  const sourcePreviews = {[paper]:{title:"Direct increment learning for combustion chemistry", source:"arXiv preprint", summary:"The study learns chemistry increments from augmented flame states. Its reported application includes a temperature-switched policy using transformed-state and direct-power models.", approvedForReport:true}};
+  const prose = (id, title, queryId, rows, text) => {
+    const prior = snapshot.queries.offline_models && ["flame-decision", "flame-next"].includes(id);
+    const display = prior ? `### Prior-stage record\n\nThis section preserves the earlier application assessment. The current offline representation experiment above takes priority; CFD transfer comes later.\n\n${text}` : text;
+    return visible(id) && <ReportSection id={id} title={title} queryId={queryId} sourceRows={rows} showHeading={false}><RichNarrative id={`${id}:body`} value={display} sourcePreviews={sourcePreviews} /></ReportSection>;
+  };
+  const testTable = (population, title) => {
+    const id = `flame-heldout-${population}`;
+    const rows = testRows(population);
+    return rows.length > 0 && visible(id) && <DataComponent id={id} queryId="heldout" kind="table" title={title} sourceRows={heldout.filter(row => row.population === population)} displayRows={rows}>
+      <DataTable rows={rows} label={title} compactNumbers={false} columns={[
+        {field:"control",label:"Control"}, {field:"targetName",label:"Target"}, {field:"samples",label:"Cells",renderCell:integer},
+        {field:"budgetP99",label:"Budget p99 ↓",renderCell:budgetNumber}, {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value?.toFixed(3) ?? "—"},
+        {field:"negativeEndpointFraction",label:"Negative components",renderCell:percent}, {field:"inverseCorrectionFraction",label:"Inverse corrections",renderCell:percent},
+      ]} />
+    </DataComponent>;
+  };
+  const binTable = (queryId, population, temperature) => {
+    const allRows = snapshot.queries[queryId]?.rows;
+    if (!allRows?.length) return null;
+    const {rows, sourceRows} = policyBinTable(allRows, population, largestTestRun, temperature);
+    const id = `flame-${queryId}`;
+    const title = temperature ? "Temperature regions: balanced-sample budget p99" : "Increment magnitudes: uniform-sample absolute error p99";
+    const format = value => value == null ? "Not observed" : temperature ? budgetNumber(value) : value.toExponential(2);
+    return visible(id) && <DataComponent id={id} queryId={queryId} kind="table" title={title} sourceRows={sourceRows} displayRows={rows}>
+      <DataTable rows={rows} label={title} searchable={false} compactNumbers={false} columns={[
+        {field:"range",label:temperature ? "Initial temperature" : "|Reference increment|"},
+        {field:"count",label:temperature ? "Cells" : "Species components",renderCell:integer},
+        {field:"zero",label:"Zero",renderCell:format}, {field:"boxcox",label:"Conventional",renderCell:format},
+        {field:"power",label:"Direct power",renderCell:format}, {field:"hybrid",label:"Fixed hybrid",renderCell:format},
+      ]} />
+    </DataComponent>;
+  };
+  return <article className="report-content" aria-label="Flame chemistry research review">
+    <header className="report-hero">
+      <h1 data-data-app-title contentEditable={canEdit && mode === "edit"} suppressContentEditableWarning onBlur={canEdit && mode === "edit" ? event => setAppTitle(event.currentTarget.textContent.trim() || appTitle) : undefined}>{appTitle}</h1>
+      <RichNarrative id="flame:introduction" className="report-deck" value="We moved from a small numerical exercise to states from the NH₃/CH₄ flame application. The reference checks pass on selected states. The learned models still need work. No neural model has been installed in the CFD solver." />
+    </header>
+    <MatchedTargets />
+    <FuelBudget />
+    <FuelMatchedWork />
+    <FuelScale />
+    <FuelBaseline />
+    <PairedAccuracy />
+    <ReviewGuide />
+    <Improvement />
+    <Refinement />
+    <OfflineAccuracy />
+    {prose("flame-decision", "Current decision", "models", models,
+      `## What this means now\n\nThe flame-based experiment is complete through a frozen offline 2D test. It uses the chemistry step that CFD calls, not only a small reactor exercise. This is progress toward the application in the [Fuel study](${paper}), not a reproduction of its accuracy.\n\nMore data helped on the 1D validation states: all four targets improved species p99 and heat-release RMS from 10k to 50k to 200k candidates. The conventional model reached 8.3% heat-release relative RMS at 200k. However, the separate 2D test exposed a major transfer failure. The new models are not ready to replace CVODE.\n\nA post-score input check found pressure and cold-mixture values outside training coverage. This is evidence to repair input scaling and source coverage before a larger density campaign. The test-reference policy also needed an explicit numerical-sign-noise amendment before model scoring; its original failure and all raw signed labels are preserved below.`)}
+    {prose("flame-problem", "The problem we now learn", "models", models,
+      "## 1. Learn the chemistry step that CFD actually calls\n\nEach input is a cell's temperature, pressure, and 59 species mass fractions. The target is the signed change in each species over one microsecond. Temperature and volume stay fixed during this local chemistry calculation. The CFD equations handle flow, transport, and energy outside it.\n\nThe earlier constant-pressure, adiabatic reactor audit asked a different question. It remains useful for studying numerical precision, but it cannot by itself represent this CFD application.\n\nWe used six time snapshots from the existing 1D flame. Four supply training states; two supply validation states. We split the snapshots before interpolation and perturbation. They still belong to one flame realization, so they are not six independent experiments.")}
+    {prose("flame-input-precision", "Source input precision", "reference", reference,
+      "The recovered 1D text samples have about six significant digits. We preserve the raw values and record the small mass-fraction normalization. The reference checks apply to these defined inputs. FP64 storage and tighter integration do not restore unknown digits from the original simulation.")}
+    {profile && visible("flame-profile-chart") && <EvidenceChart id="flame-profile-chart" queryId="flame_profile" title="The copied NH₃/CH₄ flame: temperature before and after the short restart" rows={profile} sourceRows={profile}
+      spec={{type:"line",x:"position_mm",y:"temperature_K",series:"time_ms",stackable:false,valueDecimals:2,xLabel:"Position (mm)",yLabel:"Temperature (K)"}} height={360} />}
+    {prose("flame-labels", "Reference accuracy", "reference", reference,
+      `## 2. Check the answers before judging the models\n\nCVODE generates the reference labels. Radau checks a selected subset by integrating the increments directly. This avoids relying only on subtraction of two endpoint values. Both methods still use Cantera's chemical rates; this is not an independent mechanism check.\n\nFor ${reference[0].states} augmented states, all ${integer(reference[0].speciesComponents)} species components passed the reference agreement check. The largest disagreement was ${reference[0].uncertaintyBudgetMax.toExponential(2)} times the chosen species error budget.\n\nThe separate relative-resolution screen passed ${integer(reference[0].resolvedNonzeroComponents)} of ${integer(reference[0].nonzeroReferenceComponents)} nonzero reference increments. There were ${integer(reference[0].unresolvedNonzeroComponents)} unresolved nonzero entries and ${integer(reference[0].zeroReferenceComponents)} zero reference entries. Report zeros separately: relative error at zero is undefined. A zero numerical reference alone is not proof of exact mathematical zero.\n\nThe screen requires an increment more than 100 times the larger of solver disagreement and endpoint spacing. It is roughly a 1% resolution screen, not evidence of twelve correct digits. These results apply to the checked subset, not every label.\n\nThe initial dataset kept 9,995 training states and 1,019 validation states. Five labels in each split failed the endpoint checks. Their records were retained and excluded, not replaced by zero.`)}
+    {prose("flame-comparison", "Controlled comparison", "models", models,
+      "## 3. Change how the target is represented\n\nWe compared four targets: transformed-state increments, direct signed-power increments, budget-linear increments, and scaled asinh increments. Within each comparison, the model, seed, data split, and update budget are the same.\n\nFirst, a small 128 × 128 × 128 tanh model used squared loss. FP32 and FP64 gave nearly the same result. More updates improved several results. Thus, arithmetic precision alone is not the main limit in this test.\n\nNext, we used the study's four 800-unit GELU layers and L1 loss. This changes both model capacity and training loss; it is not an isolated activation test. Our batch size and total training are still far below the original study. All normalization statistics use training data only.")}
+    {visible("flame-results-table") && <DataComponent id="flame-results-table" queryId="models" kind="table" title="Completed FP32 comparisons on the same validation states" sourceRows={selected} displayRows={tableRows}>
+      <DataTable rows={tableRows} label="Completed physical-space validation results" compactNumbers={false} columns={[
+        {field:"recipe",label:"Training setup"}, {field:"seed",label:"Seed"}, {field:"trainingCount",label:"Training states",renderCell:integer}, {field:"targetName",label:"Target"}, {field:"budgetP99",label:"Budget error p99 ↓",renderCell:integer},
+        {field:"trainingBudgetP99",label:"Training p99 ↓",renderCell:integer}, {field:"negativeEndpointFraction",label:"Negative components",renderCell:percent}, {field:"heatRelativeRms",label:"Heat RMS / reference RMS ↓",renderCell:value=>value.toFixed(3)},
+      ]} />
+    </DataComponent>}
+    {gap && prose("flame-training-gap", "Training versus later flame states", "models", models,
+      `### More samples are not the same as more flame coverage\n\nThe longer conventional model has heat-release relative RMS error ${gap.trainingHeatRelativeRms.toFixed(3)} on its training states and ${gap.heatRelativeRms.toFixed(3)} on the later validation states. Its species-budget p99 is ${integer(gap.trainingBudgetP99)} on training and ${integer(gap.budgetP99)} on validation.\n\nThis gap matters. The four training snapshots end at 1.5 ms; validation uses 2.0 and 2.5 ms. Adding perturbations around the same four snapshots does not add later source states. The 50k and 200k runs test denser sampling of the existing coverage, not a broader flame history. We must distinguish these two changes before recommending a much larger dataset.`)}
+    {prose("flame-metrics", "How to read the errors", "models", models,
+      "## 4. Read the physical errors, not only the training loss\n\nFor each species component, divide the increment error by 10⁻¹² + 10⁻⁶ × |initial mass fraction|. A value of 1 meets this chosen budget. The p99 value is the error below which 99% of non-argon components fall. It is not a percentage. A value of 300,000 is still far outside the budget.\n\nThis is a strict research criterion. Passing it is not sufficient to prove stable CFD, and failing it does not by itself measure flame-speed error. Heat release is a second physical view. Its relative RMS error is 1 when the prediction is zero.\n\nBox–Cox inverse values outside their valid domain are mapped to zero and counted separately in the source evidence. Therefore, zero negative endpoints does not mean unconstrained predictions were all valid. Other models receive no hidden positivity or conservation repair.")}
+    {density && gap && prose("flame-density-result", "What denser sampling changed", "models", models,
+      `### Denser sampling helped under the same training budget\n\nFor the conventional target, increasing accepted training states from ${integer(gap.trainingCount)} to ${integer(density.trainingCount)} reduced validation species p99 from ${integer(gap.budgetP99)} to ${integer(density.budgetP99)}. Heat-release RMS error fell from ${percent(gap.heatRelativeRms)} to ${percent(density.heatRelativeRms)} of the reference RMS.\n\nAll four targets improved on both measures. Each fit still used 10,000 updates of 256 states, with the same model, seed, and validation states. The larger set therefore received fewer average presentations per state. This result supported the later 200k density check, not an unlimited scale-up. It is one seed on correlated flame snapshots, not a statistical ranking.`)}
+    {visible("flame-density-table") && <DataComponent id="flame-density-table" queryId="models" kind="table" title="Conventional target: completed data-size comparisons at fixed updates" sourceRows={densityTable} displayRows={densityTable}>
+      <DataTable rows={densityTable} label="Primary-seed data-size comparison" searchable={false} compactNumbers={false} columns={[
+        {field:"trainingCount",label:"Accepted training states",renderCell:integer},
+        {field:"budgetP99",label:"Validation budget p99 ↓",renderCell:budgetNumber},
+        {field:"heatRelativeRms",label:"Heat relative RMS ↓",renderCell:value=>value.toFixed(3)},
+        {field:"selectedStep",label:"Selected update",renderCell:integer},
+      ]} />
+    </DataComponent>}
+    {prose("flame-density-scope", "What remains fixed when data grows", "models", densityTable,
+      "The table keeps all completed primary-seed conventional fits, not only the best result. Each fit uses the same 4×800 model and 10,000-update budget. The validation rule can select different saved updates. Input and target scales are fitted again on each training set. Thus, this compares the full training protocol at each size; it does not isolate data count with fixed normalization. A larger fit enters only after completion and verification.")}
+    {repeatSmall && repeatLarge && prose("flame-seed-repeat", "Fixed second-seed check", "models", seedRepeats,
+      `### Repeat the density question with another initialization\n\nThe conventional-only repeat uses fixed seed 20261010. The source data, model, 10,000 updates, batch size, and selection rule stay the same. At 10k candidates, validation species p99 was ${integer(repeatSmall.budgetP99)} and heat relative RMS was ${repeatSmall.heatRelativeRms.toFixed(3)}. At 50k candidates, these values were ${integer(repeatLarge.budgetP99)} and ${repeatLarge.heatRelativeRms.toFixed(3)}.${repeat200k ? ` At 200k candidates, they were ${integer(repeat200k.budgetP99)} and ${repeat200k.heatRelativeRms.toFixed(3)}. The 50k-to-200k gain is smaller than the 10k-to-50k gain, and the species score remains far above the budget boundary of 1.` : ""}\n\nAll completed repeats remain in the test plan. We did not choose the better seed. This checks one part of sensitivity to training randomness; it is not a repeated four-target ranking or a confidence interval.`)}
+    {chartRows.length > 0 && visible("flame-heat-chart") && <EvidenceChart id="flame-heat-chart" queryId="models" title={`Heat-release error: ${integer(chartCount)} accepted states, 10,000 matched updates, primary seed`} rows={chartRows} sourceRows={chartComparison} spec={{type:"horizontalBar",x:"targetName",y:"heatRelativeRms",stackable:false,valueDecimals:3,xLabel:"Target",yLabel:"RMS error / reference RMS"}} height={340} />}
+    {chartRows.length > 0 && visible("flame-species-validation") && <DataComponent id="flame-species-validation" queryId="models" kind="table" title={`Selected species: ${integer(chartCount)}-state primary-seed validation comparison`} sourceRows={chartComparison} displayRows={chartRows}>
+      <DataTable rows={chartRows} label="Fuel, NO, and radical increment errors" columns={[{field:"targetName",label:"Target"},...speciesColumns]} />
+    </DataComponent>}
+    {prose("flame-species-limit", "What the species view means", "models", chartComparison,
+      "NH₃ and CH₄ are the fuels in this case. NO and OH give separate views of a pollutant species and a radical. These four species were selected by chemical role, not by their test scores. Each value is the p99 of that species' increment error divided by its chosen state budget. It is not final NO emissions, a species concentration profile, or flame speed.")}
+    {datasets && visible("flame-dataset-table") && <DataComponent id="flame-dataset-table" queryId="datasets" kind="table" title="Completed label generation" sourceRows={datasets} displayRows={datasets}>
+      <DataTable rows={datasets} label="Dataset counts" columns={[{field:"candidates",label:"Training candidates",renderCell:integer},{field:"trainingAccepted",label:"Accepted training states",renderCell:integer},{field:"validationAccepted",label:"Accepted validation states",renderCell:integer},{field:"generationSeconds",label:"Generation time (seconds)",renderCell:integer}]} />
+    </DataComponent>}
+    {expanded && prose("flame-expanded-reference", "Larger-data checks", "expanded_reference", expanded,
+      `### The larger data set passes the same subset check\n\nAll ${integer(expanded[0].components)} components in ${expanded[0].states} selected states passed the independent agreement check. The largest disagreement was ${expanded[0].uncertaintyBudgetMax.toExponential(2)} of the species budget.${scaling ? ` The first ${integer(scaling.splits.train.raw_states)} training candidates are an exact prefix of the larger set. Validation inputs, accepted masks, and labels are identical. This makes the data-size comparison meaningful.` : ""} It does not certify every label.`)}
+    {historical && prose("flame-historical-context", "Existing trained models", "historical", historical,
+      "### What the existing trained models tell us\n\nThe server already contained conventional and direct-power models trained with much more data and computation. We checked their identities and converted copies into plain numerical arrays. The original files and working environments were not changed.\n\nThe table below uses the original-style reconstruction formula. This refers only to output reconstruction: these offline controls do not apply the old CFD wrapper's pressure overwrite or composition repair. These models are not an equal-budget comparison with our short fits. Their old training data may overlap this validation domain. Treat them as a useful control, not new generalization evidence.\n\nThe fixed hybrid uses no change below 305 K, direct power from 305 to 1000 K, and the conventional model above 1000 K. This distinction matters: a model intended for a temperature region can look poor when used everywhere. Stable reconstruction alone made little change to the reported tail errors for these weights.")}
+    {historical && visible("flame-historical-table") && <DataComponent id="flame-historical-table" queryId="historical" kind="table" title="Existing-weight controls: same 1D validation states, unequal training cost" sourceRows={historical} displayRows={historical.filter(row=>row.name.endsWith("source-formula"))}>
+      <DataTable rows={historical.filter(row=>row.name.endsWith("source-formula"))} label="Historical model controls" columns={[{field:"name",label:"Control"},{field:"budgetP99",label:"Budget error p99 ↓",renderCell:integer},{field:"negativeEndpointFraction",label:"Negative components",renderCell:percent},{field:"heatRelativeRms",label:"Heat RMS / reference RMS ↓",renderCell:value=>value.toFixed(3)},{field:"inverseDomainViolationFraction",label:"Raw inverse violations",renderCell:value=>value == null ? "Not recorded" : percent(value)}]} />
+    </DataComponent>}
+    {historical && prose("flame-inverse-limits", "Inverse violations are not repairs", "historical", historical,
+      "An invalid inverse-transform base and a performed correction are different things. The historical source formula can return a number from an invalid base without correcting it. Therefore, zero recorded corrections do not prove that all inverse operations were valid. Raw inverse violations are shown when recorded; a missing diagnostic is not zero.")}
+    {filterAudit && prose("flame-filter-context", "Historical data filtering", "filter_audit", filterAudit,
+      "### One difference from the old training data\n\nThe old source script keeps states whose formation-enthalpy change is at most 200 J/kg. This rejects sufficiently endothermic changes, not every negative heat-release value. Our current data do not apply this filter.\n\nThe rule would remove about 3.5–3.6% of accepted training states and 5.0% of validation states. Most rejected validation states are in the hottest bin. Removing these validation rows alone does not remove the large model errors. This does not tell us what retraining on filtered data would do. We kept the current comparison unchanged.")}
+    {filterAudit && visible("flame-filter-table") && <DataComponent id="flame-filter-table" queryId="filter_audit" kind="table" title="Read-only effect of the historical filter" sourceRows={filterAudit} displayRows={filterAudit}>
+      <DataTable rows={filterAudit} label="Historical-filter sensitivity" columns={[{field:"trainingCount",label:"Dataset training states",renderCell:integer},{field:"split",label:"Split"},{field:"states",label:"Accepted labels",renderCell:integer},{field:"rejected",label:"Would reject",renderCell:integer},{field:"rejectedFraction",label:"Fraction",renderCell:percent}]} />
+    </DataComponent>}
+    {heldout && prose("flame-heldout-context", "Reserved CFD snapshot", "heldout", heldout,
+      "## The separate 2D snapshot: two different questions\n\nAll model identities and the 305/1000 K switching thresholds were fixed before test sampling and scoring. Earlier source discovery checked only the input column layout. No model was trained or selected from these test scores. The uniform sample asks how the model performs on randomly selected cells. The temperature-balanced sample gives cold, preheat, reaction, and burnt regions a separate diagnostic view.\n\nDo not combine the two populations. Their cells can overlap, and the balanced sample is not a domain-average estimate. The main tables show the largest completed matched-data run, the zero-change baseline, and the preselected historical source-formula controls. This display rule was fixed before scoring; all frozen scores remain in the source data.\n\nOnly the new models were kept from this snapshot during this work. Prior exposure of the historical weights cannot be excluded. One offline snapshot does not prove stable CFD or accurate flame speed.")}
+    {recovery && prose("flame-reference-amendment", "Explicit reference-policy amendment", "reference_recovery", recovery,
+      `### A reference check changed before model scoring\n\nThe original strict rule accepted ${integer(recovery[0].strict_accepted)} of ${integer(recovery[0].selected)} selected cells. It rejected the rest for tiny negative endpoint values; the largest magnitude was ${Math.abs(recovery[0].most_negative_original_endpoint).toExponential(2)}. Most rejected cells were cold. Scoring only the remaining cells would change the intended population.\n\nWe preserved that failed run. A separate, documented amendment checked every rejected cell with fresh CVODE, tighter CVODE, and two direct Radau solves. It recovered ${integer(recovery[0].recovered)} cells and left ${integer(recovery[0].still_excluded)} excluded. The largest checked disagreement was ${recovery[0].uncertainty_budget_max.toExponential(2)} times the species budget.\n\nThe amended rule permits only negative endpoint magnitudes within the original absolute tolerance, ${recovery[0].negative_endpoint_floor.toExponential(0)}, with the other constraints and independent agreement checks satisfied. It does not clip or change any signed label. The original mask, all source cells, and the frozen model plan are preserved.\n\nThis is a post-reference, pre-score amendment, not the unchanged original protocol. Near-zero signed values remain numerical references, not proof of exact positivity or many correct relative digits. No model was refitted or selected from the test.`)}
+    {testSampling && visible("flame-heldout-sampling") && <DataComponent id="flame-heldout-sampling" queryId="heldout_sampling" kind="table" title="Test cells and accepted reference labels" sourceRows={testSampling} displayRows={testSampling}>
+      <DataTable rows={testSampling} label="Separate test populations" columns={[{field:"population",label:"Population"},{field:"selected",label:"Selected cells",renderCell:integer},{field:"accepted",label:"Accepted labels",renderCell:integer},{field:"excluded",label:"Excluded labels",renderCell:integer}]} />
+    </DataComponent>}
+    {testReference && prose("flame-heldout-reference", "Independent test reference check", "heldout_reference", testReference,
+      `### Check the test answers too\n\nThe independent test audit checked ${testReference[0].states} states and ${integer(testReference[0].speciesComponents)} species components. All passed the empirical budget-agreement check. Maximum disagreement was ${testReference[0].uncertaintyBudgetMax.toExponential(2)} times the budget.\n\nOf ${integer(testReference[0].nonzeroReferenceComponents)} nonzero numerical references, ${integer(testReference[0].resolvedNonzeroComponents)} passed the separate relative-resolution screen and ${integer(testReference[0].unresolvedNonzeroComponents)} did not. Another ${integer(testReference[0].zeroReferenceComponents)} references were zero. These are separate counts, not a claim that every tiny test increment has many correct digits.`)}
+    {heldout && testTable("uniform", "Reserved 2D snapshot: uniform random cells")}
+    {heldout && testTable("balanced", "Reserved 2D snapshot: temperature-balanced diagnostic")}
+    {heldout && prose("flame-test-result", "Interpret the separate test", "heldout", heldout,
+      `### What the separate test shows\n\nFor the 200k conventional model, uniform-cell heat-release relative RMS is ${testRows("uniform").find(row=>!row.historical && row.name.endsWith("state-boxcox"))?.heatRelativeRms.toFixed(1)}, compared with 1 for zero change. The fixed hybrid reduces it to ${testRows("uniform").find(row=>!row.historical && row.name.endsWith("fixed-hybrid"))?.heatRelativeRms.toFixed(2)}, which is still worse than zero. Its balanced-sample heat error is also above 1. Do not transfer the good-looking 1D validation result directly to CFD.\n\nThe historical fixed hybrid performs much better here, but its larger training budget and possible prior exposure remain confounders. It is a useful control, not proof of independent generalization or an equal-cost target ranking. Raw negative-component rates below count every negative value, regardless of magnitude; they are not by themselves a measure of physical damage.`)}
+    {heldout && visible("flame-species-test") && <DataComponent id="flame-species-test" queryId="heldout" kind="table" title="Selected species: temperature-balanced 2D diagnostic" sourceRows={heldout.filter(row=>row.population === "balanced")} displayRows={testRows("balanced")}>
+      <DataTable rows={testRows("balanced")} label="Selected species on the balanced test population" columns={[{field:"control",label:"Control"},{field:"targetName",label:"Target"},...speciesColumns]} />
+    </DataComponent>}
+    {heldout && prose("flame-bin-context", "Read the fixed policy by region", "heldout", heldout,
+      "### Where does the temperature policy help?\n\nThe next tables retain the largest completed primary run's conventional, direct-power, and fixed-hybrid predictions, plus zero change. These columns and bin edges were fixed before scoring. The balanced temperature view gives each occupied region a diagnostic sample; it is not a domain average.\n\nThe magnitude view uses uniform random cells and counts species components, not cells. Its values are absolute increment errors, not budget or relative errors. The lowest bin includes numerical zeros. A small absolute error there does not establish many correct relative digits. Empty bins remain unobserved, not zero error. Other model scores and both populations remain in the source data.")}
+    {heldout && binTable("heldout_temperature", "balanced", true)}
+    {heldout && binTable("heldout_magnitude", "uniform", false)}
+    {support && prose("flame-input-support", "Post-score input coverage diagnosis", "input_support", support,
+      "### Why more rows did not guarantee transfer\n\nThe primary models share the same verified input scaler. Training pressure spans about 101,357–101,454 Pa. All selected 2D cells are below that range. A change of roughly 0.5% in pressure becomes about 15 training-scale units because the training pressure spread is narrow. Validation pressure was also outside the range, but only about 1.36 scale units from the mean.\n\nAbout 85.6% of uniform-test cells have water mass fraction outside the training range. Temperature coverage alone therefore does not establish composition coverage. The balanced sample gives a different fraction and is not a domain average.\n\nThese are measured coverage and scaling gaps. They plausibly contribute to the transfer failure, but this descriptive check does not prove that they are its only cause. It was run after scoring and did not change any model, scaler, input, or saved prediction.")}
+    {support && visible("flame-input-support-table") && <DataComponent id="flame-input-support-table" queryId="input_support" kind="table" title="Input support: raw ranges and frozen-scale distances" sourceRows={support} displayRows={supportRows}>
+      <DataTable rows={supportRows} label="Descriptive input coverage" compactNumbers={false} columns={[
+        {field:"feature",label:"Feature"}, {field:"population",label:"Population"}, {field:"trainingRange",label:"Raw training range"},
+        {field:"observedRange",label:"Raw observed range"}, {field:"outsideTrainingRangeFraction",label:"Outside training range",renderCell:percent},
+        {field:"absoluteStandardizedMax",label:"Max |encoded distance / scale|",renderCell:value=>value.toFixed(2)},
+      ]} />
+    </DataComponent>}
+    {pressure && prose("flame-pressure-diagnosis", "Pressure-only diagnostic", "pressure_diagnostic", pressure,
+      `### A small physical pressure change can cause a large model change\n\nWe checked the same 32 states used in the reference audit. We copied each state and changed only pressure to the frozen training mean, ${pressure[0].pressurePa.toFixed(2)} Pa. We then generated new CVODE labels for these changed states and checked them with step-limited CVODE and two Radau solves. We did not compare new-pressure predictions with old-pressure answers.\n\nThe reference heat source changed by ${percent(pressure[0].referenceHeatResponse)} of its original RMS. Some model predictions changed much more. For the fixed hybrid, heat relative RMS fell from ${pressure.find(row=>row.target === "fixed-hybrid").originalHeatRelativeRms.toFixed(2)} to ${pressure.find(row=>row.target === "fixed-hybrid").changedHeatRelativeRms.toFixed(3)}. But its species-budget p99 remained ${integer(pressure.find(row=>row.target === "fixed-hybrid").changedBudgetP99)}, far above 1. The linear model's heat error became worse even though its species p99 improved.\n\nThis supports pressure sensitivity as a contributor to the failure, not its only cause. It does not prove that a new scaler alone will solve the problem. All six frozen policies are shown. No model was refitted or selected. This is a post-score diagnosis on an inspected subset, not a domain-average score, a new test, or a repair. The original 2D scores above remain unchanged.`)}
+    {pressure && visible("flame-pressure-table") && <DataComponent id="flame-pressure-table" queryId="pressure_diagnostic" kind="table" title="32 paired states: original pressure versus training-mean pressure" sourceRows={pressure} displayRows={pressureRows}>
+      <DataTable rows={pressureRows} label="Post-score pressure sensitivity" searchable={false} compactNumbers={false} columns={[
+        {field:"targetName",label:"Frozen policy"}, {field:"originalBudgetP99",label:"Original p99 ↓",renderCell:budgetNumber},
+        {field:"changedBudgetP99",label:"Changed-pressure p99 ↓",renderCell:budgetNumber},
+        {field:"originalHeatRelativeRms",label:"Original heat RMS ↓",renderCell:value=>value.toFixed(3)},
+        {field:"changedHeatRelativeRms",label:"Changed-pressure heat RMS ↓",renderCell:value=>value.toFixed(3)},
+      ]} />
+    </DataComponent>}
+    {prose("flame-cfd", "Copied CFD baseline", "cfd", cfd,
+      `## 5. Check the installed CFD solver without changing it\n\nA copied 500-cell case completed 100 steps, from 2.5 to 2.6 ms. Neural chemistry was disabled. The final maximum temperature was ${cfd[1].temperature_max_K.toFixed(2)} K. No final species component was negative. Maximum mass-fraction closure error was ${cfd[1].mass_closure_max.toExponential(2)}.\n\nAll ${cfd[1].originalFilesUnchanged} original files used by the copy retained their hashes. The installed image and shared environments were not changed. The copied case needed compatible energy-solver names and an inactive spray-cloud dictionary.\n\nThis proves that the existing runtime can execute the copied restart. It does not validate flame speed, mesh convergence, a long trajectory, or a learned chemistry model. The CFD runtime uses Cantera 2.6.0; the research labels use 3.2.0. That version difference remains explicit.`)}
+    {tolerance && prose("flame-cfd-tolerance", "Numerical tolerance control", "cfd_tolerance", tolerance,
+      `### Tightening chemistry tolerances changes this short run only slightly\n\nWe made a second case copy. It used the same mesh, initial fields, timestep, and installed solver. Neural chemistry stayed off. Only CVODE tolerances changed: relative/absolute values of 10⁻⁶/10⁻¹⁰ became 10⁻¹²/10⁻²¹.\n\nBoth copies completed ${tolerance[0].steps} steps. The largest final temperature difference was ${tolerance[0].temperatureMaxAbsK.toExponential(2)} K. The largest species mass-fraction difference was ${tolerance[0].speciesMaxAbs.toExponential(2)}. All ${tolerance[0].originalFilesUnchanged} original input files retained their hashes.\n\nThe final-state species-budget p99 was ${tolerance[0].finalStateBudgetP99.toFixed(2)}. This uses the tighter final mass fraction in the budget. Do not compare it directly with the one-step learned-increment scores above. This control shows tolerance sensitivity over this short restart. It does not prove an exact solution, mesh or timestep convergence, or neural-model accuracy.`)}
+    {parity && prose("flame-runtime-parity", "Runtime version agreement", "runtime_parity", parity,
+      `### The older runtime agrees on a checked subset\n\nThe unchanged CFD Cantera ${parity[0].runtimeCantera} environment was tested on ${parity[0].states} validation states. Its tight chemistry increments differed from the Cantera ${parity[0].researchCantera} labels by at most ${parity[0].maxDifferenceBudget.toExponential(2)} of the species error budget. This reduces a compatibility concern without upgrading the installed solver. It does not certify every state.`)}
+    {prose("flame-next", "Next decision", "models", models,
+      "## 6. Repair coverage before increasing data density again\n\nFirst, define the pressure and composition range that the CFD model must handle. Check the input scales against that physical range. Do not silently overwrite test pressure or clamp out-of-range values to improve the score.\n\nSecond, include real unburned, preheat, reaction, and burnt states from more than one flame realization. Split whole cases before augmentation. More perturbations of the same four snapshots cannot supply missing physical states. Repeat a bounded 50k-to-200k comparison with this broader coverage before proposing millions of rows.\n\nThird, keep all present results fixed. This 2D snapshot has now been inspected, so a repaired model needs a fresh, unused test. Compare the four target representations again only after the shared input problem is addressed. The current evidence does not yet justify residual-learning complexity.\n\nKeep learned CFD deployment closed. The fixed hybrid reduces some failures but still has heat error above the zero-change baseline on this test. Only after useful offline accuracy and explicit positivity/conservation checks should a new model enter a short copied CFD case. No model-in-the-loop run or CFD speedup is claimed here.\n\nReview and decisions remain in [Issue #3](https://github.com/xiao312/DFODE-kit/issues/3); implementation remains in [draft PR #4](https://github.com/xiao312/DFODE-kit/pull/4). This is a research checkpoint, not a production release.")}
+  </article>;
+}

@@ -207,3 +207,4 @@ site/
 # *.pth
 # Generated experiment artifacts
 runs/
+/.trash/

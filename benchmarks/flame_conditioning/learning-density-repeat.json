@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "seed": 20261010,
+  "hidden_widths": [800, 800, 800, 800],
+  "activation": "gelu",
+  "loss": "l1",
+  "updates": 10000,
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "final_learning_rate": 0.00001,
+  "validation_every": 500,
+  "targets": ["state-boxcox"],
+  "precisions": ["float32"],
+  "training_sizes": [50000],
+  "wall_seconds": 1200,
+  "maximum_variant_seconds": 850,
+  "selection": "same validation p99 rule; fixed second-seed conventional 10k/50k repeat, not a seed search"
+}

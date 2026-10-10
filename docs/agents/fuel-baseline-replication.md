@@ -1,0 +1,408 @@
+# Fuel baseline replication: source recipe and limits
+
+Checked 2026-10-09. This note separates manuscript facts, saved study-code facts,
+and proposed adaptations. Reading source code is not a reproduced result.
+Original study files and remote environments were read-only during this audit.
+
+## Decision
+
+Build stronger **Fuel source-recipe baselines** before adding more target families.
+Use the two recovered training recipes, not another short cosine schedule.
+Start on the fixed offline development domain so that training changes can be
+checked without changing the reference labels. Then increase data size as a
+separate factor. A small-data source-recipe run is not a full paper reproduction.
+
+Keep the [method catalogue](../research-method-catalogue.md) as the source of
+method names. Keep the [dual-scaling protocol](representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs)
+as the source of scoring rules. This note defines provenance, not a new pass rule.
+
+## 1. What the Fuel manuscript specifies
+
+The study uses a 60/40 NH3/CH4 premixed flame, equivalence ratio one, 300 K,
+and 1 atm. Its 500 cells and 2,500 sampled microsecond steps yield about
+1.25 million states. Interpolation and constrained perturbations produce an
+eight-million-state dataset. Perturbations use ±100 K, pressure-span scaling,
+and species exponents between 0.85 and 1.15. Temperature, nitrogen and heat
+release filters restrict accepted states. The network has four 800-unit layers,
+standardized inputs/outputs, and no argon output. Two targets are compared:
+transformed-state differences and signed-power physical increments, both with
+exponent 0.1. [Fuel manuscript, Sections 2.2–2.4](https://arxiv.org/html/2507.08277v2)
+
+The evaluation separates tiny increments at 1e-15 from other increments. SSPI
+checks whether tiny references also have tiny predictions; a-indexes measure
+relative-error fractions for the other group. The CFD policy uses the
+transformed-state model above 1000 K, direct power between 305 and 1000 K,
+and zero below 305 K. Thus, paper a10 and our all-component mixed-budget
+acceptance are not the same metric. [Fuel manuscript, Sections 3.2–3.3](https://arxiv.org/html/2507.08277v2#S3.SS2)
+
+## 2. What the recovered training code specifies
+
+These are user-owned source files on the study host. They were read directly
+again for this note, and their hashes still match the earlier
+[source inventory](flame-source-and-runtime-contract.md#original-training-controls-text-only-inspection).
+Use portable root names from that inventory; keep absolute machine paths in
+ignored run manifests.
+
+**Source A — transformed-state run**
+
+`${WORKSPACE}/active_work/training/train_800_800_800_800_loss1_dataset_1Dflame_1d_flame_60nh3.ULFS_0.0-2.5ms_interpolate_perturbated_heat_release_filtered/singleMLPTrainingCV.asinh_loss.py`
+
+SHA-256: `b85a0e704e314a95e792583f01be8c79d8229c4e20cadff7f49a76b32a04d0d8`.
+
+**Source B — direct-power run**
+
+`${DFODE_STUDY_ROOT}/test_runs/test_250903_151713/train_mlp_dev_target_transform_power.py`
+
+SHA-256: `05ec1ff438531b4338c3fedf315905cf924dd7d81bd37a62b808769ff64ab7f6`.
+
+`DFODE_STUDY_ROOT` means the separate existing `dfode_project` study workspace.
+Its location is not the current DFODE-kit worktree. These source files are
+primary evidence for the saved runs. We have not established that these exact
+scripts and checkpoints produced every published figure.
+
+### Network and chemistry
+
+Both scripts use `61 -> 800 -> 800 -> 800 -> 800 -> 58`, GELU, a linear output,
+FP32 tensors, and no active batch normalization. Inputs are temperature,
+pressure, and 59 mass fractions in mechanism order. The outputs omit argon.
+The source architecture has 2,018,458 trainable parameters. Both use ordinary
+PyTorch Linear initialization and Adam defaults apart from the learning rate.
+Both optimize mean absolute error in normalized coordinates. Other diagnostic
+losses in Source A do not enter its backward pass. Its filename does not mean
+that it trains with asinh loss. **Evidence: Source A/B above.**
+
+The recovered labeling scripts use a Cantera reactor with energy disabled,
+fixed volume, a 1e-6 s interval, and tolerances `rtol=1e-6`, `atol=1e-10`.
+The recovered mechanism has 59 species and 356 reactions. Its pinned hash is
+`26a27fb3c19c6000ed46d70947faeaf4813b6161ca7186fb6cc9ad55ede294f0`.
+The script locations and chemistry interface are recorded in the
+[original labeling and runtime audit](flame-source-and-runtime-contract.md).
+These reactor constraints come from code inspection, not an assumption that
+all combustion datasets use the same energy equation.
+
+### Exact normalization
+
+Let `B(y)=(y^0.1-1)/0.1` and `d=Y_after-Y_before`.
+
+| Setting | Source A: transformed-state | Source B: direct power |
+| --- | --- | --- |
+| Input species | `B(Y)` | `B(Y)` |
+| Temperature and pressure | Linear, then standardized | Linear, then standardized |
+| Input center | Feature mean | Feature mean |
+| Input scale | Sample standard deviation, `ddof=1` | Population standard deviation, `ddof=0` |
+| Raw target | `B(Y_after)-B(Y_before)` | `sign(d)*abs(d)^0.1` |
+| Target center | Component mean | **Zero**, not the component mean |
+| Target scale | Sample standard deviation, `ddof=1` | Population standard deviation, `ddof=0` |
+| Constant-feature guard | Present only as commented code | Zero standard deviation replaced by one |
+
+**Evidence: Source A/B preprocessing.** Source B omits the factor `1/0.1` in
+the paper's direct-power formula. With its standard-deviation scaling, that
+positive constant cancels algebraically. This does **not** make its zero-center
+convention identical to centered Z-score normalization.
+
+Source A takes absolute values of stored endpoints. Source B clips stored
+species endpoints into `[0,1]`. Both fit normalization before their validation
+split. Do not import those repairs or the split leakage silently. Use validated
+signed reference increments and train-only statistics in the new implementation.
+Record these deliberate deviations.
+
+### Exact training schedules
+
+| Setting | Source A | Source B |
+| --- | --- | --- |
+| Epochs | 1500 | 2000 |
+| Nominal batch size | 20,000 | 20,000 |
+| Initial learning rate | 1e-3 | 1e-3 |
+| Epoch order | Fresh NumPy permutation | Shuffled PyTorch DataLoader |
+| Partial final batch | Dropped | Kept |
+| Rate changes | Tenfold reductions after zero-index epochs 500 and 1000 | StepLR, step size 500, gamma 0.1, called after each epoch |
+| Adam state at reduction | **Reset** | **Retained** |
+| Script seed | 555 | 555, but set after the random split |
+| Validation | Last 400,000 row positions | Random 95/5 row split |
+
+**Evidence: Source A/B loops.** In Source A the change occurs after training
+the specified zero-index epoch. With one-indexed epoch labels, rates are
+1e-3 for epochs 1–501, 1e-4 for 502–1001, and 1e-5 for 1002–1500.
+Source B uses 1e-3 for 1–500, 1e-4 for 501–1000, 1e-5 for 1001–1500, and
+1e-6 for 1501–2000. Its final scheduler step has no further training effect.
+
+Source B calls `random_split` before `set_seed(555)`. The supplied seed therefore
+does not reproduce that old split by itself. Keep a new explicit split manifest.
+
+The old Source A log records eight million rows, of which 7.6 million train.
+At 20,000 rows per batch, this gives 380 updates per epoch, 570,000 updates,
+and **11.4 billion training-row presentations**. This arithmetic follows the
+source loop and the [recorded log inventory](flame-source-and-runtime-contract.md#original-training-controls-text-only-inspection).
+The corresponding Source B recipe would give 760,000 updates and 15.2 billion
+presentations on the same row count. Do not equate epochs with optimizer steps.
+
+## 3. Data replication gaps
+
+The recovered source mechanism and labeling operation are specific enough to
+reuse safely. The complete published dataset lineage is not yet established.
+
+- The raw paired sample files retain 2,401 times, not all 2,500 expected times.
+- The existing raw NPY has 1.25 million FP64 rows, but its row positions do not
+  preserve source-time IDs. Source text fields have about six significant digits.
+- The inspected `sample_n_interpolation_aug_1d.py` has a default 1 K grid and
+  computes interpolated states, but its active return is **the original sorted
+  array**, not the combined array. It is evidence for a raw extraction path,
+  not proof that the published interpolation used 1 K. Its hash is
+  `099a066330d571a9451ff13c110b5dc12b183cb086b635c24a56535a685f0e44`.
+- Exact published interpolation spacing, perturbation draw dependencies,
+  normalization/closure order, numerical heat-release cutoff, and row-selection
+  seed are not fully bound to the retained eight-million-row artifact.
+- A saved training run is useful primary evidence, but file naming is not proof
+  of published-checkpoint identity.
+
+These observations use read-only source inspection and the
+[asset inventory](flame-source-and-runtime-contract.md#flame-state-sources).
+Resolve them before using the label **full paper reproduction**. Do not run the
+legacy scripts unchanged: they write to old study paths and use large worker
+counts. Reimplement their verified numerical recipe in the project run tree.
+
+## 4. GBCT comparison
+
+The paper specifies widths 1600/800/400, GELU, L1, Adam, and Z-score
+normalization. Stage one uses 2500 epochs, batch 1024, and learning rate 1e-4.
+Stage two uses another 2500 epochs, batch 262144, and learning rate 1e-5.
+It applies signed power with exponent 0.5 to the rate of the Box–Cox state
+difference, whose exponent is 0.1. These are different targets and training
+conditions from the Fuel recipe. [GBCT manuscript, Section 3](https://arxiv.org/html/2512.05685v1#S3.SS2)
+
+The pinned released code has discrepancies that prevent treating its default
+command as the paper protocol:
+
+- `batch_grow_rate` defaults to 128, not the paper's factor 256.
+- The chemical loader scales centered labels by their uncentered mean absolute
+  value, not their standard deviation. It returns FP32 tensors and normalizes
+  before splitting. See the [existing loader audit](gbct-source-and-adaptation.md).
+- The single-device trainer assigns `inputs_train` and `labels_train`, but its
+  batch loop reads undefined `inputs_data` and `labels_data`.
+- The distributed loop computes batch count from the original batch size while
+  its slices use the increased size. Its explicit epoch shuffle is commented.
+- Rate/batch changes reset Adam at the start of epochs divisible by 2500,
+  including epoch 5000. This is not precisely the prose's two equal phases.
+
+These are static observations, not executed failures. Sources pinned at
+`982e58954af5c5e8e3860d3057363b83bcbaeac6`:
+[configuration](https://github.com/Seauagain/GBCT/blob/982e58954af5c5e8e3860d3057363b83bcbaeac6/deepode/nn/config.py),
+[trainer](https://github.com/Seauagain/GBCT/blob/982e58954af5c5e8e3860d3057363b83bcbaeac6/deepode/nn/trainer.py).
+
+For a bounded comparator, select the **paper-intent** schedule explicitly and
+use train-only Z-score statistics. Keep the same NH3/CH4 labels and split.
+Call this a GBCT paper-recipe adaptation, not reproduction of the original
+chemical benchmark. Keep an explicit optimizer-reset policy. Do not spend this
+campaign repairing or running the upstream trainer.
+
+## 5. Difference from the completed paired campaign
+
+The [paired campaign](../../benchmarks/offline_accuracy/paired/README.md) used
+10,000 training states and 1,023 development states; batch 256; 4,000 updates;
+two cosine phases; and train-only centered population scaling. It used 59
+network outputs while excluding argon from loss and scoring. The fixed physical
+pressure center/scale was 101325/5066.25 Pa.
+
+The training-row exposure was `4000*256 = 1,024,000`, about **11,133 times
+less** than the historical Source A run. The number of unique training rows
+was 760 times smaller. These ratios describe different factors; neither proves
+that more work alone will recover the published performance.
+
+The current [offline dataset](../../benchmarks/offline_accuracy/dataset.json)
+uses four training snapshots, two development snapshots, independently sampled
+0.95–1.05 atm pressure, and Cantera 3.2.0 references at `rtol=1e-12`,
+`atol=1e-21`. Only a 16-state subset has the independent increment check.
+Its wider pressure domain, explicit split lineage, tighter references, and
+stable FP64 reconstruction are deliberate adaptations. Preserve them during
+the first training-recipe comparison so the labels do not change at the same time.
+
+## 6. Bounded implementation plan
+
+1. Implement the two Fuel recipes as separately named configurations. Match
+   the 58-output architecture, each normalization convention, L1 loss, epoch
+   traversal, and each Adam/schedule rule. Use the current GPU environment and
+   record versions, driver, precision flags, seed and source hashes.
+2. Keep the same 10k row IDs per seed and the same development rows. Use two
+   retained seeds, not the better seed. With fewer than 20k rows, explicitly
+   cap the effective batch size at the training count. This is full-batch
+   optimization, not a literal reproduction of the original minibatch noise.
+   Source A would otherwise perform zero batches. State this adaptation.
+3. Save fixed epoch checkpoints and training/development curves. Report epochs,
+   optimizer updates, effective batches, row presentations, wall time and peak
+   memory together. Never describe 1500 full-batch updates on 10k rows as
+   matching 570k updates on 7.6 million rows.
+4. Keep validation data out of normalization and training. Seed the new split
+   explicitly. Preserve constant-feature guards, stable inverse calculations,
+   and visible invalid-domain counts. These are intentional safety differences.
+5. Report the unchanged increment and state acceptance grids, whole-state
+   acceptance, error tails and physical checks. Add paper-style SSPI and
+   relative-error fractions with explicit masks as supplementary metrics. A
+   good tiny-increment score must not replace general accuracy.
+6. If this establishes a useful training improvement, grow to 50k and 200k
+   accepted states with preserved source groups and a measured cost limit.
+   On these sizes the 20k batch again gives multiple updates per epoch. Keep
+   the data-size effect separate from the optimization-budget effect.
+7. Assess the paper's fixed temperature-switch policy as a named offline
+   composition after the two models exist. Specify exact equality handling
+   at 305 and 1000 K before scoring. Do not tune the switch on development
+   results and call it the paper's policy. CFD remains a later stage.
+
+The first run can answer whether the source training recipe gives stronger
+baselines on our fixed domain. It cannot establish eight-million-state
+reproduction, independent-case generalization, solver-level error control, or
+CFD speedup. Those claims require separate evidence.
+
+## 7. Implemented first stage and verification
+
+The four 10k GPU fits are complete at source revision `dc970970`. The run
+identity is `fuel-recipe-20261009`. Each recipe uses the final scheduled
+checkpoint. Both seeds are retained. The existing live review contains the
+verified summaries and training/development curves; raw artifacts remain
+outside Git. The first stage did **not** improve primary acceptance.
+
+The separate `fuel-recipe-50k-20261009` campaign starts from the same source
+and domain. Its gates require a fresh reference audit, unchanged development
+states and labels, and nested training identities. Its current process status
+is stored with the run; this note is not a live completion indicator.
+
+Focused GPU recipe, paired-metric and repository-index tests pass. The full
+repository verification exposed seven other failures in conservation-model,
+Fluent-export/deployment, and Slurm-launcher tests. The same seven failures
+were reproduced in an isolated worktree at the previous revision `5f22bce6`.
+They were not repaired as part of this experiment. No merge-ready claim follows
+from the focused tests. The new documentation-index failure was fixed.
+
+## 8. Verified 50k result and faster labels
+
+The complete 50k campaign passed its fresh reference audit and all four saved-model
+checks. It prepared 50,100 candidates, accepted 50,060, and selected exactly 50,000
+for each fit. All 1,023 accepted development rows and labels remain unchanged.
+Serial preparation took 1,471.7 seconds. Primary development species acceptance:
+
+| Recipe | 10k, both seeds | 50k, both seeds | 50k updates / presentations |
+| --- | --- | --- | --- |
+| Fuel state | 29.93–30.17% | 42.18–42.83% | 3,000 / 60M |
+| Fuel direct power | 11.27–11.60% | 20.87–21.51% | 6,000 / 100M |
+
+The increment rule stays `abs(error) <= 1e-15 + 0.1*abs(reference)`.
+No complete development state passes it. This improvement does not isolate dataset
+size: fixed epochs also give more updates. The canonical review retains both error
+scales, both seeds, training scores, tails, physical failures and work counts.
+
+A two-repeat, 2,048-row benchmark measured about 39.1, 151.4 and 291.8 rows/s for
+1, 4 and 8 CPU workers. Every increment and acceptance flag matched saved serial
+labels exactly. The 7.5x gain includes worker startup/transport, not augmentation,
+chunk I/O or final export. See `parallel_labels/README.md` for resume and reuse
+contracts. The bounded 200k stage uses eight workers and a fresh reference audit;
+its process status is in its own run manifest, not inferred from this note.
+
+Before a million-row stage, separate the effect of more updates from more unique
+rows, and audit broader source coverage. The current size comparison still uses
+four training and two development snapshots from one flame. Finding more saved
+snapshot directories is not proof of independent cases or valid split lineage.
+
+## 9. Verified 200k fixed-epoch result
+
+`fuel-recipe-200k-20261009` completed at source revision `1e7a0dfe`.
+Eight-worker preparation reused 50,100 candidates and labeled 150,400 new ones.
+It accepted 200,363 of 200,500 candidates in 526.6 seconds. A fresh 32-state,
+1,888-component CVODE/Radau subset check passed before the four GPU fits.
+All fits passed saved-weight replay and independent metric checks.
+
+| Recipe | Training acceptance, both seeds | Development acceptance, both seeds | Updates / presentations |
+| --- | --- | --- | --- |
+| Transformed-state, Fuel source recipe | 62.26–62.32% | 61.32–61.48% | 15,000 / 300M |
+| Direct signed-power, Fuel source recipe | 47.82–49.20% | 45.12–46.13% | 20,000 / 400M |
+
+These use the same primary increment rule and 1,023 development states.
+No complete development state passes. Direct-power predictions still give
+negative endpoint components (about 3.3%). Transformed-state predictions have
+no negative endpoints after the declared inverse-domain corrections; these
+corrections are not evidence that the raw predicted coordinate is always valid.
+The improvement includes more data, more updates and newly fitted scales.
+It is not proof that data size alone produced the gain.
+
+## 10. Matched-work data-size control
+
+`fuel-matched-work-20261009` completed eight GPU fits at clean source revision
+`396e547a`. Each uses 6,000 updates, batch 10k and 60M presentations. Freeze each
+recipe/seed's 50k preprocessing and pair initial weights. Compare the nested
+50k and 200k selections. Keep the same 1,023 development states and final-checkpoint
+rule. No independent test or new reference generation is part of this control.
+
+Primary increment development acceptance:
+
+| Recipe | Seed | 50k rows | 200k rows | Change, percentage points |
+| --- | --- | --- | --- | --- |
+| Transformed-state, matched work | 20261011 | 49.79% | 52.68% | +2.89 |
+| Transformed-state, matched work | 20261012 | 49.52% | 52.03% | +2.50 |
+| Direct signed-power, matched work | 20261011 | 20.70% | 23.29% | +2.59 |
+| Direct signed-power, matched work | 20261012 | 21.37% | 23.56% | +2.19 |
+
+More unique rows help under this fixed-work protocol, but the gain is modest.
+At 200k, training acceptance is 51.81–52.43% for transformed-state and
+23.46–23.78% for power, close to development. There is no large generalization
+gap that alone explains the remaining failures. This is not a saturation test.
+No complete development state passes. The transformed-state normalized-error
+p99 is about 54k–57k allowance units; power is about 156–197. Power still gives
+about 5% negative endpoint components. Better component acceptance does not
+mean better tails or a physically valid solver substitute.
+
+The earlier 200k fixed-epoch scores are not invalidated or replaced. Their
+updates, batches and preprocessing differ. Next, test more updates at fixed
+200k data and fixed preprocessing before a 1M expansion. Do not attribute a
+between-recipe gap to representation alone; schedules and normalization differ.
+
+All eight saved-weight, independent-count, physical-metric and frozen-scaler
+checks passed. Campaign verification confirms equal work, identical paired
+initial weights, nested row IDs and common development identities. Fourteen
+focused experiment tests passed on the server GPU; five review-compiler tests
+and nine report/catalogue tests passed locally. Full server `make verify`
+still reports the same seven unrelated failures listed in section 7.
+Browser inspection was unavailable; report builds and published-byte checks
+are separate from visual acceptance. The draft PR remains a draft.
+
+## 11. Fixed 200k data, threefold training budget
+
+`fuel-budget-18k-20261009` completed four fresh GPU fits at clean source revision
+`12eda710`. Reuse the verified 6k-update 200k fits as controls. Keep the same
+training/development row IDs, batch 10k, original 50k scalers, initial weights,
+architecture, precision and pass rules. Increase updates from 6k to 18k and
+presentations from 60M to 180M. Stretch learning-rate stages threefold; preserve
+each recipe's Adam reset policy. This is not checkpoint continuation or a
+schedule-isolated experiment. Retain both seeds and the final checkpoint.
+
+| Recipe | 6k development pass | 18k development pass | Paired change | Fit wall ratio |
+| --- | --- | --- | --- | --- |
+| Transformed-state | 52.03–52.68% | 62.88–63.11% | +10.44–10.85 points | 2.83–2.85x |
+| Direct signed-power | 23.29–23.56% | 42.41–42.81% | +18.85–19.51 points | 2.90–2.92x |
+
+These are primary increment-rule results. At 18k, training acceptance is
+63.87–63.98% and 44.67–45.41%, respectively. No complete development state passes.
+Both recipes can use more training work; the 6k result was not an established
+ceiling. These two work budgets do not prove saturation. Improvements from the
+larger training protocol exceed the previous equal-work data-size gains on this
+domain; this is not a universal scaling law.
+
+Error tails remain unacceptable for a solver replacement. Transformed-state
+development p99 is 32,530–34,610 allowance units. Power p99 is 25.18–27.44, with
+3.35–3.49% negative endpoint components. The zero control passes 5.08% under
+the primary rule, with p99 about 10. Passing more components does not mean
+controlling the worst errors. State-policy scores remain separately available.
+
+Use these stronger fits as controls for the next matched representation/loss
+experiment on 200k data. Keep the independent test unopened and do not infer
+solver accuracy or authorize a 1M/CFD run from these results.
+
+All four model replay, metric and physical checks passed. The campaign also
+checks the original baseline hashes, equal row IDs, scalers and initial weights.
+Raw outputs remain outside Git. The existing review retains all prior queries
+and adds both budgets, both seeds, both error scales and learning curves against
+updates or measured fit wall time. Full repository checks retain the seven
+known failures; report visual inspection remains unavailable.
+
+Requested housekeeping moved only checked transfer bundles, duplicate exports
+and disposable pytest caches into each project's ignored `.trash/` directory.
+Original relative paths, move records and recovery guidance are retained there.
+No reference data, experiment checkpoints, active environments or solver assets
+were deleted or moved. There is no automatic purge.
