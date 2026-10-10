@@ -179,6 +179,9 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `adaptive-continue` | [GBCT baseline — warm-start control](#adaptive-continue) | Adaptive residual coordinates |
+| `adaptive-local` | [Fixed local residual correction](#adaptive-local) | Adaptive residual coordinates |
+| `adaptive-calibrated` | [Residual-calibrated local correction](#adaptive-calibrated) | Adaptive residual coordinates |
 | `matched200k-state-boxcox-coordinate` | [Transformed-state increment — matched 200k coordinate loss](#matched200k-state-boxcox-coordinate) | Matched 200k targets and losses |
 | `matched200k-state-boxcox-increment` | [Transformed-state increment — matched 200k increment loss](#matched200k-state-boxcox-increment) | Matched 200k targets and losses |
 | `matched200k-state-boxcox-state` | [Transformed-state increment — matched 200k state loss](#matched200k-state-boxcox-state) | Matched 200k targets and losses |
@@ -235,6 +238,66 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="adaptive-continue"></a>
+### GBCT baseline — warm-start control
+
+Artifact ID: `adaptive-continue`. Family: Adaptive residual coordinates.
+
+Frozen 200k dataset and verified GBCT/increment base. Two seeds, 6k extra updates, batch 10k, fresh Adam, cosine 1e-4 to 1e-6, final checkpoint. Same physical increment loss and both evaluation policies. Continuation fits the base; corrections freeze it and add a zero-output 3x256 GELU model with normalized physical and asinh(base) features. Decoder: base+(1e-14+abs(base))*alpha(base)*correction. Local alpha=1; calibrated alpha uses bounded conditional training-residual 75th percentiles in eight fixed magnitude bins, fit on 50k training rows only. No positivity projection or test access. Scale is not an acceptance tolerance. Experimental, not a demonstrated improvement or MSNN reproduction.
+
+```mermaid
+flowchart TD
+  n0["Verified 200k GBCT/increment model"]
+  n1["Fresh Adam; 6k physical-loss updates"]
+  n2["Same physical inverse and acceptance rules"]
+  n0 --> n1
+  n1 --> n2
+```
+
+<a id="adaptive-local"></a>
+### Fixed local residual correction
+
+Artifact ID: `adaptive-local`. Family: Adaptive residual coordinates.
+
+Frozen 200k dataset and verified GBCT/increment base. Two seeds, 6k extra updates, batch 10k, fresh Adam, cosine 1e-4 to 1e-6, final checkpoint. Same physical increment loss and both evaluation policies. Continuation fits the base; corrections freeze it and add a zero-output 3x256 GELU model with normalized physical and asinh(base) features. Decoder: base+(1e-14+abs(base))*alpha(base)*correction. Local alpha=1; calibrated alpha uses bounded conditional training-residual 75th percentiles in eight fixed magnitude bins, fit on 50k training rows only. No positivity projection or test access. Scale is not an acceptance tolerance. Experimental, not a demonstrated improvement or MSNN reproduction.
+
+```mermaid
+flowchart TD
+  n0["Input state"]
+  n1["Frozen GBCT/increment model predicts base"]
+  n2["Local scale 1e-14 + abs(base)"]
+  n3["Zero-initialized 3x256 correction network"]
+  n4["FP64 base + scaled correction; no projection"]
+  n5["Unchanged acceptance rules and physical checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="adaptive-calibrated"></a>
+### Residual-calibrated local correction
+
+Artifact ID: `adaptive-calibrated`. Family: Adaptive residual coordinates.
+
+Frozen 200k dataset and verified GBCT/increment base. Two seeds, 6k extra updates, batch 10k, fresh Adam, cosine 1e-4 to 1e-6, final checkpoint. Same physical increment loss and both evaluation policies. Continuation fits the base; corrections freeze it and add a zero-output 3x256 GELU model with normalized physical and asinh(base) features. Decoder: base+(1e-14+abs(base))*alpha(base)*correction. Local alpha=1; calibrated alpha uses bounded conditional training-residual 75th percentiles in eight fixed magnitude bins, fit on 50k training rows only. No positivity projection or test access. Scale is not an acceptance tolerance. Experimental, not a demonstrated improvement or MSNN reproduction.
+
+```mermaid
+flowchart TD
+  n0["Input state"]
+  n1["Frozen GBCT/increment model predicts base"]
+  n2["Local scale times interpolated training-residual calibration"]
+  n3["Zero-initialized 3x256 correction network"]
+  n4["FP64 base + scaled correction; no projection"]
+  n5["Unchanged acceptance rules and physical checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="matched200k-state-boxcox-coordinate"></a>
 ### Transformed-state increment — matched 200k coordinate loss

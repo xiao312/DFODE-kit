@@ -84,6 +84,14 @@ No production code depends on this experiment; review is a one-way artifact cons
 `matched_targets.review -> matched_targets_* -> report-content/MatchedTargets.jsx`
 binds the complete factorial results into the same review while preserving history.
 
+`paper_baseline.adaptive.launch -> campaign -> run -> fit -> model/coordinates/plan` owns
+the six-fit residual-calibrated local correction experiment. It reads the pinned
+matched-target baseline and `matched_work.run.inputs` data gate. It reuses paired
+runtime/metrics and explicit `paper_baseline.run.evaluate_and_verify` adapters.
+Each checkpoint contains its frozen base and train-only scale tables; inference
+never reads reference labels. Historical trainers and production code do not
+depend on this module. The method catalogue names its three controlled arms.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
