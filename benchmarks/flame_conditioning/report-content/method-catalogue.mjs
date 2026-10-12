@@ -35,6 +35,12 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...["physical","direct"].map(objective=>({
+    id:`correction-scaling-${objective}`,name:`Continued-base correction — ${objective} supervision`,
+    target:"gbct",family:"Direct correction scaling",
+    detail:"Freeze continued GBCT incumbents, not the original bases. Fixed 50k input/base-feature scaling and immutable targets. Fresh zero-output 3x256 GELU, fixed asinh crossover 1e-14, direct correction MSE versus physical log1p error. Nested 10k/50k/200k correction-training prefixes, conditional progression, 6k updates and batch 10k. Same acceptance rule. No balancing, extra capacity, CFD or independent test. Base already saw the full training pool; not a from-scratch data requirement.",
+    flow:["Freeze continued GBCT base and audit coverage", "Prepare training-only base features and correction coordinates", "Fresh 3x256 head on selected nested prefix", `6000 matched updates with ${objective} supervision`, "Stable FP64 inverse; train/development group acceptance and cost"],
+  })),
   ...[256,512].flatMap(width=>["physical","direct"].map(objective=>({
     id:`resolved-fit-${width}-${objective}`, name:`Resolved small-set fit — 3x${width}, ${objective} supervision`,
     target:"gbct",family:"Training-fit diagnostic",

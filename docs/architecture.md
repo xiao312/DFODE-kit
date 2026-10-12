@@ -107,6 +107,13 @@ and physical-log objectives share resolved component masks and two head sizes.
 Development and test labels do not enter fitting or scores. Its saved artifacts
 feed review only; it does not replace the base or any full-data campaign.
 
+`paper_baseline.correction_scaling.prepare -> coverage/model/plan` freezes continued
+GBCT bases, checks label provenance, and caches training-only targets/features.
+`run -> train/evaluate/model` owns the separate small regression gate and matched
+nominal-label size progression. It reuses adaptive features, decoder_loss arithmetic,
+resolved_fit's probe and matched_work data gates without altering historical code.
+Coverage and group reports feed review; no production dependency points back here.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and

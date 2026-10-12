@@ -179,6 +179,8 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `correction-scaling-physical` | [Continued-base correction — physical supervision](#correction-scaling-physical) | Direct correction scaling |
+| `correction-scaling-direct` | [Continued-base correction — direct supervision](#correction-scaling-direct) | Direct correction scaling |
 | `resolved-fit-256-physical` | [Resolved small-set fit — 3x256, physical supervision](#resolved-fit-256-physical) | Training-fit diagnostic |
 | `resolved-fit-256-direct` | [Resolved small-set fit — 3x256, direct supervision](#resolved-fit-256-direct) | Training-fit diagnostic |
 | `resolved-fit-512-physical` | [Resolved small-set fit — 3x512, physical supervision](#resolved-fit-512-physical) | Training-fit diagnostic |
@@ -246,6 +248,46 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="correction-scaling-physical"></a>
+### Continued-base correction — physical supervision
+
+Artifact ID: `correction-scaling-physical`. Family: Direct correction scaling.
+
+Freeze continued GBCT incumbents, not the original bases. Fixed 50k input/base-feature scaling and immutable targets. Fresh zero-output 3x256 GELU, fixed asinh crossover 1e-14, direct correction MSE versus physical log1p error. Nested 10k/50k/200k correction-training prefixes, conditional progression, 6k updates and batch 10k. Same acceptance rule. No balancing, extra capacity, CFD or independent test. Base already saw the full training pool; not a from-scratch data requirement.
+
+```mermaid
+flowchart TD
+  n0["Freeze continued GBCT base and audit coverage"]
+  n1["Prepare training-only base features and correction coordinates"]
+  n2["Fresh 3x256 head on selected nested prefix"]
+  n3["6000 matched updates with physical supervision"]
+  n4["Stable FP64 inverse; train/development group acceptance and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="correction-scaling-direct"></a>
+### Continued-base correction — direct supervision
+
+Artifact ID: `correction-scaling-direct`. Family: Direct correction scaling.
+
+Freeze continued GBCT incumbents, not the original bases. Fixed 50k input/base-feature scaling and immutable targets. Fresh zero-output 3x256 GELU, fixed asinh crossover 1e-14, direct correction MSE versus physical log1p error. Nested 10k/50k/200k correction-training prefixes, conditional progression, 6k updates and batch 10k. Same acceptance rule. No balancing, extra capacity, CFD or independent test. Base already saw the full training pool; not a from-scratch data requirement.
+
+```mermaid
+flowchart TD
+  n0["Freeze continued GBCT base and audit coverage"]
+  n1["Prepare training-only base features and correction coordinates"]
+  n2["Fresh 3x256 head on selected nested prefix"]
+  n3["6000 matched updates with direct supervision"]
+  n4["Stable FP64 inverse; train/development group acceptance and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
 
 <a id="resolved-fit-256-physical"></a>
 ### Resolved small-set fit — 3x256, physical supervision
