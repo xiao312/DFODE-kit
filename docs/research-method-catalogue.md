@@ -179,6 +179,10 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `decoder-linear-log` | [Base-relative linear correction — log loss](#decoder-linear-log) | Correction decoder and loss diagnostic |
+| `decoder-linear-huber` | [Base-relative linear correction — huber loss](#decoder-linear-huber) | Correction decoder and loss diagnostic |
+| `decoder-asinh-log` | [Fixed-crossover asinh correction — log loss](#decoder-asinh-log) | Correction decoder and loss diagnostic |
+| `decoder-asinh-huber` | [Fixed-crossover asinh correction — huber loss](#decoder-asinh-huber) | Correction decoder and loss diagnostic |
 | `adaptive-continue` | [GBCT baseline — warm-start control](#adaptive-continue) | Adaptive residual coordinates |
 | `adaptive-local` | [Fixed local residual correction](#adaptive-local) | Adaptive residual coordinates |
 | `adaptive-calibrated` | [Residual-calibrated local correction](#adaptive-calibrated) | Adaptive residual coordinates |
@@ -238,6 +242,86 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="decoder-linear-log"></a>
+### Base-relative linear correction — log loss
+
+Artifact ID: `decoder-linear-log`. Family: Correction decoder and loss diagnostic.
+
+Same frozen 200k GBCT/increment base, 3x256 GELU zero-output head, input plus base-output features, two seeds, 6k extra updates and batch 10k. Alpha=1, no coordinate normalization. Linear decoder b+(1e-14+abs(b))*c; asinh decoder 1e-14*sinh(asinh(b/1e-14)+c), with stable zero-identity arithmetic. Log1p absolute normalized error versus Huber on signed normalized error (delta=1). Fixed allowance 1e-15+.1*abs(reference). No gradient clipping; record raw norms. No-training FP32 oracle audit and small-target overprediction counts. Not a demonstrated gain or a new tolerance rule.
+
+```mermaid
+flowchart TD
+  n0["Frozen GBCT predicts base b"]
+  n1["Identical inputs and zero-initialized correction head"]
+  n2["Decode using linear; FP64 reconstruction"]
+  n3["Train with normalized log error"]
+  n4["Same increment acceptance, conditional tails and sign checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="decoder-linear-huber"></a>
+### Base-relative linear correction — huber loss
+
+Artifact ID: `decoder-linear-huber`. Family: Correction decoder and loss diagnostic.
+
+Same frozen 200k GBCT/increment base, 3x256 GELU zero-output head, input plus base-output features, two seeds, 6k extra updates and batch 10k. Alpha=1, no coordinate normalization. Linear decoder b+(1e-14+abs(b))*c; asinh decoder 1e-14*sinh(asinh(b/1e-14)+c), with stable zero-identity arithmetic. Log1p absolute normalized error versus Huber on signed normalized error (delta=1). Fixed allowance 1e-15+.1*abs(reference). No gradient clipping; record raw norms. No-training FP32 oracle audit and small-target overprediction counts. Not a demonstrated gain or a new tolerance rule.
+
+```mermaid
+flowchart TD
+  n0["Frozen GBCT predicts base b"]
+  n1["Identical inputs and zero-initialized correction head"]
+  n2["Decode using linear; FP64 reconstruction"]
+  n3["Train with normalized huber error"]
+  n4["Same increment acceptance, conditional tails and sign checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="decoder-asinh-log"></a>
+### Fixed-crossover asinh correction — log loss
+
+Artifact ID: `decoder-asinh-log`. Family: Correction decoder and loss diagnostic.
+
+Same frozen 200k GBCT/increment base, 3x256 GELU zero-output head, input plus base-output features, two seeds, 6k extra updates and batch 10k. Alpha=1, no coordinate normalization. Linear decoder b+(1e-14+abs(b))*c; asinh decoder 1e-14*sinh(asinh(b/1e-14)+c), with stable zero-identity arithmetic. Log1p absolute normalized error versus Huber on signed normalized error (delta=1). Fixed allowance 1e-15+.1*abs(reference). No gradient clipping; record raw norms. No-training FP32 oracle audit and small-target overprediction counts. Not a demonstrated gain or a new tolerance rule.
+
+```mermaid
+flowchart TD
+  n0["Frozen GBCT predicts base b"]
+  n1["Identical inputs and zero-initialized correction head"]
+  n2["Decode using asinh; FP64 reconstruction"]
+  n3["Train with normalized log error"]
+  n4["Same increment acceptance, conditional tails and sign checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="decoder-asinh-huber"></a>
+### Fixed-crossover asinh correction — huber loss
+
+Artifact ID: `decoder-asinh-huber`. Family: Correction decoder and loss diagnostic.
+
+Same frozen 200k GBCT/increment base, 3x256 GELU zero-output head, input plus base-output features, two seeds, 6k extra updates and batch 10k. Alpha=1, no coordinate normalization. Linear decoder b+(1e-14+abs(b))*c; asinh decoder 1e-14*sinh(asinh(b/1e-14)+c), with stable zero-identity arithmetic. Log1p absolute normalized error versus Huber on signed normalized error (delta=1). Fixed allowance 1e-15+.1*abs(reference). No gradient clipping; record raw norms. No-training FP32 oracle audit and small-target overprediction counts. Not a demonstrated gain or a new tolerance rule.
+
+```mermaid
+flowchart TD
+  n0["Frozen GBCT predicts base b"]
+  n1["Identical inputs and zero-initialized correction head"]
+  n2["Decode using asinh; FP64 reconstruction"]
+  n3["Train with normalized huber error"]
+  n4["Same increment acceptance, conditional tails and sign checks"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
 
 <a id="adaptive-continue"></a>
 ### GBCT baseline — warm-start control

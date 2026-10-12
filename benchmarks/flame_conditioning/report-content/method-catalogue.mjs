@@ -35,6 +35,12 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...["linear","asinh"].flatMap(decoder=>["log","huber"].map(loss=>({
+    id:`decoder-${decoder}-${loss}`, name:`${decoder === "linear" ? "Base-relative linear" : "Fixed-crossover asinh"} correction — ${loss} loss`,
+    target:"gbct",family:"Correction decoder and loss diagnostic",
+    detail:"Same frozen 200k GBCT/increment base, 3x256 GELU zero-output head, input plus base-output features, two seeds, 6k extra updates and batch 10k. Alpha=1, no coordinate normalization. Linear decoder b+(1e-14+abs(b))*c; asinh decoder 1e-14*sinh(asinh(b/1e-14)+c), with stable zero-identity arithmetic. Log1p absolute normalized error versus Huber on signed normalized error (delta=1). Fixed allowance 1e-15+.1*abs(reference). No gradient clipping; record raw norms. No-training FP32 oracle audit and small-target overprediction counts. Not a demonstrated gain or a new tolerance rule.",
+    flow:["Frozen GBCT predicts base b", "Identical inputs and zero-initialized correction head", `Decode using ${decoder}; FP64 reconstruction`, `Train with normalized ${loss} error`, "Same increment acceptance, conditional tails and sign checks"],
+  }))),
   ...["continue","local","calibrated"].map(arm=>({
     id:`adaptive-${arm}`, name:{continue:"GBCT baseline — warm-start control",local:"Fixed local residual correction",calibrated:"Residual-calibrated local correction"}[arm],
     target:"gbct", family:"Adaptive residual coordinates",

@@ -92,6 +92,14 @@ Each checkpoint contains its frozen base and train-only scale tables; inference
 never reads reference labels. Historical trainers and production code do not
 depend on this module. The method catalogue names its three controlled arms.
 
+`paper_baseline.decoder_loss.campaign -> run -> fit/model/coordinates/diagnostics`
+isolates base-relative linear versus fixed-crossover asinh correction and log
+versus Huber normalized error. It reads pinned adaptive baseline identities,
+reuses adaptive head/features/preprocessing and matched data gates, and supplies
+explicit prediction adapters to the independent evaluator. Its no-training
+FP32 oracle audit and rare-event diagnostics are artifact consumers, never
+inference inputs. Older adaptive runs and production modules remain unchanged.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
