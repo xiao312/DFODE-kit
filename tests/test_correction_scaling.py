@@ -54,6 +54,20 @@ def test_decoder_agreement_near_zero_and_pass_boundary():
         compare_decoders(np.array([1e-15]),np.array([1e-15+1e-26]),np.array([0.]))
 
 
+def test_loss_concentration_and_progression_rule():
+    pytest.importorskip('torch')
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling.review import fitting_pressure,progression
+    c = np.ones((10,10)); c[0,0]=100
+    mask = np.ones_like(c,dtype=bool); mask[0,0]=False
+    q = fitting_pressure(c,mask)
+    assert q['top_component_count']==1 and q['top_squared_loss_share']==pytest.approx(10000/10099)
+    physical = dict(development=dict(acceptance=.7,nontrivial_acceptance=.69))
+    direct = dict(development=dict(acceptance=.71,base_acceptance=.7,nontrivial_acceptance=.70,base_nontrivial_acceptance=.69))
+    assert progression(physical,direct)
+    direct['development']['nontrivial_acceptance']=.68
+    assert not progression(physical,direct)
+
+
 def test_gpu_fixed_batch_subset_identity():
     torch = pytest.importorskip('torch')
     if not torch.cuda.is_available():

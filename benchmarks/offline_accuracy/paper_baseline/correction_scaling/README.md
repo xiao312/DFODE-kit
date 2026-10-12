@@ -111,6 +111,13 @@ diversity, label-quality gates, sufficient coordinate bound, paired initializati
 fixed-batch replay and GPU objective gradients. Reconcile saved predictions with
 physical counts independently before publishing measured improvements.
 
+`python -m benchmarks.offline_accuracy.paper_baseline.correction_scaling.review
+<campaign-root> --size 10000` rechecks artifact identities and independently
+recounts physical decisions. Add `--output <new-review.json>` to save evidence.
+It records initial squared-loss concentration, not gradient concentration, and
+evaluates the predeclared progression rule. It never launches fits. This is the
+inspectable code path for the coverage companion assessment and fit interpretation.
+
 Near-zero decoder agreement is measured in fixed physical allowance units
 (difference <=1e-9 allowance), with identical physical pass decisions required.
 This avoids a meaningless relative-only arithmetic check near zero. It does not

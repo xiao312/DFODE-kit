@@ -113,6 +113,9 @@ GBCT bases, checks label provenance, and caches training-only targets/features.
 nominal-label size progression. It reuses adaptive features, decoder_loss arithmetic,
 resolved_fit's probe and matched_work data gates without altering historical code.
 Coverage and group reports feed review; no production dependency points back here.
+`correction_scaling.review -> saved predictions / prepared caches` independently
+recounts acceptance, checks paired recipes and records initial squared-loss
+concentration. Its progression decision does not launch another experiment.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
