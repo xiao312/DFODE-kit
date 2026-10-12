@@ -179,6 +179,10 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `resolved-fit-256-physical` | [Resolved small-set fit — 3x256, physical supervision](#resolved-fit-256-physical) | Training-fit diagnostic |
+| `resolved-fit-256-direct` | [Resolved small-set fit — 3x256, direct supervision](#resolved-fit-256-direct) | Training-fit diagnostic |
+| `resolved-fit-512-physical` | [Resolved small-set fit — 3x512, physical supervision](#resolved-fit-512-physical) | Training-fit diagnostic |
+| `resolved-fit-512-direct` | [Resolved small-set fit — 3x512, direct supervision](#resolved-fit-512-direct) | Training-fit diagnostic |
 | `decoder-linear-log` | [Base-relative linear correction — log loss](#decoder-linear-log) | Correction decoder and loss diagnostic |
 | `decoder-linear-huber` | [Base-relative linear correction — huber loss](#decoder-linear-huber) | Correction decoder and loss diagnostic |
 | `decoder-asinh-log` | [Fixed-crossover asinh correction — log loss](#decoder-asinh-log) | Correction decoder and loss diagnostic |
@@ -242,6 +246,86 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="resolved-fit-256-physical"></a>
+### Resolved small-set fit — 3x256, physical supervision
+
+Artifact ID: `resolved-fit-256-physical`. Family: Training-fit diagnostic.
+
+All 16 audited training states; same resolved-component mask and audit reference increments. Frozen GBCT base, fixed asinh crossover 1e-14, original 119 features, zero-output correction head. Direct correction-coordinate MSE versus physical log1p normalized error. Two seeds, 6k full-batch updates, Adam cosine 1e-4 to 1e-6, final checkpoint. Equal updates, not equal compute. Training-fit evidence only: no development or test score and no claim of generalization.
+
+```mermaid
+flowchart TD
+  n0["Existing independently audited training rows"]
+  n1["Mask unresolved species components"]
+  n2["Frozen GBCT base plus fixed-asinh correction"]
+  n3["3x256 head; physical supervision"]
+  n4["Training-only acceptance, original failures and GPU cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="resolved-fit-256-direct"></a>
+### Resolved small-set fit — 3x256, direct supervision
+
+Artifact ID: `resolved-fit-256-direct`. Family: Training-fit diagnostic.
+
+All 16 audited training states; same resolved-component mask and audit reference increments. Frozen GBCT base, fixed asinh crossover 1e-14, original 119 features, zero-output correction head. Direct correction-coordinate MSE versus physical log1p normalized error. Two seeds, 6k full-batch updates, Adam cosine 1e-4 to 1e-6, final checkpoint. Equal updates, not equal compute. Training-fit evidence only: no development or test score and no claim of generalization.
+
+```mermaid
+flowchart TD
+  n0["Existing independently audited training rows"]
+  n1["Mask unresolved species components"]
+  n2["Frozen GBCT base plus fixed-asinh correction"]
+  n3["3x256 head; direct supervision"]
+  n4["Training-only acceptance, original failures and GPU cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="resolved-fit-512-physical"></a>
+### Resolved small-set fit — 3x512, physical supervision
+
+Artifact ID: `resolved-fit-512-physical`. Family: Training-fit diagnostic.
+
+All 16 audited training states; same resolved-component mask and audit reference increments. Frozen GBCT base, fixed asinh crossover 1e-14, original 119 features, zero-output correction head. Direct correction-coordinate MSE versus physical log1p normalized error. Two seeds, 6k full-batch updates, Adam cosine 1e-4 to 1e-6, final checkpoint. Equal updates, not equal compute. Training-fit evidence only: no development or test score and no claim of generalization.
+
+```mermaid
+flowchart TD
+  n0["Existing independently audited training rows"]
+  n1["Mask unresolved species components"]
+  n2["Frozen GBCT base plus fixed-asinh correction"]
+  n3["3x512 head; physical supervision"]
+  n4["Training-only acceptance, original failures and GPU cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
+
+<a id="resolved-fit-512-direct"></a>
+### Resolved small-set fit — 3x512, direct supervision
+
+Artifact ID: `resolved-fit-512-direct`. Family: Training-fit diagnostic.
+
+All 16 audited training states; same resolved-component mask and audit reference increments. Frozen GBCT base, fixed asinh crossover 1e-14, original 119 features, zero-output correction head. Direct correction-coordinate MSE versus physical log1p normalized error. Two seeds, 6k full-batch updates, Adam cosine 1e-4 to 1e-6, final checkpoint. Equal updates, not equal compute. Training-fit evidence only: no development or test score and no claim of generalization.
+
+```mermaid
+flowchart TD
+  n0["Existing independently audited training rows"]
+  n1["Mask unresolved species components"]
+  n2["Frozen GBCT base plus fixed-asinh correction"]
+  n3["3x512 head; direct supervision"]
+  n4["Training-only acceptance, original failures and GPU cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
 
 <a id="decoder-linear-log"></a>
 ### Base-relative linear correction — log loss

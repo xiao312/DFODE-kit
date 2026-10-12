@@ -35,6 +35,12 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...[256,512].flatMap(width=>["physical","direct"].map(objective=>({
+    id:`resolved-fit-${width}-${objective}`, name:`Resolved small-set fit — 3x${width}, ${objective} supervision`,
+    target:"gbct",family:"Training-fit diagnostic",
+    detail:"All 16 audited training states; same resolved-component mask and audit reference increments. Frozen GBCT base, fixed asinh crossover 1e-14, original 119 features, zero-output correction head. Direct correction-coordinate MSE versus physical log1p normalized error. Two seeds, 6k full-batch updates, Adam cosine 1e-4 to 1e-6, final checkpoint. Equal updates, not equal compute. Training-fit evidence only: no development or test score and no claim of generalization.",
+    flow:["Existing independently audited training rows", "Mask unresolved species components", "Frozen GBCT base plus fixed-asinh correction", `3x${width} head; ${objective} supervision`, "Training-only acceptance, original failures and GPU cost"],
+  }))),
   ...["linear","asinh"].flatMap(decoder=>["log","huber"].map(loss=>({
     id:`decoder-${decoder}-${loss}`, name:`${decoder === "linear" ? "Base-relative linear" : "Fixed-crossover asinh"} correction — ${loss} loss`,
     target:"gbct",family:"Correction decoder and loss diagnostic",

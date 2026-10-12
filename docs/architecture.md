@@ -100,6 +100,13 @@ explicit prediction adapters to the independent evaluator. Its no-training
 FP32 oracle audit and rare-event diagnostics are artifact consumers, never
 inference inputs. Older adaptive runs and production modules remain unchanged.
 
+`paper_baseline.resolved_fit.run -> data/fit/plan` owns the small training-only
+fit diagnostic. It reuses checked training audit references, pinned GBCT bases,
+adaptive features and fixed-asinh decoder arithmetic. Direct-coordinate MSE
+and physical-log objectives share resolved component masks and two head sizes.
+Development and test labels do not enter fitting or scores. Its saved artifacts
+feed review only; it does not replace the base or any full-data campaign.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
