@@ -44,6 +44,16 @@ def test_finite_coordinate_bound_for_both_signs_and_all_scales():
         assert np.max(abs(p-d)/(1e-15+.1*abs(d)))<=1+1e-12
 
 
+def test_decoder_agreement_near_zero_and_pass_boundary():
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling.verify import compare_decoders
+    a = np.array([6e-22])
+    assert compare_decoders(a,a+1.6e-33,a)['identical_pass_decisions']
+    with pytest.raises(ValueError):
+        compare_decoders(a,a+1e-20,a)
+    with pytest.raises(AssertionError):
+        compare_decoders(np.array([1e-15]),np.array([1e-15+1e-26]),np.array([0.]))
+
+
 def test_gpu_fixed_batch_subset_identity():
     torch = pytest.importorskip('torch')
     if not torch.cuda.is_available():

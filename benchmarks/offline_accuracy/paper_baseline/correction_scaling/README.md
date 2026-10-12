@@ -83,6 +83,7 @@ is read-only validation; add `--execute` to prepare GPU caches and coverage.
 
 `python -m benchmarks.offline_accuracy.paper_baseline.correction_scaling.run
 --prepared <prepared-directory> --seed 20261011 --size 10000 --objective direct
+--probe-root <completed-probes-directory>
 --output <new-fit-directory>` validates without mutation. `--probe` instead
 runs the checked 16-state direct regression gate. Add `--execute` for training.
 Run and review both probe seeds before any size rung. Select an idle GPU and set
@@ -99,8 +100,8 @@ recomputed labels. Fail closed on identity, finite-value or replay disagreement.
 
 `prepare -> plan / coverage / model`; `run -> train / evaluate / model / plan`.
 Read checked inputs via matched_work, continued weights via adaptive, and reuse
-adaptive features, decoder_loss numerical coordinates and resolved_fit's bounded
-probe. New code owns nominal-data scaling and group reports. Production and
+adaptive features, decoder_loss numerical coordinates and resolved_fit's probe
+configuration and metrics. New code owns nominal-data scaling and group reports. Production and
 historical modules never depend on it. The method catalogue is review-only.
 
 `python -m pytest tests/test_correction_scaling.py -q -p no:cacheprovider`
@@ -109,3 +110,8 @@ Expect tests for exact bin boundaries, complete component partitions, source
 diversity, label-quality gates, sufficient coordinate bound, paired initialization,
 fixed-batch replay and GPU objective gradients. Reconcile saved predictions with
 physical counts independently before publishing measured improvements.
+
+Near-zero decoder agreement is measured in fixed physical allowance units
+(difference <=1e-9 allowance), with identical physical pass decisions required.
+This avoids a meaningless relative-only arithmetic check near zero. It does not
+relax the physical acceptance rule. Historical resolved_fit code is unchanged.

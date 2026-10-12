@@ -10,13 +10,15 @@ from benchmarks.offline_accuracy.refinement.run import save
 from benchmarks.offline_accuracy.paired.runtime import configure
 from ..matched_work.run import checked_result
 from ..resolved_fit.run import require_idle
-from ..resolved_fit.fit import fit as probe_fit
+from ..resolved_fit.data import scores as probe_scores
 from ..resolved_fit.plan import configuration as probe_configuration
 from ..decoder_loss.diagnostics import tails
+from ..decoder_loss.coordinates import encode
 from .plan import SEEDS,SIZES,OBJECTIVES,CONTINUED_HASHES,configuration
 from .model import load_base,load_head,prediction,cached_prediction
 from .evaluate import summary,audit_scores
 from .train import fit
+from .verify import decoder_agreement
 
 
 def prepared_manifest(root,seed):
@@ -73,8 +75,22 @@ def execute(args,manifest):
     try:
         if args.probe:
             sample = load_arrays(root/"probe.npz")
-            cfg = probe_configuration(args.seed,256,"direct")
-            fitted = probe_fit(sample["features"],sample["base"],sample,active,species,cfg,args.output/"fit")
+            cfg = dict(probe_configuration(args.seed,256,"direct"),training_only_probe=True)
+            cache = dict(sample,delta=sample["reference"],eligible=sample["resolved"][:,active],
+                target=encode(sample["base"][:,active],sample["reference"][:,active],cfg))
+            destination = args.output/"fit"
+            destination.mkdir()
+            model,fitted = fit(cache,cache,active,cfg,destination)
+            base,_ = load_base(root,args.seed)
+            restored = load_head(destination,prep,cfg)
+            predicted,c = cached_prediction(model,cache,active,cfg)
+            replay,rc = prediction(base,restored,prep,sample["states"],cfg)
+            np.testing.assert_array_equal(predicted,replay)
+            np.testing.assert_array_equal(c,rc)
+            agreement = decoder_agreement(sample["base"][:,active],c,sample["reference"][:,active],cfg)
+            np.savez(destination/"predictions.npz",prediction=predicted,coordinate=c)
+            fitted.update(config=cfg,metrics=probe_scores(predicted,sample["reference"],sample["resolved"],sample["base"],species),
+                          decoder_agreement=agreement,exact_model_replay=True)
             fitted.update(common,status="complete",artifacts={p.name:sha256(p) for p in (args.output/"fit").iterdir()})
             save(args.output/"fit/result.json",fitted)
             save(args.output/"fit/verification.json",dict(status="verified",result_sha256=sha256(args.output/"fit/result.json")))

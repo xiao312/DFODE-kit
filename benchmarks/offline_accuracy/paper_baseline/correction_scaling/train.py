@@ -32,12 +32,13 @@ def fit(training,development,active,config,destination):
     truth = tensor(training["delta"][:,active])
     b = tensor(training["base"][:,active])
     target = tensor(training["target"])
-    mask = torch.ones((config["batch_size"],int(active.sum())),dtype=torch.bool,device="cuda")
+    mask = torch.as_tensor(training.get("eligible",np.ones_like(training["target"],dtype=bool)),device="cuda")
     optimizer = torch.optim.Adam(model.parameters(),lr=config["learning_rate"])
     torch.cuda.reset_peak_memory_stats()
     gradients,history,occupancy = [],[],[]
     with (destination/"gradients.jsonl").open("x") as log:
-        for completed,selected in enumerate(batch_indices(len(x),config)):
+        batches = (np.arange(len(x)) for _ in range(config["updates"])) if config.get("training_only_probe") else batch_indices(len(x),config)
+        for completed,selected in enumerate(batches):
             if time.monotonic()-started > config["wall_seconds"]:
                 raise TimeoutError("Fixed-work fit exceeded declared training limit")
             fraction = completed/max(1,config["updates"]-1)
@@ -45,7 +46,7 @@ def fit(training,development,active,config,destination):
             optimizer.param_groups[0]["lr"] = lr
             ix = tensor(selected)
             optimizer.zero_grad(set_to_none=True)
-            loss = objective(model(x[ix]),b[ix],truth[ix],mask,target[ix],config)
+            loss = objective(model(x[ix]),b[ix],truth[ix],mask[ix],target[ix],config)
             if not torch.isfinite(loss):
                 raise ValueError("Nonfinite objective")
             loss.backward()
