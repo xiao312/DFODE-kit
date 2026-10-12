@@ -59,8 +59,9 @@ def fit(training,development,active,config,destination):
             step = completed+1
             if step%config["diagnostics_every_updates"]==0:
                 record = dict(update=step,loss_before_update=float(loss.detach()),learning_rate=lr,
-                    training=compact(model,training,active,config),development=compact(model,development,active,config),
-                    elapsed_seconds=time.monotonic()-started)
+                    training=compact(model,training,active,config),elapsed_seconds=time.monotonic()-started)
+                if not config.get("training_only_probe"):
+                    record["development"] = compact(model,development,active,config)
                 history.append(record)
                 with (destination/"progress.jsonl").open("a") as handle:
                     handle.write(json.dumps(record,allow_nan=False)+"\n")

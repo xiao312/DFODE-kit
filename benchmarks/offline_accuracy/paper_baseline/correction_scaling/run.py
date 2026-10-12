@@ -152,7 +152,9 @@ def main():
         check_probes(args.probe_root,args.prepared)
     elif args.objective!="direct":
         parser.error("The regression gate uses direct supervision only")
-    print(json.dumps(dict(status="planned",probe=args.probe,config=configuration(args.seed,args.size,args.objective))),flush=True)
+    planned = (dict(probe_configuration(args.seed,256,"direct"),training_only_probe=True)
+               if args.probe else configuration(args.seed,args.size,args.objective))
+    print(json.dumps(dict(status="planned",probe=args.probe,config=planned)),flush=True)
     if args.execute:
         execute(args,manifest)
 

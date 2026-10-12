@@ -68,18 +68,20 @@ def test_gpu_fixed_batch_subset_identity():
     np.testing.assert_array_equal(coordinates(model,x)[selected],coordinates(model,x[selected]))
 
 
-@pytest.mark.parametrize('objective',('physical','direct'))
-def test_gpu_small_training_recipe(objective,tmp_path):
+@pytest.mark.parametrize('objective,probe',(('physical',False),('direct',False),('direct',True)))
+def test_gpu_small_training_recipe(objective,probe,tmp_path):
     torch = pytest.importorskip('torch')
     if not torch.cuda.is_available():
         pytest.skip('GPU required')
     from benchmarks.offline_accuracy.paper_baseline.correction_scaling.train import fit
     from benchmarks.offline_accuracy.paper_baseline.decoder_loss.coordinates import encode
-    cfg = dict(configuration(20261011,10000,objective),updates=2,batch_size=4,widths=[8]*3,diagnostics_every_updates=1)
+    cfg = dict(configuration(20261011,10000,objective),updates=2,batch_size=8 if probe else 4,
+               widths=[8]*3,diagnostics_every_updates=1,training_only_probe=probe)
     rng = np.random.default_rng(1)
     d = np.column_stack([np.linspace(1e-12,1e-6,8),np.zeros(8)])
     b = d*2
     cache = dict(features=rng.normal(size=(8,5)).astype(np.float32),base=b,delta=d,
                  target=encode(b[:,:1],d[:,:1],cfg))
     _,r = fit(cache,cache,np.array([True,False]),cfg,tmp_path)
-    assert r['updates_completed']==2 and r['row_presentations']==8 and r['raw_gradient_norm']['max']>0
+    assert r['updates_completed']==2 and r['row_presentations']==(16 if probe else 8) and r['raw_gradient_norm']['max']>0
+    assert ('development' in r['history'][0]) is not probe
