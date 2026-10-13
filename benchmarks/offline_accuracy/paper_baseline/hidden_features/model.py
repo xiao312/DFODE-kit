@@ -12,7 +12,8 @@ from ..correction_scaling.plan import configuration
 ARMS = {"A": (119, [256, 256, 256], 177210),
         "B": (919, [256, 256, 256], 382010),
         "C": (119, [800, 256, 256], 381754),
-        "P": (119, [256, 256, 256], 177210)}
+        "P": (119, [256, 256, 256], 177210),
+        "L": (119, [], 6960)}
 
 
 def config(seed, arm):
@@ -21,6 +22,8 @@ def config(seed, arm):
                   wall_seconds=None)
     if arm == "P":
         result.update(experiment="anchor-interval-preservation-v1", preservation_weight=1.)
+    elif arm == "L":
+        result.update(experiment="low-capacity-correction-v1")
     return result
 
 

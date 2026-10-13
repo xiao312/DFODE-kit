@@ -102,7 +102,7 @@ def main():
         parser.error("Output already exists; inspect status/jobs instead of launching a duplicate")
     campaign = read_json(project / "research/campaign.json")
     bindings = read_json(project / "research/bindings.json")
-    if args.experiment not in ("EXP-20261013-hidden-features", "EXP-20261013-preservation"):
+    if args.experiment not in ("EXP-20261013-hidden-features", "EXP-20261013-preservation", "EXP-20261013-linear"):
         raise ValueError("Use a registered experiment identifier")
     experiment = read_json(project / "research/experiments" / (args.experiment + ".json"))
     arms = [value["id"] for value in experiment["arms"]]

@@ -63,3 +63,13 @@ Inside the interval the extra penalty is zero. References are used only in train
 and scoring; inference is unchanged. No coefficient sweep, layer sweep or size
 ladder is authorized by this experiment. This tests restraint, not a guarantee of
 unseen preservation. Run with `--experiment EXP-20261013-preservation`.
+
+## Follow-up: capacity reduction
+
+P reduced transfer regression but did not beat the base. Larger B/C heads fit
+training better while transferring worse. L therefore tests the opposite capacity
+direction: one affine 119-to-58 correction head (6960 parameters), A's unchanged
+Smooth L1 objective and schedule, no preservation penalty. It remains nonlinear
+in physical state because the frozen base/features/decoder are nonlinear. Run
+with `--experiment EXP-20261013-linear`. This is one low-capacity control, not a
+width sweep. Weak fitting and weak transfer would close this capacity-only route.
