@@ -82,3 +82,8 @@ Expected checks: deterministic disjoint selections, matching strata, unchanged
 gamma-zero predictions, exact interval/physical agreement away from roundoff,
 damage denominators and reference-quality qualification. Replay known 10k and
 development predictions exactly before reporting new transfer results.
+
+`...correction_transfer.review --root <diagnostic-root> --original <scaling-root>
+--output <new-review.json>` independently recounts all damping decisions from saved
+coordinates and checks reference scores against raw solver records. It creates a
+small review summary only; it never selects gamma, changes labels or trains.
