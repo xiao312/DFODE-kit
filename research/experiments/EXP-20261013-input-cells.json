@@ -1,0 +1,18 @@
+{
+  "experiment_id": "EXP-20261013-input-cells",
+  "status": "REGISTERED",
+  "hypothesis": "FP32 normalized composition cells can contain reference-qualified chemistry changes with incompatible GBCT output-coordinate acceptance intervals.",
+  "support": "Output arithmetic is adequate but many fitting/transfer recipes fail. Exact duplicate-row counts do not measure within-cell information loss. This tests a possible cause, not an established explanation.",
+  "source_run": "runs/offline-accuracy/consensus-distill-20261013",
+  "source_review_sha256": "9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+  "seeds": [20261011, 20261012],
+  "rows_per_snapshot": 4,
+  "selection": "First four common50k rows in each of four snapshots, fixed existing order. Separate seed-specific input cells. For each row select the positive non-N2/non-AR species and direction with largest mass transfer to/from N2 permitted by both FP32 cells. Use one-quarter cell room; at most eight halvings only to establish exact encoding equality. No chemical-result selection.",
+  "physics": "Fixed temperature and initial pressure, fixed-volume fixed-temperature evolution over1e-6s. Composition transfer conserves mass and nonnegativity. Tiny local input perturbations are diagnostic challenge states only, not new training labels or an expanded operating domain.",
+  "reference": "Reuse three CVODE endpoint checks and two independently formulated Radau increment checks. Empirical uncertainty=max discrepancy plus endpoint-spacing floor, not a certified bound. Require all five solves. Compare intended and Cantera-effective initial composition encodings.",
+  "decision": "A qualified incompatible pair requires bit-identical FP32 normalized network inputs, nonzero physical perturbation, both component uncertainty<=0.1 allowance, and disjoint outward-expanded GBCT normalized-output intervals. Account for tolerance variation under reference uncertainty and full saturation preimage. Any support motivates a separately registered precision-controlled experiment. No cases does not prove quantization harmless or justify an unregistered larger search.",
+  "controls": "Original versus perturbed states; both primary seed preprocessing maps separately. Original labels remain untouched. No U, development, restricted confirmation or candidate weights are evaluated. No training or promotion.",
+  "resources": {"cpu_workers": 4, "worker_seconds": 120, "maximum_seconds": 2100, "gpu_workers": 0, "maximum_states": 64},
+  "run": "runs/offline-accuracy/input-cells-20261013",
+  "confirmation_access": false
+}

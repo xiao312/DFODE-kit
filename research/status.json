@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "REPRESENTATION_PAIRS_RUNNING",
-  "active_experiment": "EXP-20261013-representation-pairs",
-  "active_jobs": [{"host":"lh40902","pid":3866730,"start_ticks":"1050583442","source":"65ab34f","kind":"one-thread cached diagnostic","run":"runs/offline-accuracy/representation-pairs-20261013","session_id":71949}],
+  "stage": "INPUT_CELL_AUDIT_REGISTERED",
+  "active_experiment": "EXP-20261013-input-cells",
+  "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
@@ -50,7 +50,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Reconcile PID/start identity and collect representation_pairs result, do not duplicate. Reliability coarse table closed: only0.026pp out-of-fold gain, failed registered gate; independent table recount passed. Strict checked GPU consensus stays pending authorized promotion/confirmation, incumbent unchanged. No GPU job.",
+  "next_action": "Run registered input-cell reference audit after source tests and review. Representation pairs completed; independent overlap b220a716799915c5c79c995024f02bc9fbee14169189fc0419c52666045d3ef3. No mixed pair qualifies. No current job; inspect input-cells active-job.json before any execution. Strict checked GPU consensus remains pending authorized promotion/confirmation; incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

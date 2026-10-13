@@ -32,9 +32,19 @@ The follow-up species/disagreement table is closed: out-of-fold gains were only
 the smaller same-sign prediction damaged about7.1% of base successes. Independent
 table-eligibility and prediction recount passed. No bins were tuned afterward.
 
-Now running: matched-work representation diversity on existing checkpoints.
-Compare GBCT with state-Box-Cox, signed-power and asinh versus two GBCT seeds.
-Only pinned training rows are used; no new model fit or confirmation access.
+The matched-work representation comparison is complete. On common training50k,
+GBCT/signed-power means reach71.90 /71.54%, below two-GBCT means73.63% and with
+excess damage. Strict signed-power pairs slightly beat the same-rule seed control,
+but remain below the continued anchor. No mixed pair qualifies. Independent
+overlap, oracle-union and correlation recount passed. The seed control also has
+different training/calibration samples; it is not pure initialization diversity.
+Review: `653e14e0c3f57bec3ff7e1874ed2382a627dffe8eca90160753d4f96959bba35`.
+
+Next is a bounded input-rounding audit, not another loss or ensemble sweep.
+Check32 constructed local composition pairs with the same FP32 neural inputs.
+The GBCT decoder still receives FP64 initial composition, so compare full
+uncertainty-expanded output-coordinate intervals. Keep new audit references
+separate from training labels. No candidate or tolerance change is made.
 
 ## Previous: teacher compression does not retain the gain
 
