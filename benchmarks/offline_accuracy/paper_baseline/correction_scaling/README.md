@@ -108,6 +108,10 @@ callers remain unchanged. The separate `hidden_features` comparison uses this
 interface and independently scores its final checkpoints.
 An optional `objective_function` callback supports the separate registered
 preservation constraint without changing the historical default objective.
+An optional `model_factory` callback supports the registered species-head
+comparison. Its default is the original `resolved_fit.fit.head`; all existing
+callers keep the same model and optimization. Factories must return a GPU model
+with exact zero physical correction initially. The trainer checks that identity.
 `wall_seconds=None` is reserved for owner-authorized removal of time caps;
 the finite declared optimizer work remains required.
 

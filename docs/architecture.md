@@ -346,6 +346,11 @@ between frozen predictions. It uses the same diagnostic controller and the
 historical checked correction loader. The selector adds no references to its
 inference inputs. Full candidate qualification remains a separate controller path.
 
+`species_heads` reuses the same row-staging and trainer with an explicit model
+factory. Its batched heads have disjoint species parameters, not routing. Its
+state-only inference mount excludes the mechanism and labels. Both new and old
+trainer paths use the existing default model factory unless explicitly supplied.
+
 `kinetic_features` reuses the diagnostic controller, correction trainer and
 initial-rate formulas. Its separate state-only inference worker receives the
 private mechanism and frozen weights/scaler, not reference arrays. The trusted

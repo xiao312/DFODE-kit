@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "RATE_OVERLAP_REGISTERED",
-  "active_experiment": "EXP-20261013-rate-overlap",
+  "stage": "SPECIES_HEADS_REGISTERED",
+  "active_experiment": "EXP-20261013-species-heads",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -38,7 +38,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Run kinetic_features.overlap and use its fixed partitions to select a discriminating next trial. Kinetic-feature recipe negative; no promotion or U/D access.",
+  "next_action": "Test then run species-heads via guarded gradient_probe.run; near-equal total capacity versus shared head. Same20k fitting/20k check, no kinetics or U/D. Recount before selecting next trial.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

@@ -23,9 +23,9 @@ def compact(model,cache,active,config):
         coordinate_rmse=float(np.sqrt(np.mean(ce**2))))
 
 
-def fit(training,development,active,config,destination,objective_function=objective):
+def fit(training,development,active,config,destination,objective_function=objective,model_factory=head):
     started = time.monotonic()
-    model = head(config,training["features"].shape[1],int(active.sum()))
+    model = model_factory(config,training["features"].shape[1],int(active.sum()))
     initial = weight_hash(model)
     np.testing.assert_array_equal(cached_prediction(model,training,active,config)[0],training["base"])
     tensor = lambda value:torch.as_tensor(value,device="cuda")

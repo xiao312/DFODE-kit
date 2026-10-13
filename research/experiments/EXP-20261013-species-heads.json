@@ -1,0 +1,20 @@
+{
+ "experiment_id":"EXP-20261013-species-heads","status":"REGISTERED",
+ "hypothesis":"Separate species parameters learn and preserve distinct correction functions better than shared parameters at near-equal total capacity.",
+ "evidence":["Species-distance diagnostic improved local transfers but fixed basis remained weak", "Wider shared heads and generic/kinetic features did not improve unseen preservation", "Rate overlap shows transferable approximation opportunity is not equivalent to learned repair"],
+ "alternatives":"Shared structure is useful; separate narrow heads underfit; both improve fitting but not transfer. Do not attribute to gradient conflict without measured parameter evidence.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/kinetic-features-20261013","control_review_sha256":"34325bdcbe69d841f0107d6a959f011fb121f6222534184b10e17b6deed036d1",
+ "selection":"species_head_pool","selection_seed_offset":701,
+ "seeds":[20261011,20261012],"arms":["shared","species"],"parameters":{"shared":285270,"species":285882},
+ "fit_rows":20000,"calibration_rows":10000,"check_rows":20000,"batches":6000,"batch_size":10000,
+ "model":"Shared119->452->452->58 versus58 independent119->32->32->1 GELU heads. Parameter totals differ0.21%; local per-output width differs by design. Same119 inputs for every head, no species-dependent feature choice.",
+ "changed_factor":"Parameter sharing/allocation at nearly equal total parameter count; not equal per-output width, FLOPs or initialization values.",
+ "fixed":"Same selected50k/roles as kinetic feature experiment, fit20k only, no kinetic features, frozen bases/preprocessing, asinh correction s1e-14, coordinateSL1 beta log1p(.1), FP32net/FP64loss,6000updates batch10000 pairedbatches, Adam/cosine existing schedule, final checkpoint. Seeded uniform initialization, outputzero means identical physicalbase initial predictions.",
+ "prechecks":"Actual counts, independent per-species forward parity, no cross-species parameter gradients, exact zero-output/base and saved replay, unchanged row/species ordering and protected hashes.",
+ "inference":"One universal pipeline evaluates all58 heads; no routing, clipping or query references. Separate state-only Bubblewrap replay, live complete timing.",
+ "advance_rule":"Species check exceeds shared and base by at least0.005 in bothseeds, all unchanged physical screening guards. Full U20k/D1023 needed later before any qualification. Latency<=1.5x required for promotion, not assumed.",
+ "next":"Species-only benefit supports reduced sharing; both fail means this narrow allocated-capacity recipe unsupported. Training-only benefit requires effective-capacity/transfer analysis, not automatic widening. Inspect groups/learning curves before another controlled trial.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_fit_seconds":900},
+ "run":"runs/offline-accuracy/species-heads-20261013","confirmation_access":false
+}

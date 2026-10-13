@@ -64,6 +64,8 @@ secrets, network and host home are not mounted. Use one idle GPU and one CPU thr
 `EXP-20261013-kinetic-features` uses its own staging/execution adapter to reuse
 the admission guard. It fits only20k labels and runs a separate state-only worker.
 See `kinetic_features/README.md`; historical diagnostic selection is unchanged.
+`EXP-20261013-species-heads` reuses those same roles but changes only parameter
+sharing. Read its README; no kinetic features enter either arm.
 
 Run `python -m pytest tests/test_gradient_probe.py -q`. Expect known conflicting,
 orthogonal and zero-gradient cases and a correctly normalized group sum. Check
