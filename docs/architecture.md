@@ -336,6 +336,11 @@ calibration diagnostic. They reuse `local_function.run/review/postcheck` and the
 same protected evaluator. Dependency flow is controller -> candidate module ->
 existing base/decoder; production has no dependency on either research module.
 
+`conditional_calibration` reuses the registered `gradient_probe.run` controller
+and the interval-consensus learner for training-only cross-fit checks. It changes
+scalar output resolution, not scoring. Its independent review does not open U/D
+or confirmation. See its README for fold exposure and artifact interfaces.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.

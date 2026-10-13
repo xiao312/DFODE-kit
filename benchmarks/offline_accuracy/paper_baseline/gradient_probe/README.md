@@ -41,6 +41,11 @@ sample-size diagnostic, not equal-FLOP training or independent confirmation.
 
 ## Interface, dependencies and boundary
 
+The same controller also admits `EXP-20261013-conditional-calibration`, a
+separate full-parent, training-only scalar diagnostic. Its manifest selects
+`conditional_calibration.worker`; it does not execute gradient probes. Read
+that module's README for its different finite work and fold boundaries.
+
 `python -m benchmarks.offline_accuracy.paper_baseline.gradient_probe.run
 --project <root> --output <new-dir>` performs discovery; `--execute` admits the
 registered diagnostic. Outputs are selected training IDs, group statistics,

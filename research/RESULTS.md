@@ -1,6 +1,31 @@
 # Signed-increment research results
 
-## Latest model test: low-step base continuation
+## Latest: broader support does not rescue base continuation
+
+**Valid negative result. The continued GBCT incumbent is unchanged.** The
+180k-state control reduces same-source damage compared with the50k averaged
+arm, but does not improve on the base in either seed. Development changes
+remain small and disagree in sign. No negative endpoints were returned.
+
+| Predictor | Same-source unseen,20k | Development,1,023 |
+|---|---:|---:|
+| 180k update support | 72.214 / 72.260% | 68.330 / 68.787% |
+| 50k averaged control | 72.188 / 72.231% | 68.298 / 68.826% |
+| Continued GBCT | 72.241 / 72.275% | 68.296 / 68.800% |
+
+The180k training acceptance is72.253 /72.341%, versus its own base72.230 /
+72.320%. This population differs from the historical50k training score. Both
+fits use30M row presentations and3,000 updates, not equal epochs. Exact saved
+replay, fresh base replay and independent full-population recount passed.
+Review hash: `68dd5c05db2827841dd34e53c743d89e001e0334cac982a1d1fbeb9c2d8b5c23`.
+Close this low-step continuation family provisionally; no more LR/batch sweep.
+
+Next is a training-only [conditional scalar-bias check](experiments/EXP-20261013-conditional-calibration.json).
+Two-fold evaluation compares one species constant with16 training-derived
+base-output bins. It tests repeatable output-dependent bias, not a new loss or
+another large network. It does not open development or confirmation data.
+
+## Previous model test: low-step base continuation
 
 **Valid negative result. Neither batch size qualifies.** Training acceptance
 improves by about 0.06-0.10 percentage points, but same-source unseen acceptance
@@ -19,7 +44,8 @@ averaging improved fitting, not transfer. Exact replay, independent recount,
 and the unchanged gate checks passed. The incumbent did not change.
 See the [aggregate scorecard](results/base-polish-20261013.json).
 
-Next is one [fitting-support control](experiments/EXP-20261013-base-support.json):
+The completed [fitting-support control](experiments/EXP-20261013-base-support.json)
+tested the following:
 use all 180k existing non-evaluation states instead of narrowing updates to50k.
 Keep the 10k batch, update count, schedule, preprocessing and full U/D evaluator.
 This tests a specific possible source of regression, not a resumed data ladder.
@@ -39,7 +65,7 @@ their predictions as if they came from one trained candidate. The
 reviews retain those distinctions. Decoder parity and independent recounts
 passed. No PCGrad benefit is established.
 
-Next, average gradients over seven non-check batches at fixed 1e-7. This
+The completed next diagnostic averaged gradients over seven non-check batches at fixed1e-7. This
 registered [gradient-support diagnostic](experiments/EXP-20261013-gradient-average.json)
 separates minibatch variability from step size. No further step-size sweep.
 

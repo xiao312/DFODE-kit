@@ -1,0 +1,21 @@
+{
+ "experiment_id":"EXP-20261013-conditional-calibration","status":"REGISTERED",
+ "hypothesis":"A small conditional bias hidden by species-wide constant calibration repeats on states not used to fit that calibration.",
+ "evidence":["EXP-20261013-interval-calibration","EXP-20261013-base-support"],
+ "alternatives":"No repeatable scalar bias; fitting-bin overfit; missing state-dependent information or sign structure.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013",
+ "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "seeds":[20261011,20261012],"batches":50,"batch_size":1000,"selection":"full_parent",
+ "worker_module":"benchmarks.offline_accuracy.paper_baseline.conditional_calibration.worker",
+ "folds":2,"bins":16,"minimum_bin_count":128,"fold_seed_offset":411,
+ "arms":["constant","conditional"],"changed_factor":"One constant versus16 training-quantile bins of base asinh output per species. Same training folds, interval-interior objective and zero fallback.",
+ "fixed":"Original continued base,50k pool,FP64 coordinates,s=1e-14,physical acceptance,AR excluded,deterministic bin ties and sparse-bin identity fallback",
+ "fitting":"Finite endpoint sorts, no optimizer. Edges fitted only on fitting-fold base predictions; shifts fitted only on fitting-fold references. Record all edges/coefficients/fallbacks.",
+ "exposure":"Two25k fitting/check folds within existing50k. Every row is checked only by the other fold's map. Base and its preprocessing saw these rows historically. NoU20k,D1023 or confirmation access.",
+ "inference":"Fixed scalar base-output bin lookup plus learned shift, applied consistently. No query reference; not a monotone or certified-preserving map. No clipping.",
+ "prechecks":["fold disjointness and full coverage","species order","duplicate quantiles","same zero fallback in both arms","saved-artifact replay","finite outputs"],
+ "score":"Training-only physical acceptance,groups,species,repair/damage,signs,p99,negative endpoints. Independent recount; no promotion or latency claim.",
+ "decision":"Advance only if conditional cross-fit acceptance exceeds base and constant by0.005 in both seeds, with no nontrivial decrease or increased sign/negative counts and damage<=0.02. Otherwise close scalar-bias family provisionally. This diagnostic rule does not replace campaign gates.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":600,"new_labels":0},
+ "run":"runs/offline-accuracy/conditional-calibration-20261013","confirmation_access":false
+}

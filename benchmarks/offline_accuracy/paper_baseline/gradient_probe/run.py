@@ -18,7 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
-    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average"])
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)
@@ -53,13 +53,14 @@ def main():
         training=arrays(source/"train-global/training.npz");states=arrays(source/"input-training/states.npz")
         np.testing.assert_array_equal(training["source_indices"],states["source_indices"])
         selected=np.random.default_rng(seed+137).permutation(len(states["states"]))[:plan["batches"]*plan["batch_size"]]
+        if plan.get("selection")=="full_parent":selected=np.arange(len(states["states"]))
         if plan.get("control_run"):
             relative=f"{seed}/predictions.npz"
             old=arrays(checked_file(control/relative,control_report["artifacts"][relative]))
             np.testing.assert_array_equal(old["source_indices"],training["source_indices"][selected])
         np.savez(dest/"training.npz",states=states["states"][selected],delta=training["delta"][selected],base=training["base"][selected],source_indices=training["source_indices"][selected])
         save(dest/"config.json",plan);shutil.copytree(source/"model",dest/"model")
-        elapsed+=run_worker(project,dest,output/str(seed),["--seed",str(seed)],output/"active-job.json",args.gpu,dest/"model",worker_module="benchmarks.offline_accuracy.paper_baseline.gradient_probe.worker")
+        elapsed+=run_worker(project,dest,output/str(seed),["--seed",str(seed)],output/"active-job.json",args.gpu,dest/"model",worker_module=plan.get("worker_module","benchmarks.offline_accuracy.paper_baseline.gradient_probe.worker"))
         records.append(read_json(output/str(seed)/"result.json"));verify_evaluator_lock(project)
         print(json.dumps(dict(seed=seed,status=records[-1]["status"])),flush=True)
     save(output/"active-job.json",dict(status="COMPLETE_AWAITING_RECOUNT"))
