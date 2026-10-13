@@ -11,13 +11,16 @@ from ..correction_scaling.plan import configuration
 
 ARMS = {"A": (119, [256, 256, 256], 177210),
         "B": (919, [256, 256, 256], 382010),
-        "C": (119, [800, 256, 256], 381754)}
+        "C": (119, [800, 256, 256], 381754),
+        "P": (119, [256, 256, 256], 177210)}
 
 
 def config(seed, arm):
     result = configuration(seed, 10000, "coordinate-sl1")
     result.update(experiment="hidden-feature-access-v1", arm=arm, widths=ARMS[arm][1],
                   wall_seconds=None)
+    if arm == "P":
+        result.update(experiment="anchor-interval-preservation-v1", preservation_weight=1.)
     return result
 
 

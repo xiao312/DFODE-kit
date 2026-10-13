@@ -13,7 +13,7 @@ def save(path, value):
     Path(path).write_text(json.dumps(value, indent=2, allow_nan=False), encoding="utf-8")
 
 
-def stage(project, output, bindings):
+def stage(project, output, bindings, arms=("A", "B", "C")):
     root, transfer = project / bindings["prepared_root"], project / bindings["transfer_root"]
     for seed_text in bindings["seeds"]:
         seed = int(seed_text)
@@ -32,7 +32,7 @@ def stage(project, output, bindings):
         scales = dict(hidden_offset=offset, hidden_scale=scale)
         np.savez(model_dir / "hidden-scales.npz", **scales)
         training = {k:v[:10000] for k,v in full.items()}
-        for arm in ("A", "B", "C"):
+        for arm in arms:
             path = destination / ("train-" + arm)
             path.mkdir()
             cfg = config(seed, arm)

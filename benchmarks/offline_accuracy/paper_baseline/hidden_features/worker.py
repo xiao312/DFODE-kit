@@ -28,7 +28,11 @@ def main():
         if supplied != cfg:
             raise ValueError("Worker configuration differs")
         rows = arrays("/input/training.npz")
-        model, fitted = fit(rows, None, rows["active"], cfg, destination)
+        if args.arm == "P":
+            from .preservation import objective
+            model, fitted = fit(rows, None, rows["active"], cfg, destination, objective_function=objective)
+        else:
+            model, fitted = fit(rows, None, rows["active"], cfg, destination)
         if fitted["parameter_count"] != ARMS[args.arm][2]:
             raise ValueError("Parameter control mismatch")
         predicted, coordinate = cached_prediction(model, rows, rows["active"], cfg)

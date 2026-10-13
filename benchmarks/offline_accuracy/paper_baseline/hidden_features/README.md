@@ -51,3 +51,15 @@ Run `python -m pytest tests/test_hidden_features.py tests/test_research_contract
 Expected: parameter counts, zero-output identity, feature shapes, decoder replay,
 absence of label-dependent inference, fail-closed promotion and sandbox admission.
 Validate cached versus state-only inference exactly on all three populations.
+
+## Follow-up: anchor-interval preservation
+
+The completed A/B/C comparison improved training fit as capacity/feature access
+increased, but harmed both unseen populations in both seeds. A separate registered
+P comparison keeps A's inputs, head and schedule. It adds one training constraint:
+Smooth L1 plus the mean squared distance outside the exact acceptable coordinate
+interval on base-passing training components, scaled by beta=log1p(.1), weight1.
+Inside the interval the extra penalty is zero. References are used only in training
+and scoring; inference is unchanged. No coefficient sweep, layer sweep or size
+ladder is authorized by this experiment. This tests restraint, not a guarantee of
+unseen preservation. Run with `--experiment EXP-20261013-preservation`.

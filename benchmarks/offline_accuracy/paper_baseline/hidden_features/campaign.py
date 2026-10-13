@@ -93,6 +93,7 @@ def main():
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--experiment", default="EXP-20261013-hidden-features")
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
     project = args.project.resolve()
@@ -101,7 +102,10 @@ def main():
         parser.error("Output already exists; inspect status/jobs instead of launching a duplicate")
     campaign = read_json(project / "research/campaign.json")
     bindings = read_json(project / "research/bindings.json")
-    experiment = read_json(project / "research/experiments/EXP-20261013-hidden-features.json")
+    if args.experiment not in ("EXP-20261013-hidden-features", "EXP-20261013-preservation"):
+        raise ValueError("Use a registered experiment identifier")
+    experiment = read_json(project / "research/experiments" / (args.experiment + ".json"))
+    arms = [value["id"] for value in experiment["arms"]]
     inputs(project, bindings)
     m0 = project / "runs/offline-accuracy/research-contract-20261013/m0"
     checked_file(m0 / "report.json", read_json(m0 / "verification.json")["report_sha256"])
@@ -112,7 +116,7 @@ def main():
     if processes_on_gpu(args.gpu):
         print(json.dumps(dict(status="WAITING_RESOURCE", gpu=args.gpu)))
         return
-    print(json.dumps(dict(status="PRECHECKED", execute=args.execute, configurations=3, fits=6)), flush=True)
+    print(json.dumps(dict(status="PRECHECKED", execute=args.execute, configurations=len(arms), fits=2*len(arms))), flush=True)
     if not args.execute:
         return
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
@@ -124,7 +128,7 @@ def main():
     save(args.output / "source.json", source_revision())
     save(args.output / "evaluator-lock.json", evaluator_lock)
     configure()
-    stage(project, args.output, bindings)
+    stage(project, args.output, bindings, arms)
     empty_input = args.output / "probe-input"
     probe_output = args.output / "probe-output"
     empty_input.mkdir(); probe_output.mkdir()
@@ -133,7 +137,7 @@ def main():
                      inference_isolation_verified=True, source_clean=True, idle_gpu=True)
     validate(campaign, experiment, readiness, [])
     records, elapsed = [], 0.
-    for arm in ("A", "B", "C"):
+    for arm in arms:
         for seed in campaign["screening"]["seeds"]:
             verify_evaluator_lock(project)
             prepared = args.output / "prepared" / str(seed)
@@ -155,15 +159,16 @@ def main():
     decisions = {}
     expected = [f"{seed}:{population}:{comparator}" for seed in campaign["screening"]["seeds"]
                 for population in ("same_source_unseen", "development") for comparator in ("anchor", "incumbent")]
-    for arm in ("A", "B", "C"):
+    for arm in arms:
         selected = [r for r in records if r["arm"] == arm]
         decisions[arm] = decision({k:v for r in selected for k,v in r["gates"].items()}, expected,
                                   max(v for r in selected for v in r["latency_ratios"]), campaign["screening"])
-    save(state, dict(status="REVIEW_REQUIRED", decisions=decisions, worker_wall_seconds=elapsed))
+    statuses = {arm:value["candidate_status"] for arm,value in decisions.items()}
+    save(state, dict(status="REVIEW_REQUIRED", decisions=statuses, worker_wall_seconds=elapsed))
     save(args.output / "report.json", dict(status="complete", decisions=decisions, records=records, worker_wall_seconds=elapsed,
          artifacts={str(p.relative_to(args.output)):digest(p) for p in args.output.rglob("*") if p.is_file()}))
     save(args.output / "verification.json", dict(report_sha256=digest(args.output / "report.json")))
-    print(json.dumps(dict(status="complete", decisions=decisions)), flush=True)
+    print(json.dumps(dict(status="complete", decisions=statuses)), flush=True)
 
 
 if __name__ == "__main__":

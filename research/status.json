@@ -1,8 +1,16 @@
 {
   "schema_version": 1,
-  "stage": "INSTALLING_CONTRACT",
+  "stage": "FIRST_COMPARISON_RUNNING",
   "active_experiment": "EXP-20261013-hidden-features",
-  "active_jobs": [],
+  "active_jobs": [
+    {
+      "host": "lh40902",
+      "run": "runs/offline-accuracy/hidden-features-20261013",
+      "live_state": "runs/offline-accuracy/hidden-features-20261013/active-job.json",
+      "lease": "runs/research-control/EXP-20261013-hidden-features.lease.json",
+      "resume_rule": "Read lease and live state; match PID plus start ticks. Do not launch a duplicate."
+    }
+  ],
   "incumbent": "continued-gbct-two-seed",
   "last_verified_result": "https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6137254405",
   "budget": {
@@ -10,5 +18,8 @@
     "primary_fits": 0,
     "allocated_gpu_seconds": 0
   },
-  "next_action": "Complete M0 real-array scorer parity; approve resource envelope and verify label-isolated execution before fitting."
+  "next_action": "Collect the registered six fits, independently recount raw predictions, apply unchanged gates, then select one evidence-based next experiment.",
+  "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
+  "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
+  "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention."
 }

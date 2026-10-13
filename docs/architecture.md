@@ -145,6 +145,10 @@ access against a near-parameter-matched head. `campaign -> research_contract
 admission/sandbox/scorer` isolates candidate execution and scores returned arrays.
 The trusted controller owns references; candidate inference cannot mount them.
 Confirmation remains separately disabled. Production modules remain unchanged.
+The same isolated worker runs a separately registered preservation comparison;
+`hidden_features.preservation -> correction_scaling.objectives` adds only a
+training acceptance-interval penalty through an explicit trainer callback.
+It never changes scoring or the reference-free inference path.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

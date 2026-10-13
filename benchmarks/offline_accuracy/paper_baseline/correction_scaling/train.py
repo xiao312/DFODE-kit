@@ -23,7 +23,7 @@ def compact(model,cache,active,config):
         coordinate_rmse=float(np.sqrt(np.mean(ce**2))))
 
 
-def fit(training,development,active,config,destination):
+def fit(training,development,active,config,destination,objective_function=objective):
     started = time.monotonic()
     model = head(config,training["features"].shape[1],int(active.sum()))
     initial = weight_hash(model)
@@ -47,7 +47,7 @@ def fit(training,development,active,config,destination):
             optimizer.param_groups[0]["lr"] = lr
             ix = tensor(selected)
             optimizer.zero_grad(set_to_none=True)
-            loss = objective(model(x[ix]),b[ix],truth[ix],mask[ix],target[ix],config)
+            loss = objective_function(model(x[ix]),b[ix],truth[ix],mask[ix],target[ix],config)
             if not torch.isfinite(loss):
                 raise ValueError("Nonfinite objective")
             loss.backward()

@@ -30,3 +30,19 @@ def test_fixed_loss_and_no_label_needed_by_inference():
     loss = objective(x, target, target, torch.ones_like(target,dtype=torch.bool), target, cfg)
     loss.backward()
     assert torch.isfinite(x.grad).all()
+
+
+def test_preservation_penalty_allows_interval_and_penalizes_escape():
+    from benchmarks.offline_accuracy.paper_baseline.hidden_features.preservation import objective as constrained
+    cfg = config(20261011, "P")
+    truth = torch.tensor([[1e-12, -1e-12]], dtype=torch.float64)
+    base = truth.clone()
+    mask = torch.ones_like(base, dtype=torch.bool)
+    target = torch.zeros_like(base)
+    inside = torch.full_like(base, .01, requires_grad=True)
+    assert constrained(inside,base,truth,mask,target,cfg) == objective(inside,base,truth,mask,target,cfg)
+    outside = torch.full_like(base, .5, requires_grad=True)
+    loss = constrained(outside,base,truth,mask,target,cfg)
+    assert loss > objective(outside,base,truth,mask,target,cfg)
+    loss.backward()
+    assert (outside.grad > 0).all()
