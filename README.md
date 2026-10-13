@@ -15,6 +15,12 @@ In practice, DFODE-kit sits between:
 
 ## Precision-conditioning research review
 
+Latest experiment: [coordinate correction-tail diagnosis and Smooth L1 results
+(2026-10-13)](https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6136251576).
+The correction did not improve development acceptance. Continued GBCT bases
+remain incumbents; the size ladder is stopped. The HTML below retains the earlier
+baseline campaign rather than these newer correction results.
+
 1. [Overall status and measured results](https://xiao312.github.io/DFODE-kit/flame-conditioning/):
    acceptance/tolerance/cost plots, all current methods, and train/development scores.
 2. [Method catalogue and flowcharts](docs/research-method-catalogue.md):

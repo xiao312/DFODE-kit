@@ -1,5 +1,9 @@
 # Direct correction: coverage and controlled scaling
 
+Latest evidence: [coordinate Smooth L1 and correction-tail review, 2026-10-13](https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6136251576).
+Both 10k seeds improved training acceptance but reduced development acceptance.
+The continued bases remain incumbents; no larger-size progression is authorized.
+
 ## Responsibility and non-goals
 
 Move from checked small-set fitting to diverse correction-training populations.
