@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "KINETIC_FEATURES_AWAITING_RECOUNT",
-  "active_experiment": "EXP-20261013-kinetic-features",
+  "stage": "RATE_OVERLAP_REGISTERED",
+  "active_experiment": "EXP-20261013-rate-overlap",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/selective-nonlinear-20261013/review.json",
-  "last_review_sha256": "b550eab3491a869f72f066cb6d71654505bb887f562d9af552d60201e7bb3a6b",
+  "last_verified_result": "runs/offline-accuracy/kinetic-features-20261013/review.json",
+  "last_review_sha256": "34325bdcbe69d841f0107d6a959f011fb121f6222534184b10e17b6deed036d1",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -27,17 +27,18 @@
     "runs/offline-accuracy/base-support-20261013",
     "runs/offline-accuracy/conditional-calibration-20261013",
     "runs/offline-accuracy/selective-correction-20261013",
-    "runs/offline-accuracy/selective-nonlinear-20261013"
+    "runs/offline-accuracy/selective-nonlinear-20261013",
+    "runs/offline-accuracy/kinetic-features-20261013"
   ],
   "budget": {
     "configurations": 15,
     "primary_fits": 30,
-    "post_screening_diagnostics": 8,
+    "post_screening_diagnostics": 9,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Verify and run kinetic-features via gradient_probe.run. Six matched fits, separate state-only inference, then independent kinetic_features.review. Keep base incumbent; selector family closed.",
+  "next_action": "Run kinetic_features.overlap and use its fixed partitions to select a discriminating next trial. Kinetic-feature recipe negative; no promotion or U/D access.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

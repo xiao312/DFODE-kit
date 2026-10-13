@@ -37,3 +37,7 @@ correction and parameter-count tests to pass. Use the registered two-seed runner
 then `python -m benchmarks.offline_accuracy.paper_baseline.kinetic_features.review
 --project <root> --run <run>` for raw-array counts and provenance checks.
 Live timing includes rate computation; cached features are not a latency claim.
+
+`overlap --project <root>` runs the separately registered outcome cross-tab from
+saved arrays. Its reference-defined groups explain counts only. They are not an
+inference rule, causal attribution or independent generalization test.

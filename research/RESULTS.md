@@ -1,6 +1,30 @@
 # Signed-increment research results
 
-## Latest: nonlinear selection also gives no gain
+## Latest: kinetic features do not provide a transferable gain
+
+Six matched fits are complete and independently recounted. **Valid negative.**
+Initial-rate features improve training slightly, but still damage unseen rows.
+
+| Input/head | Fitting20k acceptance | Check20k acceptance |
+|---|---:|---:|
+| Continued GBCT | 72.214 / 72.511% | 72.242 / 72.267% |
+| Ordinary features | 72.071 / 72.373% | 70.487 / 70.561% |
+| Added kinetic features | 72.355 / 72.644% | 70.531 / 70.387% |
+| Near-equal-parameter control | 72.185 / 72.477% | 70.251 / 70.305% |
+
+The kinetic arm repairs28,050 /28,433 base failures but damages47,900 /50,237
+base successes on check. It returns16,012 /16,808 negative endpoints. Live
+inference, including CPU kinetics, costs15.67 /18.78 times the anchor. No
+candidate advances. These are training-pool diagnostic rows, not protected U/D.
+
+Raw Euler and frozen-exponential estimates pass only16.88 /16.92% and28.65 /
+28.71% on check. Their use as features is not a numerical reference or new
+physical information. Forty-two focused tests, separate source review, state-only
+saved replay and independent row/scaler/rate/count checks passed. Review:
+`34325bdcbe69d841f0107d6a959f011fb121f6222534184b10e17b6deed036d1`.
+Next: inspect fixed raw-rate/base-pass overlap before selecting another fit.
+
+## Previous: nonlinear selection also gives no gain
 
 The second selector test is **valid negative**. Both seeds select the calibrated
 always-base threshold (1.01), with zero repairs and zero damage. Check acceptance
