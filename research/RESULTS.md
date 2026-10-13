@@ -40,11 +40,17 @@ overlap, oracle-union and correlation recount passed. The seed control also has
 different training/calibration samples; it is not pure initialization diversity.
 Review: `653e14e0c3f57bec3ff7e1874ed2382a627dffe8eca90160753d4f96959bba35`.
 
-Next is a bounded input-rounding audit, not another loss or ensemble sweep.
-Check32 constructed local composition pairs with the same FP32 neural inputs.
-The GBCT decoder still receives FP64 initial composition, so compare full
-uncertainty-expanded output-coordinate intervals. Keep new audit references
-separate from training labels. No candidate or tolerance change is made.
+The input-rounding audit found no incompatible GBCT output intervals in32
+constructed local pairs (1856 qualified paired components). All64 five-check
+reference calculations completed. Maximum increment change was0.000032 of an
+allowance. Exact effective composition, input collision and independent inverse
+boundaries passed. This small sample does not prove FP32 harmless everywhere,
+but gives no support for this explanation of the observed fitting failures.
+
+Next: freeze the base features and compare an affine GBCT output readout trained
+on exact targets versus acceptable intervals. The interval arm leaves already
+acceptable outputs alone in its objective. Both use the same50k states, scales,
+initialization and work. This is not the earlier nonlinear asinh correction.
 
 ## Previous: teacher compression does not retain the gain
 

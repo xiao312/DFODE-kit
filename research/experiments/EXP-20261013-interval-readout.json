@@ -1,0 +1,19 @@
+{
+ "experiment_id":"EXP-20261013-interval-readout","status":"REGISTERED",
+ "hypothesis":"An affine correction of frozen GBCT output coordinates can repair errors with less damage when supervised by acceptable intervals rather than exact targets.",
+ "evidence":["Input-cell diagnostic found no incompatible paired output intervals in32 constructed local pairs; not a global precision proof.","Nonlinear hidden-feature corrections and input-affine asinh corrections failed transfer. Original-GBCT-coordinate affine feasibility is a distinct function class and objective."],
+ "parent_run":"runs/offline-accuracy/consensus-distill-20261013",
+ "parent_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "selection":"interval_readout","seeds":[20261011,20261012],"arms":["point","interval"],
+ "fit_rows":50000,"selection_seed":20261013,"widths":[],"parameters":46458,
+ "batches":6000,"batch_size":10000,"learning_rate":0.001,"final_learning_rate":0.00001,
+ "model":"Frozen800-dimensional final hidden activation, training-only standardization, zero FP32 affine58-output head. Add head output times fixed per-species scale to original normalizedGBCT coordinates inFP64. Same base input/output preprocessing and decoder. No inference reference or clipping beyond the already declared GBCT inverse-domain rule.",
+ "scaling":"Percomponent width is half of the finite normalizedGBCT encodings of max(-Y,d-tau) and d+tau. Floor at128*eps64*max(1,abs(endpoints)), report counts. Median width across common50k defines each species head-output scale. Lower acceptance preimage remains -infinity when d-tau<=-Y; finite endpoint used only for scaling. Hidden standard deviation zero ->1, report count.",
+ "objective":"point: SmoothL1(beta1) of (predicted_coordinate-exact_target)/component_width; interval: SmoothL1(beta1) of distance(predicted_coordinate,acceptable_interval)/same_width. Only target set changes. Fixed bases/features/rows/seed batches/scales/Adam cosine schedule, zero initialization. No preservation penalty, weight decay, clipping, routing or checkpoint selection. Final6000 update only.",
+ "exposure":"Reuse exact prior common50k excluding unionbothU/headfitIDs. Both bases and their preprocessing saw broader training pool. FullU20k andD1023 are development diagnostics, not independent confirmation.",
+ "prechecks":"Exact zero-head anchor replay, species alignment, reference endpoints valid, widths finite positive, interval membership versus direct physical rule, paired parameter/init counts, source/evaluator hashes and Bubblewrap boundary.",
+ "evaluation":"All unchanged campaign gates, both seeds/fullpopulations; independent physical recount, saved-model state-only replay, raw timing, domain corrections and finite outputs. Ideal fixed-feature objective convex does not imply FP32/Adam reaches its optimum.",
+ "outcomes":{"interval_beats_point_and_anchor":"Check every gate; pending authorized promotion only, then robustness.","interval_reduces_damage_but_no_gain":"No promotion; inspect fixed-feature feasibility and optimization before further variants.","both_fail":"Close this recipe; do not claim interval learning or frozen features impossible."},
+ "resources":{"maximum_fit_seconds":900,"maximum_worker_seconds":2100,"gpu_workers":1,"cpu_threads":1},
+ "run":"runs/offline-accuracy/interval-readout-20261013","confirmation_access":false
+}

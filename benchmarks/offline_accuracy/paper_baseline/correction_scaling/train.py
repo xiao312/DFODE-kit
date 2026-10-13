@@ -17,7 +17,7 @@ def compact(model,cache,active,config,prediction_function=cached_prediction):
     ref = cache["delta"][:,active]
     ratio = abs(predicted[:,active]-ref)/(1e-15+.1*abs(ref))
     nontrivial = abs(ref)>1e-15/.9
-    ce = abs(c-cache["target"])
+    ce = abs(c-cache.get("diagnostic_target",cache["target"]))
     return dict(acceptance=float((ratio<=1).mean()),nontrivial_acceptance=float((ratio[nontrivial]<=1).mean()),
         p99=float(np.quantile(ratio,.99)),coordinate_p99=float(np.quantile(ce,.99)),
         coordinate_rmse=float(np.sqrt(np.mean(ce**2))))

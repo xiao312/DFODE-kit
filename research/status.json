@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "INPUT_CELL_AUDIT_REGISTERED",
-  "active_experiment": "EXP-20261013-input-cells",
+  "stage": "INTERVAL_READOUT_REGISTERED",
+  "active_experiment": "EXP-20261013-interval-readout",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -50,7 +50,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Run registered input-cell reference audit after source tests and review. Representation pairs completed; independent overlap b220a716799915c5c79c995024f02bc9fbee14169189fc0419c52666045d3ef3. No mixed pair qualifies. No current job; inspect input-cells active-job.json before any execution. Strict checked GPU consensus remains pending authorized promotion/confirmation; incumbent unchanged.",
+  "next_action": "Execute registered interval-readout point/interval comparison after GPU admission and focused tests. Input-cell audit complete64/64 with1856qualifiedpairedcomponents, zeroincompatibility; independent boundaries passed. No current job. Strict checked GPU consensus pending authorized promotion; incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
