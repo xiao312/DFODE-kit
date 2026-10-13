@@ -169,6 +169,12 @@ uses the same graph for full-target and correction transfers. The existing
 independent review recounts physical scores. No evaluator or production dependency
 changes, and this diagnostic cannot promote a predictor.
 
+`paper_baseline.local_function.run -> verified species-distance artifacts +
+research_contract sandbox/gates` stages matched fixed-centre models. `worker ->
+model + correction_scaling base/adaptive features` fits coefficients on training
+labels and predicts from state-only mounts. `review -> saved predictions` performs
+an independent recount. No production module or protected evaluator is changed.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
