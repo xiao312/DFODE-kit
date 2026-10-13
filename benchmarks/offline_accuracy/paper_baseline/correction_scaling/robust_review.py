@@ -33,23 +33,33 @@ def main():
         manifest = prepared_manifest(args.original/"prepared",seed)
         prepared = args.original/"prepared"/str(seed)
         summaries,results = {},{}
+        environments = []
         for objective in ("physical","direct","coordinate-sl1"):
             parent = args.candidate if objective=="coordinate-sl1" else args.original/"10000"
             path = parent/f"{seed}-{objective}"
             summary,result = recount(path,prepared,10000,manifest["species"])
+            environments.append(json.loads((path/"environment.json").read_text()))
             if result["config"]!=configuration(seed,10000,objective):
                 raise ValueError("Fit configuration changed")
             summaries[objective],results[objective] = summary,result
             summary.update(raw_gradient_norm=result["raw_gradient_norm"],
                            gradient_clipping_count=result["gradient_clipping_count"],
                            source=result["source"])
+            group_scores = json.loads((path/"group-scores.json").read_text())
+            summary["conditional"] = {split:dict(
+                sign=result[split]["sign"],overprediction=result[split]["overprediction"],
+                magnitude_bins=group_scores[split]["magnitude_bins"],
+                groups=group_scores[split]["groups"]) for split in ("training","development")}
             report["fits"].append(summary)
+        if any(environment!=environments[0] for environment in environments[1:]):
+            raise ValueError("Recorded runtime settings differ from historical controls")
         paired(results["coordinate-sl1"],results["direct"])
         for key in ("initial_weights_sha256","prepared_manifest_sha256","row_presentations"):
             if results["physical"][key]!=results["direct"][key]:
                 raise ValueError("Historical objectives are not paired")
         report["progression"].append(dict(seed=seed,passed=progression(summaries["physical"],summaries["coordinate-sl1"])))
     report["numerical_gate_passed"] = all(r["passed"] for r in report["progression"])
+    report["identical_recorded_environments"] = True
     report["advance"] = False
     report["decision_scope"] = "10k diagnostic only; preservation and conditional tails require review before a new size protocol"
     save(args.output,report)

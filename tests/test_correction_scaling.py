@@ -150,3 +150,32 @@ def test_larger_rung_requires_passing_hash_bound_review(tmp_path):
         require_previous(50000,tmp_path,tmp_path,path,sha256(path))
     with pytest.raises(ValueError,match='both'):
         validate_record(dict(status='verified',advance=True,size=10000,fits=[]),50000)
+
+
+def test_larger_gate_recounts_and_rejects_changed_artifact(tmp_path,monkeypatch):
+    pytest.importorskip('torch')
+    import json
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling import gate,review,run
+    from benchmarks.flame_conditioning.extract import sha256
+    record = dict(status='verified',advance=True,size=10000,fits=[])
+    results = {}
+    for seed in (20261011,20261012):
+        for objective in ('physical','direct'):
+            path = tmp_path/'10000'/f'{seed}-{objective}'
+            path.mkdir(parents=True)
+            (path/'result.json').write_text('{}')
+            summary = dict(seed=seed,objective=objective,result_sha256=sha256(path/'result.json'),
+                development=dict(acceptance=.72 if objective=='direct' else .7,base_acceptance=.7,
+                                 nontrivial_acceptance=.71,base_nontrivial_acceptance=.7))
+            record['fits'].append(summary)
+            results[path.name] = (summary,dict(config=configuration(seed,10000,objective),
+                initial_weights_sha256='weights',prepared_manifest_sha256='prepared',
+                training_count=10000,row_presentations=60000000,source='source'))
+    path = tmp_path/'review.json'
+    path.write_text(json.dumps(record))
+    monkeypatch.setattr(run,'prepared_manifest',lambda *args:dict(species=['H2','AR']))
+    monkeypatch.setattr(review,'recount',lambda directory,*args:results[directory.name])
+    assert gate.require_previous(50000,tmp_path,tmp_path,path,sha256(path))['size']==10000
+    (tmp_path/'10000'/'20261012-direct'/'result.json').write_text('{"changed":true}')
+    with pytest.raises(ValueError,match='result hash'):
+        gate.require_previous(50000,tmp_path,tmp_path,path,sha256(path))
