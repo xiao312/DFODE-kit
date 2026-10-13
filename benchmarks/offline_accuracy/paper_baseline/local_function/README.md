@@ -2,6 +2,11 @@
 
 ## Responsibility
 
+The controller and independent review also host the separately registered
+[base-polish experiment](../base_polish/README.md). Its model adapter replaces
+local weights with a continued base checkpoint; admission, isolated inference,
+protected scoring and full-population recount remain shared and unchanged.
+
 Test learned local functions with global versus frozen species rank distance.
 This is not nearest-label copying, a production change or a new evaluator.
 Reuse the continued base, checked 50k library, 20k unseen population and 1023 D

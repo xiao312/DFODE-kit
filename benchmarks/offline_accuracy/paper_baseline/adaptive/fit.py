@@ -25,15 +25,31 @@ def diagnostic(models,prep,rows,config):
     return result
 
 
-def fit(base,base_prep,training,development,normalization,config,destination):
+def backward_mean(indices, loss_function, microbatch_size):
+    """Accumulate a row-mean objective without changing group/component weights."""
+    if microbatch_size<=0 or len(indices)==0:raise ValueError("Require positive batch sizes")
+    total=None
+    for chunk in indices.split(microbatch_size):
+        loss=loss_function(chunk)*(len(chunk)/len(indices))
+        if not torch.isfinite(loss):raise ValueError("Nonfinite adaptive loss")
+        loss.backward()
+        total=loss.detach() if total is None else total+loss.detach()
+    return total
+
+
+def fit(base,base_prep,training,development,normalization,config,destination,*,fixed_preprocessing=None):
     if not torch.cuda.is_available():
         raise ValueError("GPU required; no CPU fallback")
     torch.cuda.synchronize()
     started,cpu = time.monotonic(),time.process_time()
     bc = base_config(config["seed"])
     base_values,_ = base_prediction(base,base_prep,training["states"],bc)
-    norm_values,_ = base_prediction(base,base_prep,normalization["states"],bc)
-    prep = preprocessing(base_prep,norm_values,normalization["delta"],config)
+    if fixed_preprocessing is None:
+        norm_values,_ = base_prediction(base,base_prep,normalization["states"],bc)
+        prep = preprocessing(base_prep,norm_values,normalization["delta"],config)
+    else:
+        prep={key:value.copy() for key,value in fixed_preprocessing.items()}
+        for key,value in base_prep.items():np.testing.assert_array_equal(prep["base_"+key],value)
     active = prep["active"]
     roundtrip = residual_roundtrip(base_values[:,active],training["delta"][:,active])
     if roundtrip["max_error_over_allowance"] > .01:
@@ -50,7 +66,7 @@ def fit(base,base_prep,training,development,normalization,config,destination):
     b = torch.as_tensor(base_values[:,active],dtype=torch.float64,device="cuda")
     scale = torch.as_tensor(scales(base_values[:,active],prep,config),dtype=torch.float64,device="cuda")
     offset,ys = [torch.as_tensor(base_prep[k],dtype=torch.float64,device="cuda") for k in ("y_offset","y_scale")]
-    optimizer = torch.optim.Adam(fitted.parameters(),lr=config["learning_rate"])
+    optimizer = torch.optim.Adam(fitted.parameters(),lr=config["learning_rate"],foreach=config.get("optimizer_foreach"))
     torch.cuda.reset_peak_memory_stats()
     history = []
     for completed,selected in enumerate(batch_indices(len(x),config)):
@@ -61,13 +77,12 @@ def fit(base,base_prep,training,development,normalization,config,destination):
         optimizer.param_groups[0]["lr"] = rate
         indices = torch.as_tensor(selected,device="cuda")
         optimizer.zero_grad(set_to_none=True)
-        output = fitted(x[indices])
-        predicted = (differentiable_decode(start[indices],output.double()*ys+offset,bc)
-                     if config["arm"] == "continue" else b[indices]+scale[indices]*output.double())
-        loss = physical_loss(predicted,truth[indices],start[indices],"increment",config)
-        if not torch.isfinite(loss):
-            raise ValueError("Nonfinite adaptive loss")
-        loss.backward()
+        def objective(selected):
+            output = fitted(x[selected])
+            predicted = (differentiable_decode(start[selected],output.double()*ys+offset,bc)
+                         if config["arm"] == "continue" else b[selected]+scale[selected]*output.double())
+            return physical_loss(predicted,truth[selected],start[selected],"increment",config)
+        loss=backward_mean(indices,objective,config.get("microbatch_size",len(indices)))
         if any(p.grad is not None and not torch.isfinite(p.grad).all() for p in fitted.parameters()):
             raise ValueError("Nonfinite adaptive gradient")
         optimizer.step()
@@ -75,7 +90,8 @@ def fit(base,base_prep,training,development,normalization,config,destination):
         if step % config["diagnostics_every_updates"] == 0 or step == config["updates"]:
             record = dict(updates=step,row_presentations=step*config["batch_size"],loss=float(loss.detach()),
                 learning_rate=rate,training=diagnostic(models,prep,training,config),
-                development=diagnostic(models,prep,development,config),elapsed_wall_seconds=time.monotonic()-started)
+                elapsed_wall_seconds=time.monotonic()-started)
+            if development is not None:record["development"]=diagnostic(models,prep,development,config)
             history.append(record)
             with (destination/"progress.jsonl").open("a") as handle:
                 handle.write(json.dumps(record,allow_nan=False)+"\n")
@@ -89,7 +105,7 @@ def fit(base,base_prep,training,development,normalization,config,destination):
     torch.save(optimizer.state_dict(),destination/"optimizer.pt")
     np.savez(destination/"preprocessing.npz",**prep)
     np.save(destination/"training-indices.npy",training["source_indices"])
-    np.save(destination/"normalization-indices.npy",normalization["source_indices"])
+    if fixed_preprocessing is None:np.save(destination/"normalization-indices.npy",normalization["source_indices"])
     fitted.eval()
     fitted_count = sum(p.numel() for p in fitted.parameters())
     base_count = sum(p.numel() for p in frozen.parameters())

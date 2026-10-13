@@ -1,0 +1,28 @@
+{
+  "experiment_id":"EXP-20261013-base-polish","status":"REGISTERED",
+  "hypothesis":"A low-step continuation with averaged gradients can convert the observed training-only repair signal into a transferable improvement of the existing GBCT map.",
+  "evidence":["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average"],
+  "diagnostic_review_sha256":"3bcae4ebc41d653438bae39b45758406aecb99f8053efc0dc5bfb3679d6608b6",
+  "parent_run":"runs/offline-accuracy/local-function-20261013",
+  "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "model_kind":"base_polish","arms":["small","averaged"],"seeds":[20261011,20261012],
+  "training_count":50000,"parameter_count":2018458,"updates":3000,"batch_size":10000,
+  "batch_sizes":{"small":1000,"averaged":10000},"microbatch_size":1000,
+  "work_policy":"Matched optimizer updates, not matched row presentations, epochs, FLOPs or wall time. Small=3M and averaged=30M row presentations per fit. 50k divides both batches; fixed seeded permutations without partial batches.",
+  "changed_factor":"Gradient batch size only; accumulation avoids memory-driven changes. Sizes align with the existing 50k pool and historical 10k batch.",
+  "fixed":["continued GBCT initial weights per seed","50k rows excluding U20k","all preprocessing","4x800 GELU architecture","FP32 weights and FP64 reconstruction/loss","physical log1p objective","cosine 1e-7 to1e-8 over3000 steps","fresh Adam default betas/epsilon, foreach=false","final checkpoint","scorer and gates"],
+  "exposure":"50k candidate training pool. U20k is base/preprocessing-seen but candidate-update-unseen. D1023 repeatedly inspected development. No restricted confirmation. No extra metric or calibration fitting.",
+  "selection":"Final checkpoint only. Record training metrics every500 steps; no U/D data enters training or checkpoint selection.",
+  "inference":"One updated GBCT network with original preprocessing and decoder; no residual head, temperature switch, clipping/projection added, or query references. Existing inverse-domain handling is unchanged and evaluated.",
+  "prechecks":["microbatch mean-gradient equivalence","initial fixed-batch base replay","unchanged preprocessing","parameter count","model reload","row identities and train/U disjointness"],
+  "evaluation":"Full T50k,U20k,D1023, both seeds; pinned protected evaluator and exact campaign gates against anchor/incumbent; independent raw-prediction recount, fresh base replay, whole-pipeline latency",
+  "resources":{"gpu_workers":1,"cpu_threads":1,"fits":4,"wall_seconds_per_fit":1800,"new_references":0},
+  "outcomes":{
+    "averaged_passes_all_gates":"Record development-qualified candidate without manual incumbent replacement; continue authorized robustness work",
+    "both_improve_but_fail_gates":"Quantify each failed guard; no promotion; choose one evidence-specific follow-up",
+    "averaged_only_beats_small":"Batch support is useful in this recipe but not sufficient; distinguish fit/transfer and preservation",
+    "neither_improves":"Close this low-step continuation recipe provisionally; do not run another LR/batch sweep without new evidence"
+  },
+  "run":"runs/offline-accuracy/base-polish-20261013","module":"benchmarks.offline_accuracy.paper_baseline.base_polish",
+  "confirmation_access":false,"production_promotion":false
+}

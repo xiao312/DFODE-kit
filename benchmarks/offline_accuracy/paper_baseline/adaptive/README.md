@@ -10,6 +10,11 @@ Historical experiments, environments and independent tests remain read-only.
 
 ## Frozen experiment
 
+The later [base-polish comparison](../base_polish/README.md) reuses `fit` with
+explicit fixed preprocessing, optional gradient microbatches, and no development
+rows in the training worker. Omitted options preserve the historical defaults.
+It is a separate registered experiment, not a revision of these historical fits.
+
 Six GPU fits: `continue`, `local`, `calibrated` for each seed. `plan.py` pins the
 two base result hashes and their complete 24-fit campaign verification. Each arm
 receives 6k additional updates, batch 10k, Adam reset at the start, cosine learning

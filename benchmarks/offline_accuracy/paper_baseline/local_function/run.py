@@ -17,6 +17,9 @@ from .model import select_centres
 
 
 def stage(project,output,binding,plan):
+    if plan.get("model_kind")=="base_polish":
+        from ..base_polish.prepare import stage as polish_stage
+        return polish_stage(project,output,plan)
     if plan.get("model_kind")=="constant_calibration":
         from ..interval_calibration.prepare import stage as calibration_stage
         return calibration_stage(project,output,plan)
@@ -107,15 +110,16 @@ def main():
     stage(project,args.output,binding,plan)
     state=args.output/"active-job.json";records=[];elapsed=0
     calibration=plan.get("model_kind")=="constant_calibration"
-    worker="benchmarks.offline_accuracy.paper_baseline."+("interval_calibration" if calibration else "local_function")+".worker"
+    polish=plan.get("model_kind")=="base_polish"
+    worker="benchmarks.offline_accuracy.paper_baseline."+("base_polish" if polish else "interval_calibration" if calibration else "local_function")+".worker"
     for arm in plan["arms"]:
         for seed in plan["seeds"]:
             prep=args.output/"prepared"/str(seed);verify_stage(prep)
             dest=args.output/"fits"/f"{seed}-{arm}"
-            extra=["--arm",arm] if calibration else []
+            extra=["--arm",arm] if calibration or polish else []
             elapsed+=run_worker(project,prep/("train-"+arm),dest/"fit",["train","--seed",str(seed),*extra],state,args.gpu,worker_module=worker)
             model=dest/"model";shutil.copytree(prep/"model",model)
-            for name in (("constants.npz",) if calibration else ("weights.pt","geometry.npz")):shutil.copyfile(dest/"fit"/name,model/name)
+            for name in (("weights.pt",) if polish else ("constants.npz",) if calibration else ("weights.pt","geometry.npz")):shutil.copyfile(dest/"fit"/name,model/name)
             for population in ("training","same_source_unseen","development"):
                 elapsed+=run_worker(project,prep/("input-"+population),dest/population,["infer","--seed",str(seed),*extra],state,args.gpu,model,worker_module=worker)
             record=score_arm(project,args.output,binding,seed,arm,campaign);records.append(record)

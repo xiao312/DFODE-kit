@@ -30,7 +30,11 @@ def main():
                 raise ValueError("Work or parameter count differs")
             if plan.get("model_kind")!="constant_calibration":
                 if fit["history"][-1]["update"]!=plan["updates"]:raise ValueError("Optimizer work differs")
-                geom=arrays(root/"model/geometry.npz");centres.append(geom["centre_ids"])
+                if plan.get("model_kind")!="base_polish":
+                    geom=arrays(root/"model/geometry.npz");centres.append(geom["centre_ids"])
+                else:
+                    if fit["row_presentations"]!=plan["updates"]*plan["batch_sizes"][arm]:raise ValueError("Presentation budget differs")
+                    if fit["preprocessing_sha256"]!=digest(root/"model/preprocessing.npz"):raise ValueError("Preprocessing changed")
         if len(centres)>1:np.testing.assert_array_equal(centres[0],centres[1])
         for population,rows in population_rows(args.project/binding["prepared_root"],args.project/binding["transfer_root"],str(seed)):
             if population=="training":
