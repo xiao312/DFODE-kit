@@ -37,9 +37,10 @@ def main():
             np.testing.assert_array_equal(saved["base"],rows["base"])
             # The other model cache uses the same named dataset namespace.
             other_rows=arrays(prepared/str(other)/("development.npz" if population=="development" else "training.npz"))
-            ix=align_indices(other_rows["source_indices"],rows["source_indices"])
-            for key in ("states","delta","snapshot"): np.testing.assert_array_equal(other_rows[key][ix],rows[key])
-            np.testing.assert_array_equal(saved["other"],other_rows["base"][ix]); del other_rows
+            available=np.isin(rows["source_indices"],other_rows["source_indices"])
+            ix=align_indices(other_rows["source_indices"],rows["source_indices"][available])
+            for key in ("states","delta","snapshot"): np.testing.assert_array_equal(other_rows[key][ix],rows[key][available])
+            np.testing.assert_array_equal(saved["other"][available],other_rows["base"][ix]); del other_rows
             b,q,y=saved["base"],saved["other"],saved["prediction"]
             # Separate sign/min arithmetic, rather than calling candidate clipping.
             step=(q-b)/2; cap=plan["fraction"]*(1e-15+.1*abs(b))
@@ -67,12 +68,14 @@ def main():
             g=candidate["groups"]["all"]
             summary.append(dict(seed=seed,population=population,acceptance=g["acceptance"],base=g["base_acceptance"],repairs=g["repaired"],damage=g["damaged"],
                 damage_rate=g["damage_rate_among_base_successes"],nontrivial=candidate["groups"]["nontrivial"]["acceptance"],p99=g["normalized_error"]["p99"],
-                negative=candidate["endpoint_diagnostics"]["negative_components"],latency_ratio=ratio,physical_gate=gates[f"{seed}:{population}:anchor"]))
+                negative=candidate["endpoint_diagnostics"]["negative_components"],latency_ratio=ratio,
+                other_cache_overlap_rows=int(available.sum()),other_cache_missing_rows=int((~available).sum()),
+                physical_gate=gates[f"{seed}:{population}:anchor"]))
     expected={f"{seed}:{population}:{comparator}" for seed in plan["seeds"] for population in plan["populations"] for comparator in ("anchor","incumbent")}
     verdict=decision(gates,expected,max(latency),policy)
     save(root/"protected-scores.json",dict(records=records)); verify_evaluator_lock(project)
     save(root/"review.json",dict(status="verified",summary=summary,decision=verdict,incumbent_unchanged=True,independent_pairs=1,
-         limitations="One overlapping pair; both bases saw U. No independent confirmation or promotion. Fixed bound repairs only near-threshold failures.",
+         limitations="One overlapping pair. Own anchor saw U; other seed prepared cache misses44/38 of its counterpart U rows, contrary to the pre-run all-seen shorthand. Fresh other-model reload covers ALL rows; cached parity applies only to overlap. No independent confirmation or promotion. Fixed bound repairs only near-threshold failures.",
          report_sha256=digest(root/"report.json"),scores_sha256=digest(root/"protected-scores.json")))
     print(summary); print(verdict)
 
