@@ -7,6 +7,38 @@ from benchmarks.research_contract.replay import population_rows
 from .prepare import save
 
 
+def diversity_controls(project, run, binding):
+    """Verify the changed training population against the archived 10k control."""
+    control = project / "runs/offline-accuracy/hidden-features-20261013"
+    selections = arrays(project / binding["transfer_root"] / "plan/selections.npz")
+    records = []
+    for seed in (20261011, 20261012):
+        old = read_json(control / "fits" / f"{seed}-A/fit/result.json")
+        new = read_json(run / "fits" / f"{seed}-S/fit/result.json")
+        if old["initial_weights_sha256"] != new["initial_weights_sha256"]:
+            raise ValueError("Diversity arm initialization differs from control")
+        differences = {k: [old["config"].get(k), new["config"].get(k)]
+                       for k in old["config"] | new["config"]
+                       if old["config"].get(k) != new["config"].get(k)}
+        if set(differences) != {"arm", "experiment", "training_count"}:
+            raise ValueError("Unexpected diversity configuration change")
+        indices = np.load(run / "prepared" / str(seed) / "training-indices.npy", allow_pickle=False)
+        if len(indices) != 50000 or len(np.unique(indices)) != 50000:
+            raise ValueError("Diversity training population is not 50k distinct states")
+        np.testing.assert_array_equal(indices[:10000], np.arange(10000))
+        if np.intersect1d(indices, selections[f"unseen_{seed}"]).size:
+            raise ValueError("Candidate training contains fixed unseen evaluation rows")
+        for population in ("same_source_unseen", "development"):
+            relative = Path("prepared") / str(seed) / f"input-{population}/states.npz"
+            before, after = arrays(control / relative), arrays(run / relative)
+            for key in ("states", "source_indices"):
+                np.testing.assert_array_equal(before[key], after[key])
+        records.append(dict(seed=seed, initial_weights_equal=True,
+                            configuration_differences=differences, training_states=len(indices),
+                            fixed_unseen_overlap=0, evaluation_inputs_identical=True))
+    return records
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", type=Path, required=True)
@@ -21,6 +53,7 @@ def main():
     for path, expected in report["artifacts"].items():
         checked_file(project_path(args.run, path), expected)
     binding = read_json(args.project / "research/bindings.json")
+    controls = diversity_controls(args.project, args.run, binding) if any(r["arm"] == "S" for r in report["records"]) else None
     active = np.array([name != "AR" for name in binding["species"]])
     table = []
     for seed in (20261011, 20261012):
@@ -64,6 +97,7 @@ def main():
     save(args.output, dict(status="verified", source_report_sha256=digest(args.run / "report.json"),
                           table=table, decisions=report["decisions"],
                           historical_A_exact=True if any(r["arm"] == "A" for r in report["records"]) else None,
+                          diversity_controls=controls,
                           incumbent_changed=False, confirmation_opened=False))
     print(args.output)
 
