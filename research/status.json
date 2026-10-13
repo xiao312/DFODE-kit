@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "CONSENSUS_DISTILL_RECOUNTED",
-  "active_experiment": "EXP-20261013-consensus-distill",
+  "stage": "CONSENSUS_GPU_REGISTERED",
+  "active_experiment": "EXP-20261013-consensus-gpu",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/strict-consensus-screen-20261013/review.json",
-  "last_review_sha256": "46905c6683b5eb26de706569a0c9d35d9ced75c551dd0ac88bc03217017f8a24",
+  "last_verified_result": "runs/offline-accuracy/consensus-distill-20261013/review.json",
+  "last_review_sha256": "9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -35,7 +35,8 @@
     "runs/offline-accuracy/bounded-base-mean-20261013",
     "runs/offline-accuracy/bounded-base-screen-20261013",
     "runs/offline-accuracy/consensus-shrink-20261013",
-    "runs/offline-accuracy/strict-consensus-screen-20261013"
+    "runs/offline-accuracy/strict-consensus-screen-20261013",
+    "runs/offline-accuracy/consensus-distill-20261013"
   ],
   "budget": {
     "configurations": 15,
@@ -45,7 +46,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Finish independent supplement for completed distillation. Reject head and constant. Register and test GPU reconstruction of strict two-base consensus; preserve source predictions and compare complete cost and arithmetic drift. No active training job.",
+  "next_action": "Run tests then guarded gradient_probe.run EXP-20261013-consensus-gpu; full state-only GPU inverse parity and timing. Review via paired_base.screen_review. No training or active job yet; incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

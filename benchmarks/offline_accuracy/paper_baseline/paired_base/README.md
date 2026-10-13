@@ -53,3 +53,15 @@ between b and0.9b. This retains nonzero base signs, unlike the zero-inclusive
 restriction. The same state-only worker and full review support the explicit
 `mode: strict-shrink`; historical `bounded` behavior is unchanged. This still
 cannot repair severe or wrong-sign base errors. It is not a universal solution.
+
+`gpu_model` is a separately registered execution variant. It keeps the two FP32
+networks and CPU input transformation, shares input preparation, and reconstructs
+GBCT outputs on GPU in FP64. It preserves the historical inverse-domain rule and
+returns its mask. It does not fit or change weights. CUDA and NumPy transcendental
+functions need not be bit-identical: retain both outputs and quantify differences.
+`screen_worker` selects this only when `backend: gpu-decode` is registered. Both
+full physical scoring and arithmetic parity are required; no silent fallback.
+The latency record includes the old anchor and an optimized single-base control.
+Verify `pytest tests/test_consensus_gpu.py tests/test_paired_base.py -q` in the
+pinned environment. Expected: inverse branches, masks, finite results, inactive
+species and scalar agreement. Full replay remains a server-only evidence check.

@@ -42,6 +42,18 @@ def main():
             for key in ("states","delta","snapshot"): np.testing.assert_array_equal(other_rows[key][ix],rows[key][available])
             np.testing.assert_array_equal(saved["other"][available],other_rows["base"][ix]); del other_rows
             b,q,y=saved["base"],saved["other"],saved["prediction"]
+            arithmetic={}
+            if plan.get("backend")=="gpu-decode":
+                old=arrays(project/plan["control_run"]/str(seed)/population/"predictions.npz")
+                np.testing.assert_array_equal(saved["historical"],old["prediction"])
+                np.testing.assert_array_equal(saved["source_indices"],old["source_indices"])
+                budget=1e-15+.1*abs(rows["delta"])
+                drift=abs(y-saved["historical"])/budget
+                arithmetic=dict(max_budget_drift=float(drift[:,active].max()),
+                    changed_pass_components=int(np.count_nonzero((abs(y-rows["delta"])<=budget)[:,active]!=(abs(saved["historical"]-rows["delta"])<=budget)[:,active])))
+                require(arithmetic["max_budget_drift"]<=plan["maximum_budget_arithmetic_drift"],"Arithmetic drift exceeds preregistered implementation threshold")
+                require(arithmetic["changed_pass_components"]==0,"Implementation changed pass counts")
+                b,q=saved["backend_base"],saved["backend_other"]
             # Separate sign/min arithmetic, rather than calling candidate clipping.
             step=(q-b)/2; cap=plan["fraction"]*(1e-15+.1*abs(b))
             expected=b+np.sign(step)*np.minimum(abs(step),cap)
@@ -58,8 +70,8 @@ def main():
             repair=(old_error>1)&newpass
             require(not np.any(repair&(old_error>(1+plan["fraction"])/(1-.1*plan["fraction"])+1e-10)),"Repair-range bound")
             candidate=score(dict(prediction=y,source_indices=rows["source_indices"]),rows,binding["species"],f"{seed}:{population}")
-            baseline=score(dict(prediction=b,source_indices=rows["source_indices"]),rows,binding["species"],f"{seed}:{population}")
-            recount(y,rows["delta"],b,candidate,active,rows["states"][:,2:])
+            baseline=score(dict(prediction=rows["base"],source_indices=rows["source_indices"]),rows,binding["species"],f"{seed}:{population}")
+            recount(y,rows["delta"],rows["base"],candidate,active,rows["states"][:,2:])
             for snapshot in np.unique(rows["snapshot"]):
                 mask=rows["snapshot"]==snapshot
                 require(int(newpass[mask].sum())==candidate["slices"]["snapshot:"+str(snapshot)]["pass_count"],"Snapshot recount")
@@ -67,6 +79,9 @@ def main():
             require(result["exact_reload_replay"],"Reload evidence missing")
             ratio=float(np.median(result["timings"]["candidate"])/np.median(result["timings"]["anchor"]))
             require(ratio==result["ratio"],"Timing ratio mismatch"); latency.append(ratio)
+            if "optimized_single" in result["timings"]:
+                arithmetic["latency_vs_optimized_single"]=float(np.median(result["timings"]["candidate"])/np.median(result["timings"]["optimized_single"]))
+                arithmetic["optimized_single_vs_historical"]=float(np.median(result["timings"]["optimized_single"])/np.median(result["timings"]["anchor"]))
             for comparator in ("anchor","incumbent"): gates[f"{seed}:{population}:{comparator}"]=comparison(candidate,baseline,policy)
             records.append(dict(seed=seed,population=population,candidate=candidate,baseline=baseline))
             g=candidate["groups"]["all"]
@@ -74,7 +89,7 @@ def main():
                 damage_rate=g["damage_rate_among_base_successes"],nontrivial=candidate["groups"]["nontrivial"]["acceptance"],p99=g["normalized_error"]["p99"],
                 negative=candidate["endpoint_diagnostics"]["negative_components"],latency_ratio=ratio,
                 other_cache_overlap_rows=int(available.sum()),other_cache_missing_rows=int((~available).sum()),
-                physical_gate=gates[f"{seed}:{population}:anchor"]))
+                physical_gate=gates[f"{seed}:{population}:anchor"],arithmetic=arithmetic))
     expected={f"{seed}:{population}:{comparator}" for seed in plan["seeds"] for population in plan["populations"] for comparator in ("anchor","incumbent")}
     verdict=decision(gates,expected,max(latency),policy)
     save(root/"protected-scores.json",dict(records=records)); verify_evaluator_lock(project)

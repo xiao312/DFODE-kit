@@ -370,6 +370,10 @@ Its separately registered full screening adapter uses `gradient_probe.run`
 admission -> `hidden_features.run_worker` -> state-only `screen_worker` with two
 pinned models. `screen_review` independently verifies arrays and runs protected
 gates. There is no production or automatic-promotion dependency.
+Its optional registered `gpu_model` execution keeps the base networks unchanged,
+shares CPU features and moves FP64 reconstruction onto the selected GPU. The
+same worker retains historical CPU outputs for arithmetic comparison. It has no
+reference or mechanism dependency and does not alter the protected evaluator.
 
 `element_projection` uses the same guarded diagnostic controller and state-only
 base replay. A mechanism-derived constraint matrix is its only added metadata.
