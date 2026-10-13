@@ -47,3 +47,10 @@ identity, weighted distance parity, zero-correction identity, smooth far-field
 decay, finite gradients and saved-model replay tests. Candidate qualification
 requires full T/U/D scoring, independent physical recounts and matched end-to-end
 base/candidate latency. No automatic production promotion exists.
+
+`postcheck --project <root> --run <completed-run>` checks an existing result,
+without fitting. It admits one isolated GPU worker per seed to replay the frozen
+base from state-only inputs for all three populations. The trusted controller
+compares the saved base arrays outside the sandbox. `review` then independently
+recounts tails, gate failures, snapshot scores and damage by original error
+margin. These post-fit checks do not change predictions or select checkpoints.
