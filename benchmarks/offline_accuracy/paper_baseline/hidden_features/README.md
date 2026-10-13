@@ -84,6 +84,8 @@ Partial fits require an explicit retry decision; they are never overwritten.
 Keep `interruption.json`, `recovery.json` and both source revisions. The GPU guard
 rechecks worker exit after non-atomic GPU/process reads to avoid an exit-time race.
 The regression tests simulate both this race and a real competing GPU process.
+The read-only local-predictability diagnostic reuses this resource monitor with
+an explicit worker module; the historical default worker is unchanged.
 
 ## Follow-up: disjoint training diversity
 

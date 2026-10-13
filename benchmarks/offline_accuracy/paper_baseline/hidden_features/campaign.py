@@ -40,11 +40,12 @@ def descendants(parent):
     return found
 
 
-def run_worker(project, input_dir, output, args, state, gpu, model=None):
+def run_worker(project, input_dir, output, args, state, gpu, model=None,
+               worker_module="benchmarks.offline_accuracy.paper_baseline.hidden_features.worker"):
     output.mkdir(parents=True)
     if processes_on_gpu(gpu) - {os.getpid()}:
         raise RuntimeError("WAITING_RESOURCE: selected GPU has another process; nothing was stopped")
-    cmd = command(project, input_dir, output, ["-m", "benchmarks.offline_accuracy.paper_baseline.hidden_features.worker", *args], model_dir=model, gpu=gpu)
+    cmd = command(project, input_dir, output, ["-m", worker_module, *args], model_dir=model, gpu=gpu)
     with (output / "worker.log").open("x") as log:
         child = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
                                  env={"PATH":"/usr/bin:/bin"})

@@ -153,6 +153,12 @@ It never changes scoring or the reference-free inference path.
 stopped controllers by PID/start time and reuses complete fits. It preserves the
 interruption record and never overwrites partial evidence or kills foreign work.
 
+`paper_baseline.local_predictability.run -> research_contract identity/sandbox +
+hidden_features resource monitor` owns a read-only local-variation diagnostic.
+`neighbors -> PyTorch` constructs graphs from features and IDs, without labels;
+`analysis -> pinned reference scorer + stable decoder` measures full-target and
+residual transfer on those same graphs. It cannot promote a model or change data.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
