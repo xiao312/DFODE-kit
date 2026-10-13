@@ -11,7 +11,7 @@ from ..correction_scaling.model import load_base,load_head,prediction,base_predi
 from ..correction_scaling.plan import configuration
 from ..adaptive.model import base_preprocessing,features
 from ..conditional_calibration.worker import summary
-from .model import Gate,replace,calibrate
+from .model import make_gate,replace,calibrate
 
 
 def probabilities(model,x,c):
@@ -41,7 +41,7 @@ def main():
     saved=dict(source_indices=rows["source_indices"],baseline=b,truth=d,initial=initial,raw=candidate,coordinate=coordinate,features=xvalues,scale=scale)
     records=[]
     for arm in plan["arms"]:
-        model=Gate(x.shape[1],d.shape[1],arm).to("cuda");optimizer=torch.optim.Adam([v for v in model.parameters() if v.requires_grad],lr=1e-3,foreach=False)
+        model=make_gate(x.shape[1],d.shape[1],arm,args.seed).to("cuda");optimizer=torch.optim.Adam([v for v in model.parameters() if v.requires_grad],lr=1e-3,foreach=False)
         rng=np.random.default_rng(args.seed+907);history=[]
         for step in range(plan["batches"]):
             if time.monotonic()-started>plan["resources"]["maximum_worker_seconds"]:raise TimeoutError("Registered worker budget")
@@ -59,7 +59,7 @@ def main():
         torch.save(model.state_dict(),Path("/output")/(arm+".pt"))
         np.savez(Path("/output")/(arm+".npz"),**{k:v.detach().cpu().numpy() for k,v in model.state_dict().items()})
         prob=probabilities(model,x,c)
-        again=Gate(x.shape[1],d.shape[1],arm).to("cuda");again.load_state_dict(torch.load(Path("/output")/(arm+".pt"),weights_only=True,map_location="cuda"))
+        again=make_gate(x.shape[1],d.shape[1],arm,args.seed).to("cuda");again.load_state_dict(torch.load(Path("/output")/(arm+".pt"),weights_only=True,map_location="cuda"))
         np.testing.assert_array_equal(prob,probabilities(again,x,c))
         sl=roles["calibration"];threshold,curve=calibrate(prob[sl],b[sl],candidate[sl],initial[sl],d[sl])
         pred,chosen=replace(b,candidate,initial,prob,threshold)

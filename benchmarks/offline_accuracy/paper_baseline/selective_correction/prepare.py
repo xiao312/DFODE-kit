@@ -13,6 +13,12 @@ def stage(project,dest,seed,plan):
     unseen=arrays(project/binding["transfer_root"]/"plan/selections.npz")[f"unseen_{seed}"]
     allowed=np.setdiff1d(np.arange(len(full["states"])),np.r_[np.arange(10000),unseen])
     chosen=np.random.default_rng(seed+plan["selection_seed_offset"]).permutation(allowed)[:50000]
+    if plan.get("control_run"):
+        control=project/plan["control_run"]
+        review=read_json(checked_file(control/"review.json",plan["control_review_sha256"]))
+        report=read_json(checked_file(control/"report.json",review["report_sha256"]))
+        relative=f"prepared/{seed}/selected-positions.npy"
+        np.testing.assert_array_equal(chosen,np.load(checked_file(control/relative,report["artifacts"][relative])))
     if len(chosen)!=50000 or len(np.unique(chosen))!=50000 or np.isin(chosen,unseen).any() or (chosen<10000).any():raise ValueError("Invalid role selection")
     payload={k:full[k][chosen] for k in ("states","delta","base","features","source_indices","snapshot")}
     np.savez(dest/"training.npz",**payload);np.save(dest/"selected-positions.npy",chosen)

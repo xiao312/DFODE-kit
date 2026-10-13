@@ -1,5 +1,26 @@
 # Signed-increment research results
 
+## Latest: affine correction selection gives no net repair
+
+The registered training-only check is **valid negative**. Its affine selector
+returns the base's exact acceptance on both20k check sets:72.242 /72.267%.
+Seed11 repairs/damages0/0 components; seed12 repairs/damages2/2. The
+species-intercept control selects the base everywhere. The raw frozen correction
+has only66.177 /66.020% acceptance on these same rows.
+
+The calibrated affine thresholds are0.94 /0.92. Even without calibration
+constraints, the best registered threshold gains only one component on each
+10k calibration set. Thus the tested affine score does not separate enough
+useful corrections; the preservation constraint alone does not explain failure.
+These are correction-unseen training-pool rows, **not the protected U20k**.
+Ten tests, separate source review, exact reload and frozen-prediction replay,
+protected scoring and independent split/count/selection checks passed. Review:
+`c0a02ade3486e9359229168262a7330e49c5539bb04c6321bd195a3e288ed5c7`.
+
+Next: one [nonlinear selector control](experiments/EXP-20261013-selective-nonlinear.json)
+with the same inputs, rows and work. It tests interactions/function capacity,
+not a new correction or relaxed criterion. Close this recipe if it also fails.
+
 ## Latest diagnostic: output-bin calibration does not transfer
 
 **Valid negative.** In two-fold checks within the50k training pool,16

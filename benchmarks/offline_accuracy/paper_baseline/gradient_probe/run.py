@@ -18,7 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
-    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction"])
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)

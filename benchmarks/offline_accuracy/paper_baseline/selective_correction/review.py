@@ -2,6 +2,7 @@
 import argparse
 from pathlib import Path
 import numpy as np
+from scipy.special import erf
 from benchmarks.research_contract.adapter import arrays,read_json,checked_file,digest,verify_evaluator_lock
 from benchmarks.research_contract.replay import score
 from ..hidden_features.prepare import save
@@ -51,7 +52,16 @@ def main():
             # CPU FP64 recount of the FP32 affine gate; threshold decisions below
             # use its saved probabilities after this arithmetic agreement check.
             cx=(rows["coordinate"]/scale).astype(np.float32).astype(float)
-            logits=rows["features"].astype(float)@weights["weight"].astype(float)+weights["bias"]+cx*weights["own"][0]+abs(cx)*weights["own"][1]
+            if arm=="nonlinear":
+                values=[]
+                for start in range(0,len(cx),1024):
+                    x=rows["features"][start:start+1024].astype(float);q=cx[start:start+1024]
+                    h=np.einsum("bf,sfh->bsh",x,weights["hidden_weight"].astype(float),optimize=True)+weights["hidden_bias"]
+                    h+=q[:,:,None]*weights["hidden_own"][:,0]+abs(q)[:,:,None]*weights["hidden_own"][:,1]
+                    h=.5*h*(1+erf(h/np.sqrt(2)))
+                    values.append((h*weights["output_weight"]).sum(-1)+weights["bias"])
+                logits=np.concatenate(values)
+            else:logits=rows["features"].astype(float)@weights["weight"].astype(float)+weights["bias"]+cx*weights["own"][0]+abs(cx)*weights["own"][1]
             prob=rows[arm+"_probability"];recomputed=np.exp(-np.logaddexp(0,-logits))
             np.testing.assert_allclose(prob,recomputed,rtol=1e-4,atol=1e-6)
             threshold=choose_independently(prob[20000:30000],b[20000:30000],c[20000:30000],initial[20000:30000],d[20000:30000])
@@ -78,7 +88,11 @@ def main():
                 row=dict(seed=seed,arm=arm,population=name,acceptance=float(new.mean()),base=float(old.mean()),raw=float((abs(c[sl]-truth)<=tau).mean()),repaired=repaired,damaged=damaged,damage_rate=float(D),threshold=record["threshold"],selected=int(chosen[sl].sum()),nontrivial=float(new[nt].mean()),base_nontrivial=float(old[nt].mean()),sign_errors=signs,base_sign_errors=int(((np.sign(base)!=np.sign(truth))&nt).sum()),negative=negative,p99=g["normalized_error"]["p99"],base_p99=base_score["groups"]["all"]["normalized_error"]["p99"],weak_p99=scored["groups"]["weak_nontrivial"]["normalized_error"]["p99"],base_weak_p99=base_score["groups"]["weak_nontrivial"]["normalized_error"]["p99"],mass_residual_p99=float(np.quantile(abs(y.sum(1)),.99)),element_residual_p99=float(np.quantile(abs(y@em.T).max(1),.99)))
                 row["conservation_comparators"]={label:dict(mass_p99=float(np.quantile(abs(values.sum(1)),.99)),element_p99=float(np.quantile(abs(values@em.T).max(1),.99))) for label,values in (("base",base),("raw",c[sl]))}
                 table.append(row);scores.append(dict(seed=seed,arm=arm,population=name,candidate=scored,base=base_score,raw=rawscore))
-        a,c0=[next(t for t in table if t["seed"]==seed and t["arm"]==arm and t["population"]=="check") for arm in ("affine","intercept")]
+        if plan.get("control_run"):
+            control=read_json(checked_file(args.project/plan["control_run"]/"review.json",plan["control_review_sha256"]))
+            a=next(t for t in table if t["seed"]==seed and t["arm"]=="nonlinear" and t["population"]=="check")
+            c0=next(t for t in control["table"] if t["seed"]==seed and t["arm"]=="affine" and t["population"]=="check")
+        else:a,c0=[next(t for t in table if t["seed"]==seed and t["arm"]==arm and t["population"]=="check") for arm in ("affine","intercept")]
         passes.append(a["acceptance"]>=max(a["base"],c0["acceptance"])+.005 and a["nontrivial"]>=a["base_nontrivial"] and a["damage_rate"]<=.02 and a["sign_errors"]<=a["base_sign_errors"] and a["negative"]==0 and a["p99"]<=1.05*a["base_p99"] and a["weak_p99"]<=1.05*a["base_weak_p99"])
     save(root/"protected-scores.json",dict(records=scores));verify_evaluator_lock(args.project)
     save(root/"review.json",dict(status="verified",table=table,report_sha256=digest(root/"report.json"),score_sha256=digest(root/"protected-scores.json"),advance=all(passes),candidate=False,confirmation_opened=False))

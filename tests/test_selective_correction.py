@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 torch=pytest.importorskip("torch")
 from benchmarks.offline_accuracy.paper_baseline.selective_correction.model import Gate,replace,calibrate
+from benchmarks.offline_accuracy.paper_baseline.selective_correction.model import NonlinearGate
 
 
 def test_exact_branch_and_endpoint_guard():
@@ -27,3 +28,12 @@ def test_parameter_control_and_no_reference_input():
     assert sum(p.numel() for p in a.parameters() if p.requires_grad)==7076
     assert sum(p.numel() for p in c.parameters() if p.requires_grad)==58
     assert torch.count_nonzero(a(torch.ones(3,119),torch.ones(3,58)))==0
+
+
+def test_nonlinear_gate_inputs_counts_and_initial_identity():
+    a=NonlinearGate(119,58,17);b=NonlinearGate(119,58,17)
+    assert sum(p.numel() for p in a.parameters())==114202
+    for k,v in a.state_dict().items():torch.testing.assert_close(v,b.state_dict()[k],rtol=0,atol=0)
+    assert torch.count_nonzero(a(torch.ones(3,119),torch.ones(3,58)))==0
+    a(torch.ones(3,119),torch.ones(3,58)).sum().backward()
+    assert a.output_weight.grad.abs().sum()>0

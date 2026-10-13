@@ -1,6 +1,7 @@
 """Small comparative classifier and fixed, label-free replacement rule."""
 import numpy as np
 import torch
+import math
 
 
 class Gate(torch.nn.Module):
@@ -13,6 +14,27 @@ class Gate(torch.nn.Module):
 
     def forward(self,x,c):
         return x@self.weight+self.bias+c*self.own[0]+c.abs()*self.own[1]
+
+
+class NonlinearGate(torch.nn.Module):
+    """Same per-species inputs as affine; only the function class changes."""
+    def __init__(self,features,species,seed,width=16):
+        super().__init__();torch.manual_seed(seed)
+        bound=1/math.sqrt(features+2)
+        self.hidden_weight=torch.nn.Parameter(torch.empty(species,features,width).uniform_(-bound,bound))
+        self.hidden_own=torch.nn.Parameter(torch.empty(species,2,width).uniform_(-bound,bound))
+        self.hidden_bias=torch.nn.Parameter(torch.empty(species,width).uniform_(-bound,bound))
+        self.output_weight=torch.nn.Parameter(torch.zeros(species,width))
+        self.bias=torch.nn.Parameter(torch.zeros(species))
+
+    def forward(self,x,c):
+        h=torch.einsum("bf,sfh->bsh",x,self.hidden_weight)+self.hidden_bias
+        h=h+c[:,:,None]*self.hidden_own[:,0]+c.abs()[:,:,None]*self.hidden_own[:,1]
+        return (torch.nn.functional.gelu(h)*self.output_weight).sum(-1)+self.bias
+
+
+def make_gate(features,species,arm,seed):
+    return NonlinearGate(features,species,seed) if arm=="nonlinear" else Gate(features,species,arm)
 
 
 def replace(base,candidate,initial,probability,threshold):

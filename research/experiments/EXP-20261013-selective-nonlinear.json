@@ -1,0 +1,20 @@
+{
+ "experiment_id":"EXP-20261013-selective-nonlinear","status":"REGISTERED",
+ "hypothesis":"The repair/damage decision requires input interactions that the tested affine gate cannot represent.",
+ "evidence":["EXP-20261013-selective-correction: best unconstrained calibration net gain is1 component in either seed"],
+ "alternatives":"No transferable decision signal in these features; nonlinear gate fits but overfits; fixed work insufficient (inspect fitting loss, do not assume capacity).",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/selective-correction-20261013","control_review_sha256":"c0a02ade3486e9359229168262a7330e49c5539bb04c6321bd195a3e288ed5c7",
+ "seeds":[20261011,20261012],"arms":["nonlinear"],"selection":"correction_unseen_pool","selection_seed_offset":701,
+ "worker_module":"benchmarks.offline_accuracy.paper_baseline.selective_correction.worker",
+ "batches":2000,"batch_size":1000,"fit_rows":20000,"calibration_rows":10000,"check_rows":20000,
+ "changed_factor":"Gate function capacity: one16-GELU hidden layer independently per species,114202 parameters, versus completed affine7076-parameter control. No new features or predictor updates. This changes nonlinearity and parameter count, not a parameter-matched claim.",
+ "initialization":"Seeded Kaiming-uniform hidden weights/bias, zero final affine weights/bias; initial logits zero as in control",
+ "fixed":"Same selected positions and role ordering, frozen GBCT and10k coordinate-SL1 head,119 prepared features plus own correction/absolute correction with fitting-only RMS,2000updates,batch1000,FP32 gate/FP64 BCE on discordants,freshAdam foreach=false,cosine1e-3 to1e-4,final checkpoint",
+ "selection_policy":"Unchanged101 thresholds0..1 plus always-base1.01, calibration net-pass maximization subject damage<=1%,nontrivial no decline and no added sign errors; ties fewer replacements then higher threshold. Same declared negative-endpoint rejection, no clipping.",
+ "work_policy":"Matched optimizer updates and2M row presentations, not equal parameter count,FLOPs or elapsed time. Reuse affine control, do not rerun.",
+ "evaluation":"Same check20k training-pool rows, not protectedU20k; protected physical scorer plus independent recount,gate reload and frozen-prediction replay. No independent confirmation or latency claim.",
+ "advance_rule":"Nonlinear check acceptance exceeds base and affine by0.005 in both seeds, no nontrivial decline,damage<=0.02,no added sign/negative counts,p99global/weak<=1.05. Otherwise close current selective-correction family after this second controlled negative unless distinct new evidence appears.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":600},
+ "run":"runs/offline-accuracy/selective-nonlinear-20261013","confirmation_access":false
+}

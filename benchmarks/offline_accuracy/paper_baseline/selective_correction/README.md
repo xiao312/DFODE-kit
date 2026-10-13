@@ -28,6 +28,13 @@ Both arms reject a correction whose endpoint is negative. Record this explicit
 label-free constraint and raw-candidate results; do not clip predictions.
 Final output is exact selection between two signed increments, not blending.
 
+`EXP-20261013-selective-nonlinear` reuses the completed affine control and exact
+row roles. It changes only the gate function class to one16-unit GELU layer
+per species (114,202 parameters), with seeded hidden initialization and zero
+output layer. Same inputs, objective,2,000updates and2M presentations; not equal
+FLOPs or parameter count. Source control and every calibration rule stay fixed.
+This is the second bounded selector trial, not an open architecture sweep.
+
 ## Boundary and dependencies
 
 `gradient_probe.run -> selective_correction.prepare -> pinned training/candidate`
