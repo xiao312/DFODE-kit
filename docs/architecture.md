@@ -12,6 +12,14 @@
 
 ## Precision conditioning research branch
 
+`research/` owns the persistent signed-increment mission, prospective evaluation
+contract, campaign authority, evidence ledger and restart index.
+`benchmarks.research_contract.replay -> adapter/reference/gates -> NumPy` scores
+saved arrays independently of candidate training, using historical checked data
+and selection readers. Admission is separate from numerical scoring. Runtime
+isolation and confirmation custody are required boundaries, not properties of a
+hash file. Historical trainers and production modules remain unchanged.
+
 `benchmarks/precision_conditioning/` owns the standalone representational audit.
 It depends only on NumPy and does not alter production data or training paths.
 `tests/test_precision_conditioning_audit.py` verifies its numerical invariants.

@@ -1,0 +1,40 @@
+# Protected numerical research contract
+
+## Responsibility and non-goals
+
+Score aligned signed-increment arrays and apply explicit, conjunctive development
+gates. Reproduce the historical bases and rejected corrections. This module does
+not train, select a checkpoint, relabel data, promote production, or open a test.
+
+## Interface and inputs
+
+`reference.evaluate_predictions` is the imported NumPy-only reference scorer.
+The adapter enforces the fixed tolerances, row/species identity and input hashes.
+`gates` compares each candidate to both the fixed anchor and moving incumbent.
+Missing required evidence is inconclusive, never an implicit pass. Nonfinite
+predictions remain in denominators and prevent promotion.
+
+`python -m benchmarks.research_contract.replay --project <root>
+--bindings research/bindings.json --output <new-directory>` checks identities.
+Add `--execute` to write an independent real-array score report. It reads the
+saved predictions; neural label-free replay remains a separate required check.
+The output is a new JSON artifact; existing reports and models stay unchanged.
+
+## Dependencies and security
+
+The standalone scorer depends on NumPy. The replay adapter uses the historical
+checked artifact readers and frozen row selections. Candidate inference must be
+isolated from evaluator labels. This module alone does not supply an OS boundary.
+Runtime admission must verify that boundary before autonomous candidate execution.
+No credentials belong in this module or its artifacts.
+
+Dependencies: `replay -> adapter/reference/gates -> NumPy`; historical readers are
+read-only dependencies, never consumers of this new contract. The authoritative
+scientific and operating specification is `research/`.
+
+## Verification
+
+`python -m pytest tests/test_research_contract*.py -q` checks synthetic scoring,
+empty groups, row-order rejection, two-comparator guardrails and budget admission.
+The original 22 synthetic tests are retained. Server real-array checks must
+reproduce base/MSE/Smooth L1 counts and reject their known regressions.

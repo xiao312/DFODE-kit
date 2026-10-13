@@ -47,6 +47,8 @@ This repository contains DFODE-kit, a Python toolkit for sampling combustion sta
 - Do not commit machine-specific local paths to published docs, README examples, or user-facing command snippets. Use portable placeholders like `/path/to/...`, `${VAR}`, or `<worktree-root>` instead.
 
 ## Read next
+- For signed-increment research, start with `research/README.md`, then read its
+  contract, campaign authority, status and active experiment before running work.
 - `docs/agents/README.md`
 - `docs/init.md`
 - `docs/agents/verification.md`

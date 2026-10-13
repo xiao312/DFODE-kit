@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "stage": "INSTALLING_CONTRACT",
+  "active_experiment": "EXP-20261013-hidden-features",
+  "active_jobs": [],
+  "incumbent": "continued-gbct-two-seed",
+  "last_verified_result": "https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6137254405",
+  "budget": {
+    "configurations": 0,
+    "primary_fits": 0,
+    "allocated_gpu_seconds": 0
+  },
+  "next_action": "Complete M0 real-array scorer parity; approve resource envelope and verify label-isolated execution before fitting."
+}

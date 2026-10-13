@@ -1,0 +1,88 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "EXP-20261013-hidden-features",
+  "status": "PROPOSED",
+  "hypothesis_id": "H-hidden-features",
+  "question": "Do frozen-base hidden features improve repair, preservation and transfer beyond a comparable trainable-parameter budget?",
+  "evidence": [
+    "issue:6137254405",
+    "evidence_seed.json"
+  ],
+  "changed_factor": "correction input representation with a parameter-budget control",
+  "arms": [
+    {
+      "id": "A",
+      "input_features": 119,
+      "widths": [
+        256,
+        256,
+        256
+      ],
+      "head_parameters": 177210
+    },
+    {
+      "id": "B",
+      "input_features": 919,
+      "widths": [
+        256,
+        256,
+        256
+      ],
+      "head_parameters": 382010,
+      "added_feature": "800-d post-final-GELU frozen-base activation"
+    },
+    {
+      "id": "C",
+      "input_features": 119,
+      "widths": [
+        800,
+        256,
+        256
+      ],
+      "head_parameters": 381754
+    }
+  ],
+  "fixed": [
+    "continued_base_checkpoint_per_seed",
+    "training_10000_row_ids",
+    "prepared_reference_version",
+    "decoder",
+    "coordinate_smooth_l1_beta_log1p_0.1",
+    "acceptance_rule",
+    "optimizer_schedule",
+    "final_checkpoint_policy"
+  ],
+  "paired_seeds": [
+    20261011,
+    20261012
+  ],
+  "budget": {
+    "updates": 6000,
+    "batch_size": 10000,
+    "row_presentations": 60000000,
+    "match_type": "updates_and_presentations_not_equal_compute",
+    "fit_wall_limit_s": 1200
+  },
+  "controls_note": "Reuse A only if recorded environment and all unchanged artifacts match. Different-shaped heads cannot have identical weight hashes; zero initialization must give identical initial physical predictions. Rerun A for current timing/runtime parity.",
+  "outcome_predictions": {
+    "B_beats_C_on_U_and_D": "Supports useful feature reuse under this budget; does not prove new physical information.",
+    "B_and_C_improve_similarly": "Capacity remains a plausible explanation.",
+    "training_only_improvement": "Fitting improvement without required transfer.",
+    "neither_improves": "This layer/recipe unsupported; select a discriminating next hypothesis, not an automatic layer sweep."
+  },
+  "promotion_policy": "../campaign.json",
+  "protected_binding_hashes": null,
+  "execution_authorization_id": null,
+  "outputs": {
+    "manifest": "immutable JSON",
+    "predictions": "aligned arrays, no references supplied to inference",
+    "metrics": "trusted evaluator JSON",
+    "review": "evidence-qualified narrative and deterministic decision"
+  },
+  "decision": null,
+  "feature_preparation": {
+    "layer": "800-d post-final-GELU",
+    "normalization": "per-channel mean/std on fixed 50k training calibration prefix; scale 1 for zero variance; no labels",
+    "freeze_scalers": true
+  }
+}
