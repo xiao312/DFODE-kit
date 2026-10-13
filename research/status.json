@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "INTERVAL_CALIBRATION_REGISTERED",
+  "stage": "INTERVAL_CALIBRATION_RUNNING",
   "active_experiment": "EXP-20261013-interval-calibration",
-  "active_jobs": [],
+  "active_jobs": [{"kind":"controller","pid":3776930,"start_ticks":"1049222566","source":"7f95dcff","run":"runs/offline-accuracy/interval-calibration-20261013","worker_state":"runs/offline-accuracy/interval-calibration-20261013/active-job.json","lease":"runs/research-control/EXP-20261013-interval-calibration.lease.json"}],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
@@ -28,7 +28,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and execute EXP-20261013-interval-calibration using existing local_function controller; full T50k/U20k/D1023 scoring and independent recount. Local basis/optimizer family is provisionally closed. Continue after the new diagnostic without routine owner review.",
+  "next_action": "Reconnect to the existing interval-calibration controller; do not start a duplicate. Then run local_function.postcheck and review on its completed run. Local basis/optimizer family is provisionally closed. Continue after the new diagnostic without routine owner review.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
