@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "LOCAL_OPTIMUM_REGISTERED",
-  "active_experiment": "EXP-20261013-local-optimum",
+  "stage": "INTERVAL_CALIBRATION_REGISTERED",
+  "active_experiment": "EXP-20261013-interval-calibration",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/local-function-20261013/review.json",
-  "last_review_sha256": "83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "last_verified_result": "runs/offline-accuracy/local-optimum-20261013/review.json",
+  "last_review_sha256": "54d9090e28f63fa0eb3d2687fc823abf861149f2e8167134bcd84f6af156aae5",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -17,17 +17,18 @@
     "runs/offline-accuracy/diversity-20261013",
     "runs/offline-accuracy/local-predictability-20261013",
     "runs/offline-accuracy/species-distance-20261013",
-    "runs/offline-accuracy/local-function-20261013"
+    "runs/offline-accuracy/local-function-20261013",
+    "runs/offline-accuracy/local-optimum-20261013"
   ],
   "budget": {
-    "configurations": 8,
-    "primary_fits": 16,
+    "configurations": 10,
+    "primary_fits": 20,
     "post_screening_diagnostics": 2,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and execute EXP-20261013-local-optimum: 20 full-data IRLS updates of each frozen basis, then full isolated scoring and recount. Do not repeat the completed Adam fits. Continue to an evidence-selected family after review.",
+  "next_action": "Test and execute EXP-20261013-interval-calibration using existing local_function controller; full T50k/U20k/D1023 scoring and independent recount. Local basis/optimizer family is provisionally closed. Continue after the new diagnostic without routine owner review.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

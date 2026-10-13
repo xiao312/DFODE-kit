@@ -331,6 +331,11 @@ paths share the existing isolation and protected scorer. `postcheck` and
 `audit_metrics` independently verify saved predictions; they do not modify the
 contract or production models. See the module README for interfaces.
 
+`interval_calibration.prepare/model/worker` add a 58-constant, training-derived
+calibration diagnostic. They reuse `local_function.run/review/postcheck` and the
+same protected evaluator. Dependency flow is controller -> candidate module ->
+existing base/decoder; production has no dependency on either research module.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.

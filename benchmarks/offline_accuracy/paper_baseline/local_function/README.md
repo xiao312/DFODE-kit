@@ -71,3 +71,8 @@ This is extra optimization work, not a matched-work comparison with Adam.
 `convex.py` owns the fixed-design solve and training-only conditioning records.
 It depends on this module's basis and existing decoder; the runner selects it
 only through a new frozen manifest. The reference scorer is unchanged.
+
+The controller and physical recount also support the separately documented
+`interval_calibration` module through `model_kind=constant_calibration`. This
+reuses admission, staging checks, state-only replay and scoring rather than
+adding a second controller. Its 58-constant model has no local geometry.

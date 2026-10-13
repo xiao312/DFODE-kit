@@ -1,6 +1,37 @@
 # Signed-increment research results
 
-## Latest: trained fixed-centre local functions
+## Latest: full-data coefficient refinement
+
+**Valid negative result. More accurate fitting of this coordinate objective did
+not improve the physical predictor.** The protected scorer and separate recount
+reject both arms. Continued GBCT remains the incumbent.
+
+| Predictor | Same-source unseen, 20k | Development, 1,023 |
+|---|---:|---:|
+| Global basis, after 20 full-data updates | 71.72 / 71.80% | 67.90 / 68.17% |
+| Species basis, after 20 full-data updates | 71.11 / 71.31% | 67.44 / 67.75% |
+| Continued GBCT | 72.24 / 72.27% | 68.30 / 68.80% |
+
+The basis, labels, loss and decoder did not change. All four objectives decreased,
+by about 0.10-0.16%, while training and unseen physical acceptance decreased.
+This is extra optimization after Adam, not equal-work evidence. Four refinements
+used 48.7 seconds of recorded fit time, excluding staging, replay and scoring.
+
+The recorded gradient is per-species, not the gradient of the globally averaged
+loss. With ridge curvature `mu=2e-6/128`, the conservative strong-convexity bound
+`128 * max_gradient^2 / (2*mu)` is about 1.4e-5 / 1.0e-5 for the global arms and
+1.3e-3 / 1.7e-4 for the species arms. These are computed-gradient bounds for the
+FP64 fixed-design objective, not formal floating-point certificates or bounds
+on acceptance. Twenty steps alone do not prove an exact optimum.
+
+Close this fixed-basis recipe provisionally. The next diagnostic removes neural
+optimization and input-dependent transfer entirely: compare two ways to fit one
+constant per species, coordinate Smooth L1 versus physical-interval consensus.
+It asks whether the fitting criterion chooses useful, transferable calibration.
+No reference-dependent inference or temperature switch is added. See the
+[prospective manifest](experiments/EXP-20261013-interval-calibration.json).
+
+## Previous: trained fixed-centre local functions
 
 **Valid negative result. GBCT remains the incumbent.** Both distances used the
 same 128 centres, 7,424 learned coefficients, 50k training states and work budget.

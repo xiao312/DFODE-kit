@@ -26,9 +26,11 @@ def main():
         for arm in plan["arms"]:
             root=args.run/"fits"/f"{seed}-{arm}"
             fit=read_json(root/"fit/result.json")
-            if fit["parameter_count"]!=plan["parameter_count"] or fit["history"][-1]["update"]!=plan["updates"]:
+            if fit["parameter_count"]!=plan["parameter_count"]:
                 raise ValueError("Work or parameter count differs")
-            geom=arrays(root/"model/geometry.npz");centres.append(geom["centre_ids"])
+            if plan.get("model_kind")!="constant_calibration":
+                if fit["history"][-1]["update"]!=plan["updates"]:raise ValueError("Optimizer work differs")
+                geom=arrays(root/"model/geometry.npz");centres.append(geom["centre_ids"])
         if len(centres)>1:np.testing.assert_array_equal(centres[0],centres[1])
         for population,rows in population_rows(args.project/binding["prepared_root"],args.project/binding["transfer_root"],str(seed)):
             if population=="training":
