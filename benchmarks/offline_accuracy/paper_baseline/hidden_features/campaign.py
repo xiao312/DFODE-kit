@@ -46,7 +46,8 @@ def run_worker(project, input_dir, output, args, state, gpu, model=None):
         raise RuntimeError("WAITING_RESOURCE: selected GPU has another process; nothing was stopped")
     cmd = command(project, input_dir, output, ["-m", "benchmarks.offline_accuracy.paper_baseline.hidden_features.worker", *args], model_dir=model, gpu=gpu)
     with (output / "worker.log").open("x") as log:
-        child = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+        child = subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
+                                 env={"PATH":"/usr/bin:/bin"})
         save(state, dict(status="RUNNING", pid=child.pid, start_ticks=process_identity(child.pid), output=str(output), args=args))
         started = time.monotonic()
         while child.poll() is None:
