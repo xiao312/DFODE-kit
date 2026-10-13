@@ -1,0 +1,1 @@
+"""Predeclared conservation projection diagnostic."""

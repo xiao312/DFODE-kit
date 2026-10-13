@@ -1,6 +1,25 @@
 # Signed-increment research results
 
-## Latest: kinetic features do not provide a transferable gain
+## Latest: species-specific heads do not improve transfer
+
+The four-fit parameter-sharing test is **valid negative**. Independent species
+heads fit about as well as a nearly equal-size shared head, but damage more
+unseen predictions. This does not establish a gradient-conflict mechanism.
+
+| Head | Fitting20k acceptance | Check20k acceptance |
+|---|---:|---:|
+| Shared,285270 parameters | 73.076 / 73.347% | 68.310 / 68.377% |
+| Species-specific,285882 parameters | 73.044 / 73.393% | 67.251 / 67.476% |
+| Continued GBCT | 72.214 / 72.511% | 72.242 / 72.267% |
+
+Species heads repair42,022 /42,158 check components but damage99,922 /97,729.
+Both methods exceed the1.5x latency guard. Eighteen focused tests, separate source
+review, exact state-only replay, independent forward samples and full physical
+recount passed. Review: `ad0f77c14d381ab1805471a1c8038291f48f19952817fb0da02078dc6d48a91f`.
+No promotion. Stop head-capacity changes from this result. Next test uses fixed
+element conservation constraints, not another learned generic correction.
+
+## Previous: kinetic features do not provide a transferable gain
 
 Six matched fits are complete and independently recounted. **Valid negative.**
 Initial-rate features improve training slightly, but still damage unseen rows.

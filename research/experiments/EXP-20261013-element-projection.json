@@ -1,0 +1,21 @@
+{
+ "experiment_id":"EXP-20261013-element-projection","status":"REGISTERED",
+ "hypothesis":"Part of GBCT error lies in known nonconserving directions and can be removed without learning a general residual function.",
+ "evidence":["Base elemental-increment residuals are nonzero in saved physical diagnostics", "Additional shared/species corrections improve fitting but damage unseen predictions"],
+ "alternatives":"Conservation removes an L2 error mode but spreads error into small accurate species; amplitude weighting reduces damage but fails to repair sufficiently; constraints insufficient to determine true kinetics.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/species-heads-20261013","control_review_sha256":"ad0f77c14d381ab1805471a1c8038291f48f19952817fb0da02078dc6d48a91f",
+ "selection":"element_projection_pool","selection_seed_offset":701,
+ "seeds":[20261011,20261012],"arms":["uniform","amplitude"],
+ "fit_rows":20000,"calibration_rows":10000,"check_rows":20000,
+ "batches":1,"batch_size":50000,"work_note":"Admission budget denotes one finite inference pass, not optimizer updates. No fit occurs. Additional fixed replay/timing passes are declared below.",
+ "method":"Given elemental mass-fraction matrix A over58active species, b from frozenbase, D=diag(s): return b-D V (U^T A b /sigma), where U,sigma,V^T=SVD(A D). Uniform s=1; amplitude s=1e-14+abs(b), normalized by row maximum (algebraically invariant). Remove zero elemental rows only and require A full row rank. Keep AR unchanged.",
+ "numerical_policy":"FP64 reduced SVD. If sigma_min<=1e-12*sigma_max use identity for that entire state and count it. This is an input-only numerical fallback, not reference routing. No clipping, positivity projection or normalization. Record raw base, returned predictions, conservation residual and fallback mask.",
+ "fixed":"Same50k state identities as preceding trials, same basemodels/inputs/physical scoring. No labels, thresholds or weights fitted. Original20k fit/10kcal/20kcheck names denote inherited diagnostic populations only, not training of this projection.",
+ "inference":"State-only Bubblewrap plus base/preprocessing and mechanism-derived A metadata. No kinetics at runtime. Repeat predictions exactly; warm timings6passes on1024inputprefix, first discarded; alternate anchor/candidate ordering. OneGPU sequentially.",
+ "prechecks":"Projection zero-defect identity within arithmetic tolerance; A times output nearzero in well-conditioned synthetic cases; weighted leastnorm identity; inactiveAR; SVD condition/fallback; independent CPU formula samples and full protected metric recount.",
+ "advance_rule":"Amplitude check beatsbase by0.005 in bothseeds and all unchanged screening guards; fullU/D required later. Uniform is a geometry control, not a relaxed gate. No conservation-only promotion; latency measured separately.",
+ "next":"If useful accuracy survives, investigate numerical/cost checks then fullqualification. If conservation spreads damage, close this projection recipe; do not tune weights on check. Use component contribution and conditioning evidence to choose next cause.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":300},
+ "run":"runs/offline-accuracy/element-projection-20261013","confirmation_access":false
+}

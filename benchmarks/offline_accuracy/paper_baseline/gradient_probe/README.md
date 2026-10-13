@@ -66,6 +66,8 @@ the admission guard. It fits only20k labels and runs a separate state-only worke
 See `kinetic_features/README.md`; historical diagnostic selection is unchanged.
 `EXP-20261013-species-heads` reuses those same roles but changes only parameter
 sharing. Read its README; no kinetic features enter either arm.
+`EXP-20261013-element-projection` is a no-fit algebraic constraint diagnostic.
+Its worker receives states and model-only assets; no training labels are mounted.
 
 Run `python -m pytest tests/test_gradient_probe.py -q`. Expect known conflicting,
 orthogonal and zero-gradient cases and a correctly normalized group sum. Check

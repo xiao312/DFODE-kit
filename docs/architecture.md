@@ -356,6 +356,11 @@ initial-rate formulas. Its separate state-only inference worker receives the
 private mechanism and frozen weights/scaler, not reference arrays. The trusted
 review process scores full saved outputs. No production dependency is added.
 
+`element_projection` uses the same guarded diagnostic controller and state-only
+base replay. A mechanism-derived constraint matrix is its only added metadata.
+It performs no training. Its declared projection/fallback is scored as returned,
+with raw base predictions retained; no protected evaluator changes are made.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.
