@@ -1,5 +1,15 @@
 # Frozen correction transfer and targeted reference audit
 
+## Completed evidence
+
+[Review the results and next decision](https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6137254405).
+Same-source correction-unseen acceptance falls from 72.24% / 72.27% to
+66.12% / 66.10%. None of the tested positive damping factors improves unseen
+acceptance. All 64 sampled tail anchors retain their signs across reference
+checks. These findings support the sampled labels, not the full dataset.
+Keep the continued bases. No new training or size progression was launched.
+The next proposed comparison changes correction features, not the loss.
+
 ## Responsibility and non-goals
 
 Diagnose the completed coordinate Smooth L1 heads without fitting anything.
