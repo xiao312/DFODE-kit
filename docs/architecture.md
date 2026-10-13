@@ -138,6 +138,14 @@ preservation and fixed damping without fitting. `audit -> flame chemistry`
 rechecks selected fixed-T/V references using bounded CPU integration. These
 artifacts never overwrite training labels or promote a correction policy.
 
+`paper_baseline.hidden_features.prepare -> checked correction caches / frozen base`
+stages train-only labels and state-only evaluation inputs. `worker ->
+correction_scaling.train/objectives + hidden_features.model` tests frozen feature
+access against a near-parameter-matched head. `campaign -> research_contract
+admission/sandbox/scorer` isolates candidate execution and scores returned arrays.
+The trusted controller owns references; candidate inference cannot mount them.
+Confirmation remains separately disabled. Production modules remain unchanged.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and

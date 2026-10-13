@@ -102,6 +102,11 @@ recomputed labels. Fail closed on identity, finite-value or replay disagreement.
 
 ## Dependencies and verification
 
+`train.fit` also accepts `development=None` for label-isolated new experiments.
+This omits development progress diagnostics only; optimizer work and all existing
+callers remain unchanged. The separate `hidden_features` comparison uses this
+interface and independently scores its final checkpoints.
+
 `prepare -> plan / coverage / model`; `run -> train / evaluate / model / plan`.
 Read checked inputs via matched_work, continued weights via adaptive, and reuse
 adaptive features, decoder_loss numerical coordinates and resolved_fit's probe

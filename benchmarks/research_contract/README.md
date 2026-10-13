@@ -20,6 +20,13 @@ Add `--execute` to write an independent real-array score report. It reads the
 saved predictions; neural label-free replay remains a separate required check.
 The output is a new JSON artifact; existing reports and models stay unchanged.
 
+`sandbox.command` supplies a Bubblewrap allowlist for candidate workers: source,
+the pinned Python environment, one input directory and optional model directory
+are read-only. Only that worker's output directory is writable. Home, credentials,
+reference directories and network interfaces are absent. `sandbox.probe` tests
+these boundaries and a GPU kernel before execution. The controller remains trusted;
+this is candidate-process isolation, not separate-custodian confirmation security.
+
 ## Dependencies and security
 
 The standalone scorer depends on NumPy. The replay adapter uses the historical

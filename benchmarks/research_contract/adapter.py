@@ -15,6 +15,17 @@ def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def verify_evaluator_lock(project):
+    """Canonical LF hashes work across Windows/Linux checkouts; pin before fitting."""
+    lock = read_json(Path(project) / "research/evaluator-lock.json")
+    for name, expected in lock["canonical_lf_sha256"].items():
+        path = project_path(project, name)
+        actual = hashlib.sha256(path.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+        if actual != expected:
+            raise ValueError("Protected evaluator source changed: " + name)
+    return lock
+
+
 def checked_file(path, expected):
     if not isinstance(expected, str) or len(expected) != 64 or digest(path) != expected:
         raise ValueError(f"Pinned artifact changed: {path}")

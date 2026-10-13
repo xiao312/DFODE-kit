@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
   "experiment_id": "EXP-20261013-hidden-features",
-  "status": "PROPOSED",
+  "status": "APPROVED_PENDING_PRECHECKS",
   "hypothesis_id": "H-hidden-features",
   "question": "Do frozen-base hidden features improve repair, preservation and transfer beyond a comparable trainable-parameter budget?",
   "evidence": [
@@ -61,7 +61,7 @@
     "batch_size": 10000,
     "row_presentations": 60000000,
     "match_type": "updates_and_presentations_not_equal_compute",
-    "fit_wall_limit_s": 1200
+    "fit_wall_limit_s": null
   },
   "controls_note": "Reuse A only if recorded environment and all unchanged artifacts match. Different-shaped heads cannot have identical weight hashes; zero initialization must give identical initial physical predictions. Rerun A for current timing/runtime parity.",
   "outcome_predictions": {
@@ -71,8 +71,8 @@
     "neither_improves": "This layer/recipe unsupported; select a discriminating next hypothesis, not an automatic layer sweep."
   },
   "promotion_policy": "../campaign.json",
-  "protected_binding_hashes": null,
-  "execution_authorization_id": null,
+  "protected_binding_hashes": "../evaluator-lock.json",
+  "execution_authorization_id": "owner-20261013-resource-caps-removed",
   "outputs": {
     "manifest": "immutable JSON",
     "predictions": "aligned arrays, no references supplied to inference",

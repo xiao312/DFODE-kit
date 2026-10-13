@@ -111,6 +111,6 @@
       }
     }
   },
-  "evaluator_source_sha256": null,
+  "evaluator_source_sha256": "8b35c6ea298d9167355429245f6633ec557cf886682fbd6f8921cdea653643b3",
   "environment_relative": "runs/envs/paired-gpu-20261009/bin/python"
 }

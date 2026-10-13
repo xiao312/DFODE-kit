@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "boundary": "Candidate processes have read-only source and no evaluation-label mount. Controller is trusted; confirmation remains disabled.",
+  "canonical_lf_sha256": {
+    "benchmarks/research_contract/admission.py": "78c423f02b6f9c35f23be12b6df848e1b895caeac89b34a6c0b96ce73e22498a",
+    "research/campaign.json": "585328bf98103f9a4521f9680011863b06262950a2786ce1e6e0e9751196aeaa",
+    "benchmarks/research_contract/reference.py": "8b35c6ea298d9167355429245f6633ec557cf886682fbd6f8921cdea653643b3",
+    "benchmarks/research_contract/adapter.py": "38b98c87439a18da17b3b9fedf2b20bc2cc3bfb8c60eccb07141b190a40e694a",
+    "research/EVALUATION.md": "e3e381b02f917b8a4fc35fbf380434e3f57403491f95493529ecb77bf0f592cb",
+    "benchmarks/research_contract/sandbox.py": "ae35566f7bfc7e4c15e5dbc0734988d82da949e887fcb457b7dbaebdcbcdae08",
+    "benchmarks/research_contract/gates.py": "93e7460ea001c09ed6a1a1f7127359c3a47eb6a99175ce03582a21b9d5edb301",
+    "research/bindings.json": "cd9483b4a1bb0a553cf8f908840f07ef5abc48d34b977a29e5c5601561b59fee"
+  }
+}

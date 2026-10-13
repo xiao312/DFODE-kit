@@ -40,7 +40,7 @@ def fit(training,development,active,config,destination):
     with (destination/"gradients.jsonl").open("x") as log:
         batches = (np.arange(len(x)) for _ in range(config["updates"])) if config.get("training_only_probe") else batch_indices(len(x),config)
         for completed,selected in enumerate(batches):
-            if time.monotonic()-started > config["wall_seconds"]:
+            if config["wall_seconds"] is not None and time.monotonic()-started > config["wall_seconds"]:
                 raise TimeoutError("Fixed-work fit exceeded declared training limit")
             fraction = completed/max(1,config["updates"]-1)
             lr = config["final_learning_rate"]+.5*(config["learning_rate"]-config["final_learning_rate"])*(1+np.cos(np.pi*fraction))
@@ -61,7 +61,7 @@ def fit(training,development,active,config,destination):
             if step%config["diagnostics_every_updates"]==0:
                 record = dict(update=step,loss_before_update=float(loss.detach()),learning_rate=lr,
                     training=compact(model,training,active,config),elapsed_seconds=time.monotonic()-started)
-                if not config.get("training_only_probe"):
+                if not config.get("training_only_probe") and development is not None:
                     record["development"] = compact(model,development,active,config)
                 history.append(record)
                 with (destination/"progress.jsonl").open("a") as handle:
