@@ -18,7 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
-    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear"])
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)
@@ -50,6 +50,13 @@ def main():
         for relative,expected in report["artifacts"].items():
             if relative.startswith(prefix):checked_file(parent/relative,expected)
         source=parent/"prepared"/str(seed);dest=output/"prepared"/str(seed);dest.mkdir(parents=True)
+        if plan.get("selection")=="kinetic_training_pool":
+            from ..kinetic_features.prepare import stage,execute
+            stage(project,dest,seed,plan)
+            elapsed+=execute(project,dest,output/str(seed),seed,output/"active-job.json",args.gpu)
+            records.append(read_json(output/str(seed)/"result.json"));verify_evaluator_lock(project)
+            print(json.dumps(dict(seed=seed,status=records[-1]["status"])),flush=True)
+            continue
         if plan.get("selection")=="correction_unseen_pool":
             from ..selective_correction.prepare import stage
             stage(project,dest,seed,plan)

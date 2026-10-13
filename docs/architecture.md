@@ -346,6 +346,11 @@ between frozen predictions. It uses the same diagnostic controller and the
 historical checked correction loader. The selector adds no references to its
 inference inputs. Full candidate qualification remains a separate controller path.
 
+`kinetic_features` reuses the diagnostic controller, correction trainer and
+initial-rate formulas. Its separate state-only inference worker receives the
+private mechanism and frozen weights/scaler, not reference arrays. The trusted
+review process scores full saved outputs. No production dependency is added.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.

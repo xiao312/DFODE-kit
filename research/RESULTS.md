@@ -1,6 +1,24 @@
 # Signed-increment research results
 
-## Latest: affine correction selection gives no net repair
+## Latest: nonlinear selection also gives no gain
+
+The second selector test is **valid negative**. Both seeds select the calibrated
+always-base threshold (1.01), with zero repairs and zero damage. Check acceptance
+is therefore unchanged at 72.242 / 72.267%. The 20k check rows are training-pool
+diagnostics, not the protected U20k or independent confirmation.
+
+Close this selector family provisionally. More gate capacity did not establish
+transferable selection under the registered work. This does not prove that all
+learned selection is impossible. Saved replay, independent calibration/count
+reconstruction and protected physical scoring passed. Review:
+`b550eab3491a869f72f066cb6d71654505bb887f562d9af552d60201e7bb3a6b`.
+
+Next: test initial kinetic-rate features against existing inputs and a nearly
+parameter-matched capacity control. This adds mechanism computation, not new
+reference information. It is an accuracy diagnostic with explicit inference cost.
+The continued GBCT models remain the incumbents.
+
+## Previous: affine correction selection gives no net repair
 
 The registered training-only check is **valid negative**. Its affine selector
 returns the base's exact acceptance on both20k check sets:72.242 /72.267%.
