@@ -27,9 +27,14 @@ This is a small one-step development gain, not the main research objective
 solved. The rule cannot fix wrong signs or severe errors. Both directions share
 one base pair, and the development sets have been used repeatedly.
 
-Next: a training-only cross-fit test of species/disagreement reliability. Can
-input-only agreement identify when a larger move to the smaller same-sign base
-prediction is useful? Fixed bins and preservation rules are registered first.
+The follow-up species/disagreement table is closed: out-of-fold gains were only
+0.026 /0.026 percentage points, below the registered0.5-point gate. Always taking
+the smaller same-sign prediction damaged about7.1% of base successes. Independent
+table-eligibility and prediction recount passed. No bins were tuned afterward.
+
+Now running: matched-work representation diversity on existing checkpoints.
+Compare GBCT with state-Box-Cox, signed-power and asinh versus two GBCT seeds.
+Only pinned training rows are used; no new model fit or confirmation access.
 
 ## Previous: teacher compression does not retain the gain
 
