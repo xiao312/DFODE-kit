@@ -29,3 +29,15 @@ the convex segment and thus preserves nonnegative endpoints when both input
 endpoints are nonnegative. `python -m
 benchmarks.offline_accuracy.paper_baseline.paired_base.bounded --project .`
 checks the plan; `--execute` saves results. No fitted parameters or new labels.
+
+`screen_prepare`, `screen_worker`, and `screen_review` perform the separately
+registered full-population test. `gradient_probe.run --experiment
+EXP-20261013-bounded-base-screen --project . --output <new-dir> --execute`
+uses the existing resource lease/admission and Bubblewrap guard. Trusted staging
+holds references outside worker mounts. Each worker sees only one population's
+states/IDs and two pinned base model/preprocessing directories. It saves raw
+base predictions, bounded predictions, exact reload evidence and full-pipeline
+timing. The independent review uses the protected scorer and unchanged gates.
+Review with `python -m
+benchmarks.offline_accuracy.paper_baseline.paired_base.screen_review --project .
+--run <run>`. No automatic incumbent update or confirmation access.

@@ -360,6 +360,10 @@ review process scores full saved outputs. No production dependency is added.
 aligns a common training-only population, and uses the protected scorer plus an
 independent recount. It has no training or production dependent. Cached mean
 predictions do not establish fresh inference isolation or runtime cost.
+Its separately registered full screening adapter uses `gradient_probe.run`
+admission -> `hidden_features.run_worker` -> state-only `screen_worker` with two
+pinned models. `screen_review` independently verifies arrays and runs protected
+gates. There is no production or automatic-promotion dependency.
 
 `element_projection` uses the same guarded diagnostic controller and state-only
 base replay. A mechanism-derived constraint matrix is its only added metadata.

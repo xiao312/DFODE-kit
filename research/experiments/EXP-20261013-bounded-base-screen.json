@@ -1,0 +1,17 @@
+{
+ "experiment_id":"EXP-20261013-bounded-base-screen","status":"REGISTERED",
+ "hypothesis":"The fixed bounded consensus gain transfers from the common training diagnostic to the complete required populations.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/element-projection-20261013","control_review_sha256":"03e255e1172835f7a50c4b8531f3d36801017ed4ab9d2e8f87a790d7f4ebc15e",
+ "diagnostic_run":"runs/offline-accuracy/bounded-base-mean-20261013","diagnostic_review_sha256":"b71285042a271a877bedee6ac9215f0411b16880d41bf312fdde77e4a20431a7",
+ "selection":"bounded_base_screen","seeds":[20261011,20261012],"fraction":0.1,
+ "populations":["same_source_unseen","development"],"counts":{"same_source_unseen":20000,"development":1023},
+ "batches":1,"batch_size":21023,"work_note":"Finite inference only; no optimizer or training. For each anchor and population: fresh base pair, exact reload/replay, six fixed timing passes (discardfirst), compare oneanchor versus complete pair plus bound.",
+ "fixed":"Same formula and cap as bounded-base-mean; samebaseweights and preprocessing; no fitting, cap tuning, temperature routing or extra reference access. Apply bound to raw signed physical increments; AR unchanged. States only at inference.",
+ "exposure":"Both bases saw all source training rows including U; no bounded-adjustment coefficients learned. D repeatedly inspected. One overlapping two-base pair, not independent ensemble replication. Each anchor direction is compared with its own seed anchor/incumbent, which remain identical.",
+ "prediction_rule":"b+clip((q-b)/2, -0.1*(1e-15+0.1*abs(b)), +0.1*(1e-15+0.1*abs(b))). The cap is a declared model operation, not the protected reference tolerance.",
+ "verification":"Bubblewrap model-only mounts for both pinned bases, inputstate/ID arrays only, exact anchor/othercache parity, exact savedweight reload/replay, independent full physical recount, independent boundedformula, sign/events/endpoints/species/regimes/snapshots and latency. Check sufficient preservation bound; repairs can only occur at Ebase<=1.111111 in exactarithmetic.",
+ "decision":"Protected conjunctive gates on fullU/D bothanchors, no manualpromotion. If physical checks pass but latencyfails, preserve asaccuracy-only and separately test implementation efficiency with fixedpredictions. If physicalgatesfail, identify precise limitation and do not capscan.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":300},
+ "run":"runs/offline-accuracy/bounded-base-screen-20261013","confirmation_access":false
+}

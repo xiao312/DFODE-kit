@@ -68,6 +68,8 @@ See `kinetic_features/README.md`; historical diagnostic selection is unchanged.
 sharing. Read its README; no kinetic features enter either arm.
 `EXP-20261013-element-projection` is a no-fit algebraic constraint diagnostic.
 Its worker receives states and model-only assets; no training labels are mounted.
+`EXP-20261013-bounded-base-screen` uses the same guard for the full U/D
+inference test. Its two-model mount has no labels; see `paired_base/README.md`.
 
 Run `python -m pytest tests/test_gradient_probe.py -q`. Expect known conflicting,
 orthogonal and zero-gradient cases and a correctly normalized group sum. Check
