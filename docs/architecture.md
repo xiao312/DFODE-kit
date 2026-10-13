@@ -161,6 +161,14 @@ residual transfer on those same graphs. It cannot promote a model or change data
 `local_predictability.review -> saved arrays` recounts physical outcomes;
 `summary -> reviewed report` exports aggregate evidence without state arrays.
 
+`paper_baseline.species_distance.run -> verified local_predictability artifacts`
+reuses the fixed libraries and queries. `metric -> training-only rank statistics`
+fits species-specific diagonal weights without query labels. `worker ->
+local_predictability.neighbors` searches isolated feature-only inputs; `analysis`
+uses the same graph for full-target and correction transfers. The existing
+independent review recounts physical scores. No evaluator or production dependency
+changes, and this diagnostic cannot promote a predictor.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and

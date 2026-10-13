@@ -1,0 +1,33 @@
+{
+  "experiment_id": "EXP-20261013-species-distance",
+  "kind": "training_metric_local_transfer_diagnostic",
+  "status": "REGISTERED",
+  "hypothesis": "Species-specific input relevance improves local correction transfer compared with a shared global distance.",
+  "changed_factor": "Fixed species-specific diagonal feature weights learned from training-only rank association",
+  "prior_run": "runs/offline-accuracy/local-predictability-20261013",
+  "prior_review_sha256": "0a9fd75d42d97ba6d4c40c5336de4fc7174dcbc65b63dbcd338a5f494aa6e11f",
+  "seeds": [20261011, 20261012],
+  "libraries": [10000, 50000],
+  "query_counts": {"training_loo": 1024, "same_source_unseen": 2048, "development": 1023},
+  "features": 119,
+  "calibration": "50k library excluding all 1024 T query IDs; same 48976 rows for both library sizes; U/D excluded",
+  "calibration_target": "asinh(reference/1e-14)-asinh(frozen_base/1e-14), active species only",
+  "metric": "w_ij = 0.1 + 0.9*119*rho_ij^2/sum_j(rho_ij^2); average-rank Spearman correlation; all-one fallback for zero sum",
+  "uniform_weight_fraction": 0.1,
+  "controls": ["all-one global 119-feature distance with exact prior graph parity", "same queries and nested libraries", "same graph for target/correction transfer"],
+  "neighbors": [1, 8],
+  "search": "FP64 direct differences after sqrt-weight scaling; stable library-order ties; dataset-qualified self exclusion",
+  "cpu_verification_queries_per_species_library": 3,
+  "physical_rule": "abs(error) <= 1e-15 + 0.1*abs(reference)",
+  "primary_comparison": "correction transfer on U and D, separately for k=1 and k=8 and both library sizes/seeds",
+  "outcomes": {
+    "gain_with_less_damage_both_seeds": "Species relevance is supported for these diagnostic transfers; consider one trained feature-local method, not a deployed lookup.",
+    "gain_but_below_base": "Metric contains additional signal but is insufficient; no promotion or automatic library growth.",
+    "no_consistent_gain": "Close this simple marginal-rank metric recipe; do not tune its floor on D.",
+    "training_only_gain": "Association did not transfer; no held-out or general applicability claim."
+  },
+  "limitations": ["Marginal monotone correlations can miss interactions and nonmonotone dependence", "10k searches use metric calibration beyond the 10k library", "T query labels are excluded from metric fitting, but the frozen base saw them", "U and D are repeatedly inspected development diagnostics"],
+  "resource": {"gpu_workers": 1, "cpu_threads": 1, "searches_per_seed": 59, "neural_fits": 0, "new_references": 0},
+  "promotion_allowed": false,
+  "confirmation_access": false
+}

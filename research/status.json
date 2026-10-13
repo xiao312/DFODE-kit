@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "LOCAL_PREDICTABILITY_DIAGNOSTIC_REVIEWED",
-  "active_experiment": null,
+  "stage": "SPECIES_DISTANCE_DIAGNOSTIC_REGISTERED",
+  "active_experiment": "EXP-20261013-species-distance",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -25,7 +25,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Register a training-derived species-specific distance diagnostic against the fixed global-feature control. Current global neighbors contain some signal but damage too many base passes; no local-table, loss, width or size sweep is justified.",
+  "next_action": "Verify tests and provenance, then execute the registered training-only species rank distance diagnostic. Keep query labels out of metric fitting and search; recount physical scores before interpretation.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
