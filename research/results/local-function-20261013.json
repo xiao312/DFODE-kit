@@ -1,0 +1,1215 @@
+{
+  "experiment": "EXP-20261013-local-function",
+  "source": "8c2e4437",
+  "review_sha256": "83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "status": "VALID_NEGATIVE",
+  "incumbent_changed": false,
+  "rule": "abs(prediction-reference) <= 1e-15 + 0.1*abs(reference)",
+  "population_note": "T=50000 candidate-training states; U=20000 candidate-unseen/base-seen same-source states; D=1023 repeatedly inspected development states; nominal references, no independent confirmation",
+  "table": [
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7201179310344827,
+      "base": 0.7217472413793103,
+      "repaired": 27072,
+      "damaged": 31797,
+      "damage_rate": 0.015191582495925835,
+      "p99": 12.155452825480268,
+      "nontrivial": 0.712471726535383,
+      "weak": 0.5161189736801914,
+      "active": 0.7241084106298685,
+      "sign_errors": 41696,
+      "negative": 21948
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7150644827586207,
+      "base": 0.7217472413793103,
+      "repaired": 50113,
+      "damaged": 69493,
+      "damage_rate": 0.03320151719940164,
+      "p99": 12.39503292051014,
+      "nontrivial": 0.7072950078131425,
+      "weak": 0.5147253474520185,
+      "active": 0.7187074900484051,
+      "sign_errors": 41556,
+      "negative": 30147
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7203068965517241,
+      "base": 0.7224068965517242,
+      "repaired": 10504,
+      "damaged": 12940,
+      "damage_rate": 0.01544167486085786,
+      "p99": 12.162611023919936,
+      "nontrivial": 0.7126921885183721,
+      "weak": 0.5175918686473807,
+      "active": 0.7242223783411681,
+      "sign_errors": 16342,
+      "negative": 8849
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7149318965517242,
+      "base": 0.7224068965517242,
+      "repaired": 19598,
+      "damaged": 28269,
+      "damage_rate": 0.03373421225978291,
+      "p99": 12.421035029002132,
+      "nontrivial": 0.7071727230312809,
+      "weak": 0.5161238850505018,
+      "active": 0.7184634752391684,
+      "sign_errors": 16307,
+      "negative": 11893
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6816159368995854,
+      "base": 0.6829642363568948,
+      "repaired": 585,
+      "damaged": 665,
+      "damage_rate": 0.01641043358092935,
+      "p99": 18.68981626257775,
+      "nontrivial": 0.6672407670454545,
+      "weak": 0.43856879768481977,
+      "active": 0.6837906281536206,
+      "sign_errors": 1041,
+      "negative": 793
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6780935045673644,
+      "base": 0.6829642363568948,
+      "repaired": 1081,
+      "damaged": 1370,
+      "damage_rate": 0.03380796091108753,
+      "p99": 19.030254942471544,
+      "nontrivial": 0.6635653409090909,
+      "weak": 0.43830570902394106,
+      "active": 0.6798682381614273,
+      "sign_errors": 1038,
+      "negative": 991
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7213893103448276,
+      "base": 0.7230131034482759,
+      "repaired": 27065,
+      "damaged": 31774,
+      "damage_rate": 0.015154015427774,
+      "p99": 12.080556801365391,
+      "nontrivial": 0.7138684359201558,
+      "weak": 0.5118735528808435,
+      "active": 0.7258085800616988,
+      "sign_errors": 41487,
+      "negative": 24555
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7167831034482759,
+      "base": 0.7230131034482759,
+      "repaired": 49598,
+      "damaged": 67665,
+      "damage_rate": 0.03227155705672335,
+      "p99": 12.32481568534941,
+      "nontrivial": 0.7091618105822709,
+      "weak": 0.5101768754345344,
+      "active": 0.7209240333272756,
+      "sign_errors": 41338,
+      "negative": 33294
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7209853448275862,
+      "base": 0.7227474137931035,
+      "repaired": 10666,
+      "damaged": 12710,
+      "damage_rate": 0.0151600633120504,
+      "p99": 11.990647205563974,
+      "nontrivial": 0.7134658092080376,
+      "weak": 0.5153304528724596,
+      "active": 0.7251356051216559,
+      "sign_errors": 16300,
+      "negative": 9825
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.716226724137931,
+      "base": 0.7227474137931035,
+      "repaired": 19700,
+      "damaged": 27264,
+      "damage_rate": 0.03251958820926374,
+      "p99": 12.258659183211961,
+      "nontrivial": 0.7085631633992746,
+      "weak": 0.5133461353816611,
+      "active": 0.7200610753215173,
+      "sign_errors": 16253,
+      "negative": 13267
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6849529780564263,
+      "base": 0.688003505578589,
+      "repaired": 547,
+      "damaged": 728,
+      "damage_rate": 0.017833521140561463,
+      "p99": 17.329092440841848,
+      "nontrivial": 0.6708096590909091,
+      "weak": 0.43856879768481977,
+      "active": 0.6876178145052266,
+      "sign_errors": 1058,
+      "negative": 792
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6806047123066032,
+      "base": 0.688003505578589,
+      "repaired": 962,
+      "damaged": 1401,
+      "damage_rate": 0.034319729557591494,
+      "p99": 18.024232707523964,
+      "nontrivial": 0.6662642045454545,
+      "weak": 0.4388318863456985,
+      "active": 0.6827243473790438,
+      "sign_errors": 1059,
+      "negative": 1060
+    }
+  ],
+  "latency_ratios": {
+    "global": [
+      2.4859739921481867,
+      2.4264000741477845,
+      2.412435007622563,
+      2.4181975048697826
+    ],
+    "species": [
+      2.4662418616625548,
+      2.4858759132680692,
+      2.4951974541460715,
+      2.500355437728492
+    ]
+  },
+  "decisions": {
+    "global": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:H2CN",
+          "species_gain:HONO",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:H2CN",
+          "species_gain:HONO",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:C2H2",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:C2H2",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "negative_endpoints"
+        ],
+        "inference": [
+          "Inference budget exceeded"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    },
+    "species": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H",
+          "species_gain:CH2O",
+          "species_gain:C2H4",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "weak_nontrivial_p99",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H",
+          "species_gain:CH2O",
+          "species_gain:C2H4",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "weak_nontrivial_p99",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H",
+          "species_gain:H2O2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:NH2",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:NCO",
+          "species_gain:CH2CHO",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H",
+          "species_gain:H2O2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:NH2",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:NCO",
+          "species_gain:CH2CHO",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:HO2",
+          "species_gain:CH2O",
+          "species_gain:C2H2",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:HO2",
+          "species_gain:CH2O",
+          "species_gain:C2H2",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:CH2OH",
+          "species_gain:CH3O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:CH2OH",
+          "species_gain:CH3O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "inference": [
+          "Inference budget exceeded"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    }
+  },
+  "slices": [
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 614090,
+          "damaged": 133,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 982574,
+          "damaged": 732,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 344722,
+          "damaged": 3866,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 119884,
+          "damaged": 27066,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 530688,
+          "damaged": 8348,
+          "repaired": 7205
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 521003,
+          "damaged": 7874,
+          "repaired": 6570
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 521569,
+          "damaged": 7821,
+          "repaired": 6678
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 515082,
+          "damaged": 7754,
+          "repaired": 6619
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 611541,
+          "damaged": 2682,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 973547,
+          "damaged": 9759,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 330822,
+          "damaged": 17766,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 107664,
+          "damaged": 39286,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 527311,
+          "damaged": 17438,
+          "repaired": 12918
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 517126,
+          "damaged": 17700,
+          "repaired": 12519
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 517835,
+          "damaged": 17391,
+          "repaired": 12514
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 511415,
+          "damaged": 16964,
+          "repaired": 12162
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 245284,
+          "damaged": 57,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 394022,
+          "damaged": 314,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 137762,
+          "damaged": 1528,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 47984,
+          "damaged": 11041,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 210988,
+          "damaged": 3325,
+          "repaired": 2766
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 208956,
+          "damaged": 3118,
+          "repaired": 2591
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 208208,
+          "damaged": 3238,
+          "repaired": 2562
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 207404,
+          "damaged": 3259,
+          "repaired": 2585
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 244248,
+          "damaged": 1093,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 390407,
+          "damaged": 3929,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 132077,
+          "damaged": 7213,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 42991,
+          "damaged": 16034,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 209486,
+          "damaged": 7091,
+          "repaired": 5030
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 207353,
+          "damaged": 7015,
+          "repaired": 4885
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 206556,
+          "damaged": 7124,
+          "repaired": 4796
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 205926,
+          "damaged": 7039,
+          "repaired": 4887
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 11036,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 19048,
+          "damaged": 9,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 7228,
+          "damaged": 84,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2546,
+          "damaged": 572,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20510,
+          "damaged": 336,
+          "repaired": 311
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19933,
+          "damaged": 329,
+          "repaired": 274
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 11003,
+          "damaged": 33,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 18869,
+          "damaged": 188,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 6954,
+          "damaged": 358,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2327,
+          "damaged": 791,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20402,
+          "damaged": 689,
+          "repaired": 556
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19832,
+          "damaged": 681,
+          "repaired": 525
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 616645,
+          "damaged": 167,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 986674,
+          "damaged": 890,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 343213,
+          "damaged": 3481,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 118432,
+          "damaged": 27236,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 529480,
+          "damaged": 8348,
+          "repaired": 7336
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 522876,
+          "damaged": 7936,
+          "repaired": 6636
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 522563,
+          "damaged": 7974,
+          "repaired": 6609
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 517110,
+          "damaged": 7516,
+          "repaired": 6484
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 614437,
+          "damaged": 2375,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 978827,
+          "damaged": 8737,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 329511,
+          "damaged": 17183,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 106298,
+          "damaged": 39370,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 526326,
+          "damaged": 17056,
+          "repaired": 12890
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 519224,
+          "damaged": 17391,
+          "repaired": 12439
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 519305,
+          "damaged": 16961,
+          "repaired": 12338
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 513816,
+          "damaged": 16257,
+          "repaired": 11931
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 246487,
+          "damaged": 79,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 394717,
+          "damaged": 377,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 137331,
+          "damaged": 1352,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 47142,
+          "damaged": 10902,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 211202,
+          "damaged": 3453,
+          "repaired": 2823
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 209594,
+          "damaged": 3099,
+          "repaired": 2651
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 208616,
+          "damaged": 3005,
+          "repaired": 2570
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 206931,
+          "damaged": 3153,
+          "repaired": 2622
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 245635,
+          "damaged": 931,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 391423,
+          "damaged": 3671,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 131776,
+          "damaged": 6907,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 42289,
+          "damaged": 15755,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 209926,
+          "damaged": 6894,
+          "repaired": 4988
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 208148,
+          "damaged": 6927,
+          "repaired": 5033
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 207162,
+          "damaged": 6674,
+          "repaired": 4785
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 205587,
+          "damaged": 6769,
+          "repaired": 4894
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11167,
+          "damaged": 3,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 19188,
+          "damaged": 15,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 7094,
+          "damaged": 65,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 2645,
+          "damaged": 645,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20599,
+          "damaged": 343,
+          "repaired": 291
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 20042,
+          "damaged": 385,
+          "repaired": 256
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11134,
+          "damaged": 36,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 19045,
+          "damaged": 158,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 6846,
+          "damaged": 313,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 2396,
+          "damaged": 894,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20458,
+          "damaged": 693,
+          "repaired": 500
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 19925,
+          "damaged": 708,
+          "repaired": 462
+        }
+      }
+    }
+  ]
+}

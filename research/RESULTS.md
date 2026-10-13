@@ -1,10 +1,37 @@
 # Signed-increment research results
 
-## Latest: full-data coefficient refinement
+## Latest: species-constant calibration
+
+**Valid negative result. The continued GBCT base remains the incumbent.**
+Physical-interval consensus improves training acceptance by only 0.047 / 0.052
+percentage points. These small gains do not transfer. Coordinate Smooth L1
+does not provide a useful calibration either. Both methods create additional
+negative endpoints and fail the unchanged qualification gates.
+
+| Predictor | Same-source unseen, 20k | Development, 1,023 |
+|---|---:|---:|
+| Constant coordinate Smooth L1 | 72.22 / 72.27% | 68.33 / 68.74% |
+| Constant interval consensus | 72.23 / 72.27% | 68.30 / 68.73% |
+| Continued GBCT | 72.24 / 72.27% | 68.30 / 68.80% |
+
+The [aggregate evidence](results/interval-calibration-20261013.json) records the
+counts and rejected gates. State-only replay, independent physical recount,
+and exact frozen-base replay passed. This closes the global-shift explanation
+provisionally. It does not rule out a useful input-dependent model.
+
+Next: a [training-only parameter-gradient probe](experiments/EXP-20261013-gradient-probe.json)
+of the continued base. Measure actual Adam-step repairs and damage before
+choosing another optimizer or parameter-sharing intervention. No new candidate
+or independent-confirmation claim is made.
+
+## Previous: full-data coefficient refinement
 
 **Valid negative result. More accurate fitting of this coordinate objective did
 not improve the physical predictor.** The protected scorer and separate recount
 reject both arms. Continued GBCT remains the incumbent.
+
+The [aggregate scorecard](results/local-optimum-20261013.json) contains the full
+population counts, repair/damage, tails, latency, gate failures and snapshot cuts.
 
 | Predictor | Same-source unseen, 20k | Development, 1,023 |
 |---|---:|---:|
@@ -37,6 +64,8 @@ No reference-dependent inference or temperature switch is added. See the
 same 128 centres, 7,424 learned coefficients, 50k training states and work budget.
 Unlike the earlier neighbor diagnostic, these models use fixed learned weights
 at inference, with no reference-library lookup.
+The [aggregate scorecard](results/local-function-20261013.json) preserves the
+full comparisons and damage slices without publishing private prediction arrays.
 
 | Predictor | Same-source unseen, 20k | Development, 1,023 |
 |---|---:|---:|

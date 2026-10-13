@@ -117,6 +117,11 @@ audit and four sequential GPU fits retain the existing external time limits.
 
 ## Review output
 
+The [gradient probe](gradient_probe/README.md) diagnoses parameter-level repair
+and preservation effects on fixed training batches. It reuses the frozen base,
+decoder and research admission/isolation modules. It does not train or promote
+a candidate and never reads development or confirmation labels.
+
 The [matched-target experiment](matched_targets/README.md) reuses the fixed 200k
 pool for a four-target, three-objective comparison under one common 18k schedule.
 Its normalized-coordinate and physical losses remain separate named factors.

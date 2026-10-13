@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "INTERVAL_CALIBRATION_RUNNING",
-  "active_experiment": "EXP-20261013-interval-calibration",
-  "active_jobs": [{"kind":"controller","pid":3776930,"start_ticks":"1049222566","source":"7f95dcff","run":"runs/offline-accuracy/interval-calibration-20261013","worker_state":"runs/offline-accuracy/interval-calibration-20261013/active-job.json","lease":"runs/research-control/EXP-20261013-interval-calibration.lease.json"}],
+  "stage": "GRADIENT_PROBE_REGISTERED",
+  "active_experiment": "EXP-20261013-gradient-probe",
+  "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/local-optimum-20261013/review.json",
-  "last_review_sha256": "54d9090e28f63fa0eb3d2687fc823abf861149f2e8167134bcd84f6af156aae5",
+  "last_verified_result": "runs/offline-accuracy/interval-calibration-20261013/review.json",
+  "last_review_sha256": "14baf8946b9df28ff5e8526d64188ecfd9e3beb057a6a1068ee689ae048771f8",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -18,17 +18,18 @@
     "runs/offline-accuracy/local-predictability-20261013",
     "runs/offline-accuracy/species-distance-20261013",
     "runs/offline-accuracy/local-function-20261013",
-    "runs/offline-accuracy/local-optimum-20261013"
+    "runs/offline-accuracy/local-optimum-20261013",
+    "runs/offline-accuracy/interval-calibration-20261013"
   ],
   "budget": {
-    "configurations": 10,
-    "primary_fits": 20,
+    "configurations": 12,
+    "primary_fits": 24,
     "post_screening_diagnostics": 2,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Reconnect to the existing interval-calibration controller; do not start a duplicate. Then run local_function.postcheck and review on its completed run. Local basis/optimizer family is provisionally closed. Continue after the new diagnostic without routine owner review.",
+  "next_action": "Test and execute the registered gradient_probe.run on two seeds, using training data only. Interval calibration completed and independently recounted; do not repeat.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
