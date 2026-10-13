@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "CONSENSUS_DISTILL_REGISTERED",
+  "stage": "CONSENSUS_DISTILL_RECOUNTED",
   "active_experiment": "EXP-20261013-consensus-distill",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
@@ -45,7 +45,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and execute registered consensus-distill via guardedcontroller; two6000update GPUheadfits on common50k plusconstantcontrol, then state-onlyfullU/D inference and consensus_distill.review. No teacherqualification inherited, no capscan.",
+  "next_action": "Finish independent supplement for completed distillation. Reject head and constant. Register and test GPU reconstruction of strict two-base consensus; preserve source predictions and compare complete cost and arithmetic drift. No active training job.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

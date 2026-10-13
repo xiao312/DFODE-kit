@@ -1,6 +1,23 @@
 # Signed-increment research results
 
-## Latest: strict consensus passes physical gates, but is too slow
+## Latest: teacher compression does not retain the gain
+
+The small head is **valid negative**, not a new incumbent. It costs1.37-1.40x
+the base, within the1.5x runtime limit, but gains only0.002 /0.017 percentage
+points on U. Development changes are+0.008 /-0.027 points. A per-species constant
+teacher fraction performs similarly. The head does not consistently beat it.
+
+Both6000-update fits completed. Exact state-only replay, independent physical
+recounts, and a separate source review passed. The bounded decoder prevents new
+sign reversals and magnitude growth, but cannot make an inaccurate teacher
+approximation useful. Each head trained on the same common50k states, excluding
+both U sets. No confirmation data was used and no candidate was promoted.
+
+Next: test the cost of the verified two-base rule with shared input preparation
+and GPU reconstruction. This is an implementation test, not a larger head or
+another loss. Measure arithmetic differences and all physical gates again.
+
+## Previous: strict consensus passes physical gates, but is too slow
 
 The strict interval retains base signs and limits magnitude growth. Fresh
 isolated replay passes **every physical gate** on fullU20k andD1023 for both
