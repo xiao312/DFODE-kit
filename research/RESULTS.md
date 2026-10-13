@@ -1,6 +1,116 @@
 # Signed-increment research results
 
-## Latest: local predictability diagnostic
+## Latest: species-specific distance diagnostic
+
+**Result: better local information, but no better predictor than the base.**
+The continued GBCT models remain the incumbents. The physical acceptance rule
+stays `abs(error) <= 1e-15 + 0.1*abs(reference)`.
+
+### What changed
+
+The previous diagnostic used one distance for all 58 species. This test gave
+each species its own input weights. The weights came from rank correlations
+between inputs and correction targets in 48,976 training-library rows. All 1,024
+training query rows were excluded. No unseen-query or development labels were
+used to fit the weights. A fixed 10% uniform part kept every input in the metric.
+
+```mermaid
+flowchart LR
+  T[Training inputs and correction targets] --> W[Frozen weights for each species]
+  X[Query inputs and frozen base prediction] --> N[Choose neighbors with weighted distance]
+  W --> N
+  N --> C[Transfer training correction coordinates]
+  C --> D[Stable physical increment decoder]
+  D --> E[Unchanged physical scorer]
+  R[Query references: scorer only] --> E
+```
+
+The libraries, query rows, base models and nearest-1 / mean-of-8 rules did not
+change. The global-distance control was rerun and reproduced the old neighbor
+graphs and physical pass counts. The 10k search also used the fixed 48,976-row
+metric calibration; it is not a 10k-total-data experiment.
+
+### Main comparison
+
+This table uses the fixed 50k library. Values are acceptance percentages for
+seed 11 / seed 12. The same-source-unseen sample has 2,048 states; development
+has all 1,023 states. Neither is independent confirmation.
+
+| Predictor or diagnostic | Same-source unseen | Development |
+|---|---:|---:|
+| Continued GBCT base | **72.23 / 72.27** | **68.30 / 68.80** |
+| Global distance, nearest-1 correction | 57.03 / 57.06 | 55.24 / 55.51 |
+| Species rank distance, nearest-1 correction | 60.81 / 60.80 | 58.51 / 58.80 |
+| Global distance, mean-of-8 correction | 52.05 / 52.06 | 50.34 / 50.40 |
+| Species rank distance, mean-of-8 correction | 61.56 / 61.36 | 59.08 / 58.86 |
+
+All 16 primary correction comparisons improve over their matching global-distance
+control: both library sizes, both neighbor rules, both seeds, and both U/D
+populations. None beats the base. The [aggregate evidence](results/species-distance-20261013.json)
+also includes training queries, full-target transfers, species and snapshot scores.
+
+### What the change fixes, and what it does not fix
+
+For the 50k mean-of-8 development comparison:
+
+| Quantity | Global distance, seed 11 / 12 | Species distance, seed 11 / 12 |
+|---|---:|---:|
+| Base failures repaired | 2,229 / 2,081 | 2,509 / 2,423 |
+| Base successes damaged | 12,883 / 12,997 | 7,979 / 8,321 |
+| Normalized-error p99 | 278.33 / 276.12 | 20.55 / 21.12 |
+| Negative endpoint components | 1,717 / 1,684 | 871 / 925 |
+
+Thus, the gain mainly comes from **less damage**, with some additional repair.
+The p99 error falls by about 92%. Development acceptance improves for 57 and 54
+species respectively; one and three decrease, with no decrease over one percentage
+point relative to this diagnostic control. This is not a claim of improvement
+over the base for those species.
+
+The remaining damage is still too large: 19.69% / 20.38% of base-passing development
+components fail after correction. The base has no negative endpoint components
+in this population. Species distance still gives 871 / 925. Its weak-increment
+acceptance is 40.65% / 40.52%, below the base's 43.86% / 43.88%; active acceptance is
+58.51% / 58.26%, also below the base. No complete development state passes all
+58 species in either of these two weighted mean-of-8 runs. Better neighbors are
+not yet safe corrections. Scores use the existing nominal references; individual
+reference qualification remains limited to the earlier audited subsets.
+
+### Interpretation and next action
+
+The tested feature metric was a real limitation of local transfer: changing only
+its species-specific weights gives a consistent gain. This supports further work
+on input relevance and species-specific structure. It does not prove causality of
+individual input features, intrinsic smoothness, or that separate neural heads
+will succeed. Marginal rank correlations can miss interactions and nonmonotone
+dependence. Some inputs are base-output features, not independent chemical causes.
+
+Do not tune the weight floor on development or deploy label-copying inference.
+The next justified comparison is a **trained species-local correction model
+against the same model with global distance**, at matched model size and work.
+It must learn stored coefficients from training data, not copy reference answers
+at inference. Keep the base as the comparator and require repair, preservation,
+transfer and cost evidence. Register that model comparison before execution;
+it has not been run by this diagnostic.
+
+### Verification and cost
+
+Execution source: `d5aada06`; run: `runs/offline-accuracy/species-distance-20261013`.
+Independent NumPy checks reproduced 696 full-library query rankings across 232
+species/library/seed graphs. All four global-control graphs match the prior run
+exactly. A separate process recounted all 96 physical result records. The old and
+new global controls have zero mismatches in pass, base-pass, repair and damage
+counts. All predictions were finite. The protected evaluator was unchanged.
+
+The registered run took 217 seconds after admission. Worker wall times were
+75.57 and 80.92 seconds; independent checks and scoring took 17.32 and 16.51
+seconds. These are diagnostic execution times, not deployment latency or measured
+GPU allocation time. There were no neural fits or new chemistry references.
+All 94 focused tests run for this change passed. An initial broader test command
+omitted GPU-selection and deterministic-CuBLAS environment settings; rerunning
+with the documented settings passed without code changes. No experiment retry
+was needed. Shared environments and other users' jobs were not modified.
+
+## Earlier: local predictability diagnostic
 
 The continued GBCT models remain the incumbents. This diagnostic does not identify
 an improved predictor. No new model was trained or promoted.

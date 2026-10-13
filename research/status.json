@@ -1,36 +1,38 @@
 {
   "schema_version": 1,
-  "stage": "SPECIES_DISTANCE_DIAGNOSTIC_REGISTERED",
-  "active_experiment": "EXP-20261013-species-distance",
+  "stage": "SPECIES_DISTANCE_DIAGNOSTIC_REVIEWED",
+  "active_experiment": null,
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/local-predictability-20261013/review.json",
-  "last_review_sha256": "0a9fd75d42d97ba6d4c40c5336de4fc7174dcbc65b63dbcd338a5f494aa6e11f",
+  "last_verified_result": "runs/offline-accuracy/species-distance-20261013/review.json",
+  "last_review_sha256": "fa5caa1b06632a7406fea11d3edb91f51f81cd43bb071eb2c443ae4a1adfc249",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
     "runs/offline-accuracy/linear-correction-20261013",
     "runs/offline-accuracy/diversity-20261013",
-    "runs/offline-accuracy/local-predictability-20261013"
+    "runs/offline-accuracy/local-predictability-20261013",
+    "runs/offline-accuracy/species-distance-20261013"
   ],
   "budget": {
     "configurations": 6,
     "primary_fits": 12,
-    "post_screening_diagnostics": 1,
+    "post_screening_diagnostics": 2,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Verify tests and provenance, then execute the registered training-only species rank distance diagnostic. Keep query labels out of metric fitting and search; recount physical scores before interpretation.",
+  "next_action": "Register one trained species-local correction versus the same global-distance model at matched model size/work. The species metric improved all 16 U/D correction-transfer comparisons but still trails the base. No weight-floor sweep, label-copying deployment or promotion.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
   "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention.",
   "confirmation_opened": false,
   "always_on_agent_service": false,
-  "focused_tests_passed": 112
+  "focused_tests_passed": 94,
+  "focused_test_scope": "Tests run for species-distance change; this is not the total repository test count."
 }

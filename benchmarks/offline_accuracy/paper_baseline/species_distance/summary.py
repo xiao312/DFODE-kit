@@ -19,8 +19,15 @@ def main():
         raise ValueError("Independent review required")
     records = []
     for row in report["records"]:
+        full = row["score"]
+        score = {k:full[k] for k in ("groups","coordinate_error","by_snapshot","nontrivial_sign",
+                 "endpoint_diagnostics","returned_prediction_finite","all_active_species_state_acceptance")}
+        score["per_species"] = {name:{k:g[k] for k in ("components","pass_count","base_pass_count","repaired","damaged")}
+                                for name,g in full["per_species"].items()}
+        score["small_target_events"] = [{k:event[k] for k in ("epsilon","eta","components","events","baseline_events")}
+                                        for event in full["small_target_events"]]
         records.append({k:row[k] for k in ("seed","space","library","k","mode","population")}
-                       | {"score":row["score"]})
+                       | {"score":score})
     args.output.parent.mkdir(parents=True,exist_ok=True)
     save(args.output,dict(experiment="EXP-20261013-species-distance",records=records,
          checks=report["checks"],timings=report["timings"],elapsed_seconds=report["elapsed_seconds"],
