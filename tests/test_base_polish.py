@@ -12,3 +12,13 @@ def test_microbatch_preserves_row_mean_gradient(chunk):
     actual=backward_mean(torch.arange(7),objective,chunk)
     torch.testing.assert_close(actual,expected)
     torch.testing.assert_close(w.grad,gradient)
+
+
+def test_support_selection_keeps_prefix_and_excludes_evaluation():
+    import numpy as np
+    from benchmarks.offline_accuracy.paper_baseline.base_polish.prepare import expanded_indices
+    np.testing.assert_array_equal(expanded_indices(8,[4,1],[0,3]),[4,1,2,5,6,7])
+    with pytest.raises(ValueError,match="Evaluation"):
+        expanded_indices(8,[4,1],[1,3])
+    with pytest.raises(ValueError,match="Invalid"):
+        expanded_indices(8,[4,4],[0,3])

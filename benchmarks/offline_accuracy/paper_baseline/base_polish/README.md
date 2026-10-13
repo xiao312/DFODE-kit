@@ -17,6 +17,13 @@ fresh Adam, FP32 parameters, FP64 decoding/loss, cosine 1e-7 to 1e-8 and final
 checkpoint. These are matched updates, not matched presentations or elapsed time.
 The sole primary factor is gradient batch size. No checkpoint is chosen on U/D.
 
+The separate `EXP-20261013-base-support` control retains the completed averaged
+arm's schedule and grows only its fitting population from 50k to 180k existing
+states. It keeps the old 50k prefix, adds all remaining training rows except the
+fixed U20k, and asserts namespace/ID exclusion. No labels are generated. This
+tests narrowing of base-update support, not the old correction-head size ladder.
+The 50k fit is reused, not rerun. Presentations/updates stay fixed; epochs differ.
+
 Inputs: pinned parent review/data, states, training increments and frozen model.
 Outputs: optimizer/weights, training history, exact replay, full T50k/U20k/D1023
 predictions, protected score/gates, independent recount and measured latency.

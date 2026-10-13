@@ -57,7 +57,7 @@ def main():
             np.testing.assert_array_equal(actual["prediction"],rows["base"])
     save(destination/"report.json",dict(exact_all_populations=True,seeds=plan["seeds"],
          artifacts={str(p.relative_to(destination)):digest(p) for p in destination.rglob("*") if p.is_file()}))
-    print("Exact frozen-base and zero-correction replay on T50k, U20k and D1023, both seeds")
+    print("Exact frozen-base and zero-correction replay on all declared populations, both seeds")
 
 
 if __name__=="__main__":main()

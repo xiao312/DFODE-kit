@@ -1,6 +1,30 @@
 # Signed-increment research results
 
-## Latest diagnostic: finite base-update size
+## Latest model test: low-step base continuation
+
+**Valid negative result. Neither batch size qualifies.** Training acceptance
+improves by about 0.06-0.10 percentage points, but same-source unseen acceptance
+falls. Development changes are tiny. No negative endpoints were returned;
+latency stayed close to the anchor. The accuracy gain requirement still fails,
+and seed 11 also fails weak-tail and sign guards.
+
+| Predictor | Same-source unseen, 20k | Development, 1,023 |
+|---|---:|---:|
+| 1k gradient batch | 72.22 / 72.26% | 68.30 / 68.83% |
+| 10k averaged gradient batch | 72.19 / 72.23% | 68.30 / 68.83% |
+| Continued GBCT | 72.24 / 72.27% | 68.30 / 68.80% |
+
+Both arms received 3,000 updates, but 3M versus 30M row presentations. More
+averaging improved fitting, not transfer. Exact replay, independent recount,
+and the unchanged gate checks passed. The incumbent did not change.
+See the [aggregate scorecard](results/base-polish-20261013.json).
+
+Next is one [fitting-support control](experiments/EXP-20261013-base-support.json):
+use all 180k existing non-evaluation states instead of narrowing updates to50k.
+Keep the 10k batch, update count, schedule, preprocessing and full U/D evaluator.
+This tests a specific possible source of regression, not a resumed data ladder.
+
+## Previous diagnostic: finite base-update size
 
 On 16 independent training-batch probes, fresh Adam at 1e-6 reduced predicted
 first-order pass and fail losses, but damaged acceptance on all 16 separate
