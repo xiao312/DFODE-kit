@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "BASE_POLISH_REGISTERED",
+  "stage": "BASE_POLISH_RUNNING",
   "active_experiment": "EXP-20261013-base-polish",
-  "active_jobs": [],
+  "active_jobs": [{"kind":"controller","pid":3810622,"start_ticks":"1049509030","source":"6f02ca3","run":"runs/offline-accuracy/base-polish-20261013","worker_state":"runs/offline-accuracy/base-polish-20261013/active-job.json","lease":"runs/research-control/EXP-20261013-base-polish.lease.json"}],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
@@ -32,7 +32,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and execute local_function.run --experiment EXP-20261013-base-polish in its new output. Four finite low-step base fits, full protected scoring. Do not repeat completed diagnostics.",
+  "next_action": "Reconnect existing base-polish controller PID3810622/start1049509030 and inspect active-job.json. Four fits are sequential. After completion run local_function.postcheck then review; preserve finished fits and do not duplicate.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
