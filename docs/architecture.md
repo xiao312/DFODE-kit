@@ -123,6 +123,13 @@ adds a separately named coordinate Smooth L1 arm without changing old objectives
 `run -> gate` requires a hash-bound, recomputed passing preceding rung above 10k;
 no review module launches training. New evidence stays separate from old runs.
 
+`paper_baseline.correction_transfer.prepare -> selection / correction_scaling`
+freezes same-source unseen rows and targeted tail/control audit states.
+`evaluate -> metrics / frozen correction_scaling models` measures transfer,
+preservation and fixed damping without fitting. `audit -> flame chemistry`
+rechecks selected fixed-T/V references using bounded CPU integration. These
+artifacts never overwrite training labels or promote a correction policy.
+
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen
 dataset through `refinement.run.inputs`. `paired.verify` replays artifacts and
