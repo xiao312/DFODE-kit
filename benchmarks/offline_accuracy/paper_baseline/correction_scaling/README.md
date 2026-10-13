@@ -122,3 +122,52 @@ Near-zero decoder agreement is measured in fixed physical allowance units
 (difference <=1e-9 allowance), with identical physical pass decisions required.
 This avoids a meaningless relative-only arithmetic check near zero. It does not
 relax the physical acceptance rule. Historical resolved_fit code is unchanged.
+
+## Bounded-influence diagnostic (2026-10-13)
+
+The original 10k direct-MSE comparison failed. Keep its results and the continued
+bases unchanged. Before further fitting, `tail.py` reads the checked caches and
+saved MSE heads. It classifies the largest 1% of training component targets by
+sign, species, magnitude, snapshot, inverse-domain correction and audit status.
+Inverse flags are recomputed on the GPU and predictions must exactly match the
+immutable cache. Audit membership is split-local; unknown is not a failed audit.
+The output includes all selected component records and distinct state counts.
+It also decodes training-mean per-species corrections on train and development,
+and compares these means with saved head output means and final-layer biases.
+This is a diagnostic, not a new deployment model or development-fitted policy.
+
+Run `python -m benchmarks.offline_accuracy.paper_baseline.correction_scaling.tail
+--root <original-scaling-root> --output <new-diagnostic-directory>` for read-only
+validation. Add `--execute` to write reports; no fitting or new labels occur.
+
+Then run `run` with `--objective coordinate-sl1 --size 10000` for each seed,
+using the same prepared inputs and completed probes. The new objective is
+`mean(SmoothL1(c-c*, beta=log1p(0.1)))` in FP64, with no physical decoder in
+the loss path. Its tail is linear, not capped; output-error influence is bounded,
+not necessarily parameter gradients. See the [PyTorch 2.8 definition](https://docs.pytorch.org/docs/2.8/generated/torch.nn.SmoothL1Loss.html).
+All other settings equal the historical direct fit. Historical `direct` and
+`physical` meanings are unchanged. This arm is restricted to 10k pending review.
+There is no preservation penalty, new sampling, clipping, capacity or data change.
+
+`robust_review` compares the two new fits with hash-checked historical controls,
+independently recounts acceptance and verifies unchanged config, initialization,
+prepared artifacts and row presentations. Report damage/repair counts, conditional
+acceptance and error tails as well as aggregate scores. Retain the old +0.5 point
+development/nontrivial progression criterion in both seeds. A passing numerical
+gate alone does not authorize scaling: inspect preservation and conditional tails.
+Recovery to the base is not a gain. If this fails, stop serial loss tests and
+report the evidence before choosing a different intervention.
+
+For the original ladder, requests above 10k now require `--previous-root`,
+`--previous-review`, and `--previous-review-sha256`. The gate checks the preceding
+size, both seeds, complete verified result hashes, current prepared identities,
+and recomputed scores/progression. A missing, changed or failed review blocks
+the request even during dry-run. Existing failed evidence cannot authorize 50k.
+
+Dependencies: `tail -> run/model/coverage/decoder_loss`; `robust_review ->
+review/recount`; `run -> gate -> checked historical review/results` (review
+imports are deferred to avoid a module initialization cycle). These modules
+only write new ignored artifacts; no secrets, labels or incumbent files change.
+Verification: the module tests cover Smooth L1 values/gradients, sign partitions,
+constant correction, historical config parity and failed/changed progression
+records. Full model replay remains mandatory for both new fits.

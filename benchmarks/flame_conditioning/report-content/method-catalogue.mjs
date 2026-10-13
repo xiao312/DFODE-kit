@@ -35,6 +35,10 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  {id:"correction-scaling-coordinate-sl1",name:"Continued-base correction — coordinate Smooth L1",
+    target:"gbct",family:"Direct correction scaling",
+    detail:"Bounded-influence coordinate supervision, beta=log(1.1). Same frozen continued bases, 10k rows, features, zero-output 3x256 head, fixed asinh crossover 1e-14, 6k updates and batch 10k as the completed direct-MSE controls. No physical decoder in the loss gradient path. Linear loss tail, not a hard cap. No preservation penalty, balancing, capacity or label change. Training-tail inspection and a training-mean constant control precede fitting. Physical acceptance, repair/damage and conditional tails decide success; lower coordinate loss alone does not.",
+    flow:["Freeze continued GBCT and existing prepared 10k inputs", "Inspect correction tail and constant-shift control", "Predict correction coordinate with paired fresh 3x256 head", "Train coordinate Smooth L1; beta = log(1.1)", "Same stable asinh decoder", "Require physical repair with preservation; no automatic size increase"]},
   ...["physical","direct"].map(objective=>({
     id:`correction-scaling-${objective}`,name:`Continued-base correction — ${objective} supervision`,
     target:"gbct",family:"Direct correction scaling",

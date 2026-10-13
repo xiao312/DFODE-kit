@@ -116,6 +116,12 @@ Coverage and group reports feed review; no production dependency points back her
 `correction_scaling.review -> saved predictions / prepared caches` independently
 recounts acceptance, checks paired recipes and records initial squared-loss
 concentration. Its progression decision does not launch another experiment.
+`correction_scaling.tail -> checked caches / frozen base / saved MSE head` adds
+read-only correction-tail and constant-shift diagnostics. `train -> objectives`
+adds a separately named coordinate Smooth L1 arm without changing old objectives.
+`robust_review -> review.recount` verifies paired controls and preservation.
+`run -> gate` requires a hash-bound, recomputed passing preceding rung above 10k;
+no review module launches training. New evidence stays separate from old runs.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

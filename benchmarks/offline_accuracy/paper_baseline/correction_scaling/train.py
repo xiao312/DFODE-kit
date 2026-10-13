@@ -5,7 +5,8 @@ import numpy as np
 import torch
 from benchmarks.offline_accuracy.paired.fit import weight_hash
 from ..matched_work.plan import batch_indices
-from ..resolved_fit.fit import head,objective
+from ..resolved_fit.fit import head
+from .objectives import objective
 from ..decoder_loss.diagnostics import quantiles
 from ..decoder_loss.fit import occupancy_sample
 from .model import cached_prediction

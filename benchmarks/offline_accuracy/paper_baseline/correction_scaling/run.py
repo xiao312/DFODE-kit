@@ -14,7 +14,8 @@ from ..resolved_fit.data import scores as probe_scores
 from ..resolved_fit.plan import configuration as probe_configuration
 from ..decoder_loss.diagnostics import tails
 from ..decoder_loss.coordinates import encode
-from .plan import SEEDS,SIZES,OBJECTIVES,CONTINUED_HASHES,configuration
+from .plan import SEEDS,SIZES,RUN_OBJECTIVES,CONTINUED_HASHES,configuration
+from .gate import require_previous
 from .model import load_base,load_head,prediction,cached_prediction
 from .evaluate import summary,audit_scores
 from .train import fit
@@ -70,6 +71,8 @@ def execute(args,manifest):
     species = manifest["species"]
     common = dict(source=source,continued_result_sha256=CONTINUED_HASHES[args.seed],
                   prepared_manifest_sha256=sha256(root/"manifest.json"),independent_test_count=0)
+    if args.previous_gate is not None:
+        common["previous_gate"] = args.previous_gate
     result = dict(common,status="running")
     save(args.output/"result.json",result)
     try:
@@ -140,16 +143,22 @@ def main():
     parser.add_argument("--output",type=Path,required=True)
     parser.add_argument("--seed",type=int,choices=SEEDS,required=True)
     parser.add_argument("--size",type=int,choices=SIZES,default=10000)
-    parser.add_argument("--objective",choices=OBJECTIVES,default="direct")
+    parser.add_argument("--objective",choices=RUN_OBJECTIVES,default="direct")
     parser.add_argument("--probe",action="store_true")
     parser.add_argument("--probe-root",type=Path)
+    parser.add_argument("--previous-root",type=Path)
+    parser.add_argument("--previous-review",type=Path)
+    parser.add_argument("--previous-review-sha256")
     parser.add_argument("--execute",action="store_true")
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Choose a new result directory")
     manifest = prepared_manifest(args.prepared,args.seed)
+    args.previous_gate = None
     if not args.probe:
         check_probes(args.probe_root,args.prepared)
+        args.previous_gate = require_previous(args.size,args.prepared,args.previous_root,
+                                             args.previous_review,args.previous_review_sha256)
     elif args.objective!="direct":
         parser.error("The regression gate uses direct supervision only")
     planned = (dict(probe_configuration(args.seed,256,"direct"),training_only_probe=True)

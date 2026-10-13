@@ -82,7 +82,7 @@ def test_gpu_fixed_batch_subset_identity():
     np.testing.assert_array_equal(coordinates(model,x)[selected],coordinates(model,x[selected]))
 
 
-@pytest.mark.parametrize('objective,probe',(('physical',False),('direct',False),('direct',True)))
+@pytest.mark.parametrize('objective,probe',(('physical',False),('direct',False),('direct',True),('coordinate-sl1',False)))
 def test_gpu_small_training_recipe(objective,probe,tmp_path):
     torch = pytest.importorskip('torch')
     if not torch.cuda.is_available():
@@ -99,3 +99,54 @@ def test_gpu_small_training_recipe(objective,probe,tmp_path):
     _,r = fit(cache,cache,np.array([True,False]),cfg,tmp_path)
     assert r['updates_completed']==2 and r['row_presentations']==(16 if probe else 8) and r['raw_gradient_norm']['max']>0
     assert ('development' in r['history'][0]) is not probe
+
+
+def test_coordinate_sl1_formula_gradient_and_historical_config():
+    torch = pytest.importorskip('torch')
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling.objectives import objective
+    cfg = configuration(20261011,10000,'coordinate-sl1')
+    old = configuration(20261011,10000,'direct')
+    assert {k:v for k,v in cfg.items() if k not in ('coordinate_beta','fit_objective')} == {
+        k:v for k,v in old.items() if k!='fit_objective'}
+    beta = np.log1p(.1)
+    e = torch.tensor([-30.,-beta,-beta/2,0.,beta/2,beta,30.],dtype=torch.float64,requires_grad=True)
+    mask = torch.ones_like(e,dtype=torch.bool)
+    loss = objective(e,None,None,mask,torch.zeros_like(e),cfg)
+    expected = np.where(abs(e.detach().numpy())<beta,e.detach().numpy()**2/(2*beta),abs(e.detach().numpy())-beta/2).mean()
+    assert float(loss.detach())==pytest.approx(expected)
+    loss.backward()
+    np.testing.assert_allclose(e.grad.numpy()*len(e),[-1,-1,-.5,0,.5,1,1])
+    with pytest.raises(ValueError,match='restricted'):
+        configuration(20261011,50000,'coordinate-sl1')
+
+
+def test_tail_partition_and_constant_mean():
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling.tail_metrics import relationships,selected_tail,constant_scores
+    b = np.array([[1e-8,-1e-12,0.,1e-12,1e-12]])
+    d = np.array([[1e-12,1e-12,1e-12,1e-8,1e-12]])
+    assert relationships(b,d).tolist()==[['same-sign overprediction','sign reversal','one or both zero',
+                                         'same-sign underprediction','same-sign equal magnitude']]
+    target = np.array([[1.,4.],[3.,6.]])
+    rows,cols = selected_tail(target)
+    assert rows.tolist()==[1] and cols.tolist()==[1]
+    cfg = configuration(20261011,10000,'direct')
+    result = constant_scores(np.zeros_like(target),np.zeros_like(target),target,target.mean(axis=0),cfg)
+    assert result['coordinate_mse']==1 and result['zero_coordinate_mse']==15.5
+
+
+def test_larger_rung_requires_passing_hash_bound_review(tmp_path):
+    pytest.importorskip('torch')
+    import json
+    from benchmarks.offline_accuracy.paper_baseline.correction_scaling.gate import require_previous,validate_record
+    from benchmarks.flame_conditioning.extract import sha256
+    assert require_previous(10000,None,None,None,None) is None
+    with pytest.raises(ValueError,match='requires'):
+        require_previous(50000,None,None,None,None)
+    path = tmp_path/'review.json'
+    path.write_text(json.dumps(dict(status='verified',advance=False,size=10000)))
+    with pytest.raises(ValueError,match='hash'):
+        require_previous(50000,tmp_path,tmp_path,path,'wrong')
+    with pytest.raises(ValueError,match='passing'):
+        require_previous(50000,tmp_path,tmp_path,path,sha256(path))
+    with pytest.raises(ValueError,match='both'):
+        validate_record(dict(status='verified',advance=True,size=10000,fits=[]),50000)

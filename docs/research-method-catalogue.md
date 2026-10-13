@@ -179,6 +179,7 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `correction-scaling-coordinate-sl1` | [Continued-base correction — coordinate Smooth L1](#correction-scaling-coordinate-sl1) | Direct correction scaling |
 | `correction-scaling-physical` | [Continued-base correction — physical supervision](#correction-scaling-physical) | Direct correction scaling |
 | `correction-scaling-direct` | [Continued-base correction — direct supervision](#correction-scaling-direct) | Direct correction scaling |
 | `resolved-fit-256-physical` | [Resolved small-set fit — 3x256, physical supervision](#resolved-fit-256-physical) | Training-fit diagnostic |
@@ -248,6 +249,28 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="correction-scaling-coordinate-sl1"></a>
+### Continued-base correction — coordinate Smooth L1
+
+Artifact ID: `correction-scaling-coordinate-sl1`. Family: Direct correction scaling.
+
+Bounded-influence coordinate supervision, beta=log(1.1). Same frozen continued bases, 10k rows, features, zero-output 3x256 head, fixed asinh crossover 1e-14, 6k updates and batch 10k as the completed direct-MSE controls. No physical decoder in the loss gradient path. Linear loss tail, not a hard cap. No preservation penalty, balancing, capacity or label change. Training-tail inspection and a training-mean constant control precede fitting. Physical acceptance, repair/damage and conditional tails decide success; lower coordinate loss alone does not.
+
+```mermaid
+flowchart TD
+  n0["Freeze continued GBCT and existing prepared 10k inputs"]
+  n1["Inspect correction tail and constant-shift control"]
+  n2["Predict correction coordinate with paired fresh 3x256 head"]
+  n3["Train coordinate Smooth L1; beta = log(1.1)"]
+  n4["Same stable asinh decoder"]
+  n5["Require physical repair with preservation; no automatic size increase"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="correction-scaling-physical"></a>
 ### Continued-base correction — physical supervision
