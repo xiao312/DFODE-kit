@@ -26,6 +26,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument("run",type=Path)
     args=p.parse_args();root=args.run
     report=read_json(checked_file(root/"report.json",read_json(root/"verification.json")["report_sha256"]))
+    plan=read_json(root/"frozen-experiment.json")
+    controls={}
+    if plan.get("control_run"):
+        control=root.parent/Path(plan["control_run"]).name
+        control_review=read_json(checked_file(control/"review.json",plan["control_review_sha256"]))
+        control_report=read_json(checked_file(control/"report.json",control_review["report_sha256"]))
+        controls={r["seed"]:r for r in control_report["records"]}
     exceptions=[]
     for name,expected in report["artifacts"].items():
         actual=digest(root/name)
@@ -41,9 +48,13 @@ def main():
         rows=[]
         for item in record["records"]:
             index=item["batch"];effects={}
+            if controls:
+                old=controls[record["seed"]]["records"][index]
+                if item["geometry"]!=old["geometry"] or item["before_loss"]!=old["before_loss"]:
+                    raise ValueError("Gradient or initial objective changed from control")
             for label,selection in [("step",batches[index]),("check",batches[(index+1)%8])]:
                 before=recount(data["truth"][selection],data["baseline"][selection],data["baseline"][selection])
-                after=recount(data["truth"][selection],data["baseline"][selection],data[f"prediction_{index}_{label}"])
+                after=recount(data["truth"][selection],data["baseline"][selection],data[f"prediction_{item.get('record_id',str(index))}_{label}"])
                 for phase,counts in [("before",before),("after",after)]:
                     for group,values in counts.items():
                         for key,value in values.items():
@@ -53,13 +64,13 @@ def main():
                 effects[label]={group:dict(net_passes=after[group]["passes"]-before[group]["passes"],
                     repaired=after[group]["repaired"],damaged=after[group]["damaged"],
                     loss_change=None if before[group]["loss"] is None else after[group]["loss"]-before[group]["loss"]) for group in before}
-            rows.append(dict(batch=index,cosine_pass_fail={key:value["cosines"][1][2] for key,value in item["geometry"].items()},
+            rows.append(dict(batch=index,learning_rate=item.get("learning_rate",1e-6),cosine_pass_fail={key:value["cosines"][1][2] for key,value in item["geometry"].items()},
                              step_norm=item["step_norm"],first_order=item["first_order"],effects=effects))
         summaries.append(dict(seed=record["seed"],status="VERIFIED_TRAINING_DIAGNOSTIC",rows=rows,
             decoder_max=max(r["discrepancy"]["maximum"] for r in record["records"]),seconds=record["seconds"]))
     save(root/"review.json",dict(status="verified",report_sha256=digest(root/"report.json"),metadata_exceptions=exceptions,
          summaries=summaries,candidate_promoted=False,confirmation_opened=False,
-         scope="Eight independent fresh-Adam steps per seed; 8192 training rows; not held-out model performance or a PCGrad benefit"))
+         scope="Independent fresh-Adam single-step probes; 8192 training rows; not held-out model performance or a PCGrad benefit"))
     print(root/"review.json")
 
 

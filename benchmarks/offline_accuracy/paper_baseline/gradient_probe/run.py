@@ -18,8 +18,9 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
-    plan=read_json(project/"research/experiments/EXP-20261013-gradient-probe.json")
+    plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)
     inputs(project,read_json(project/"research/bindings.json"))
     if output.exists():raise ValueError("Existing output: reconcile; do not duplicate")
@@ -29,6 +30,10 @@ def main():
     parent=project/plan["parent_run"]
     review=read_json(checked_file(parent/"review.json",plan["parent_review_sha256"]))
     report=read_json(checked_file(parent/"report.json",review["report_sha256"]))
+    if plan.get("control_run"):
+        control=project/plan["control_run"]
+        control_review=read_json(checked_file(control/"review.json",plan["control_review_sha256"]))
+        control_report=read_json(checked_file(control/"report.json",control_review["report_sha256"]))
     print(json.dumps(dict(status="PRECHECKED",execute=args.execute)),flush=True)
     if not args.execute:return
     output.mkdir(parents=True)
@@ -48,6 +53,10 @@ def main():
         training=arrays(source/"train-global/training.npz");states=arrays(source/"input-training/states.npz")
         np.testing.assert_array_equal(training["source_indices"],states["source_indices"])
         selected=np.random.default_rng(seed+137).permutation(len(states["states"]))[:plan["batches"]*plan["batch_size"]]
+        if plan.get("control_run"):
+            relative=f"{seed}/predictions.npz"
+            old=arrays(checked_file(control/relative,control_report["artifacts"][relative]))
+            np.testing.assert_array_equal(old["source_indices"],training["source_indices"][selected])
         np.savez(dest/"training.npz",states=states["states"][selected],delta=training["delta"][selected],base=training["base"][selected],source_indices=training["source_indices"][selected])
         save(dest/"config.json",plan);shutil.copytree(source/"model",dest/"model")
         elapsed+=run_worker(project,dest,output/str(seed),["--seed",str(seed)],output/"active-job.json",args.gpu,dest/"model",worker_module="benchmarks.offline_accuracy.paper_baseline.gradient_probe.worker")

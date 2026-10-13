@@ -27,6 +27,12 @@ This does not approximate the original optimizer's momentum state. Compare the
 differentiable reconstruction with the saved deployment predictions and report
 any discrepancy in physical tolerance units before interpreting gradients.
 
+The separately registered `EXP-20261013-step-scale` repeats the same diagnostic
+at 1e-7 and 1e-8 learning rates, with original weights restored before each
+step. The existing 1e-6 result remains the control; it is not rerun. Use
+`--experiment EXP-20261013-step-scale` and a new output directory. This tests
+finite-step amplitude, not another objective or a promoted predictor.
+
 ## Interface, dependencies and boundary
 
 `python -m benchmarks.offline_accuracy.paper_baseline.gradient_probe.run

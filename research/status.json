@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "GRADIENT_PROBE_RUNNING",
-  "active_experiment": "EXP-20261013-gradient-probe",
-  "active_jobs": [{"kind":"controller","pid":3794804,"start_ticks":"1049372777","source":"a366ab6","run":"runs/offline-accuracy/gradient-probe-20261013","lease":"runs/research-control/EXP-20261013-gradient-probe.lease.json"}],
+  "stage": "STEP_SCALE_REGISTERED",
+  "active_experiment": "EXP-20261013-step-scale",
+  "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/interval-calibration-20261013/review.json",
-  "last_review_sha256": "14baf8946b9df28ff5e8526d64188ecfd9e3beb057a6a1068ee689ae048771f8",
+  "last_verified_result": "runs/offline-accuracy/gradient-probe-20261013/review.json",
+  "last_review_sha256": "78943664d3531c48c4cc99eb7cdf3888a0cfc6537a74bb1e08c3d81b6a8cfeff",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -19,17 +19,18 @@
     "runs/offline-accuracy/species-distance-20261013",
     "runs/offline-accuracy/local-function-20261013",
     "runs/offline-accuracy/local-optimum-20261013",
-    "runs/offline-accuracy/interval-calibration-20261013"
+    "runs/offline-accuracy/interval-calibration-20261013",
+    "runs/offline-accuracy/gradient-probe-20261013"
   ],
   "budget": {
     "configurations": 12,
     "primary_fits": 24,
-    "post_screening_diagnostics": 2,
+    "post_screening_diagnostics": 3,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Reconnect to gradient-probe controller PID/start identity. Source a366ab6 seals active-job before its final update: preserve original report and independently verify all immutable artifacts, explicitly recording mutable status drift. Do not rerun for this metadata defect. Local ordering fix is not yet on running server.",
+  "next_action": "Execute registered step-scale probe at 1e-7 and 1e-8 on identical training batches; retain completed 1e-6 control. Then independently recount and choose next intervention. No candidate promoted.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

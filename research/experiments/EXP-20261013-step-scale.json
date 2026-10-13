@@ -1,0 +1,28 @@
+{
+  "experiment_id":"EXP-20261013-step-scale",
+  "status":"REGISTERED",
+  "hypothesis":"Finite-step size, rather than adverse raw pass/fail gradient alignment, contributes to loss and acceptance regression under fresh Adam.",
+  "evidence":["EXP-20261013-gradient-probe"],
+  "control_run":"runs/offline-accuracy/gradient-probe-20261013",
+  "control_review_sha256":"78943664d3531c48c4cc99eb7cdf3888a0cfc6537a74bb1e08c3d81b6a8cfeff",
+  "parent_run":"runs/offline-accuracy/local-function-20261013",
+  "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "seeds":[20261011,20261012],"batches":8,"batch_size":1024,
+  "learning_rates":[1e-7,1e-8],
+  "changed_factor":"Fresh Adam learning rate only; original 1e-6 control is already complete and retained, not rerun.",
+  "fixed":"Same deterministic 8192 training rows, base, preprocessing, groups, objective, eight batch/check pairs, optimizer defaults, decoder and initial weights. Restore before every step.",
+  "exposure":"Existing 50k training library only; no U/D or confirmation labels; base history unchanged.",
+  "selection":"default_rng(seed+137) permutation prefix 8192; consecutive 1024-state batches; next cyclic batch is the separate check",
+  "checkpoint":"No chained optimization or exported candidate; restore original model",
+  "work":"32 fresh Adam steps total, six group gradients per batch; one idle GPU, one CPU thread; finite diagnostic, not equal training epochs",
+  "prechecks":"Original gradient probe decoder, gradient sum and restoration checks; verify exact row and gradient-statistic parity with control before interpreting step effects",
+  "metrics":"Same/check physical repairs, damage, group losses, actual displacement norm and first-order group changes; independent saved-prediction recount",
+  "outcomes":{
+    "smaller_steps_repair_and_preserve":"Register a bounded low-step base continuation with historical control, not a PCGrad claim",
+    "loss_recovers_but_acceptance_does_not":"Objective/threshold alignment remains; avoid claiming curvature alone solves accuracy",
+    "all_step_sizes_fail_transfer":"Do not continue step-size search; investigate variance or structural prediction changes",
+    "rounding_dominates":"Document FP32 parameter update resolution; do not infer a smooth optimization ceiling"
+  },
+  "run":"runs/offline-accuracy/step-scale-20261013",
+  "promotion":false,"confirmation_access":false
+}

@@ -56,19 +56,22 @@ def main():
         residual=float((combined-gradients[0]).norm()/gradients[0].norm().clamp_min(1e-30))
         if residual>1e-5:raise ValueError("Population gradient identity failed")
         geometry_by_block={name:geometry([g[sl] for g in gradients]) for name,sl in dict(all=slice(None),trunk=slice(None,trunk),final=slice(trunk,None)).items()}
-        optimizer=torch.optim.Adam(params,lr=plan["learning_rate"],foreach=False)
-        optimizer.zero_grad();values.mean().backward();optimizer.step()
-        displacement=torch.cat([(p-original[k]).flatten() for (k,_),p in zip(base.named_parameters(),params)]).detach().double()
-        record=dict(batch=index,groups=names,geometry=geometry_by_block,gradient_identity_relative=residual,
-                    discrepancy=discrepancy,step_norm=float(displacement.norm()),
-                    first_order={name:float(g.double()@displacement) for name,g in zip(names,gradients)},before_loss=means,populations={})
-        for label,selection in [("step",indices),("check",check)]:
-            prediction,_=base_prediction(base,bp,rows["states"][selection],args.seed)
-            pred=prediction[:,active];truth=saved["truth"][selection];old=saved["baseline"][selection]
-            mask=groups(truth,old)
-            record["populations"][label]=dict(before=physical_counts(old,truth,old,mask),after=physical_counts(pred,truth,old,mask))
-            saved[f"prediction_{index}_{label}"]=pred
-        records.append(record)
+        for rate in plan.get("learning_rates",[plan.get("learning_rate")]):
+            base.load_state_dict(original)
+            optimizer=torch.optim.Adam(params,lr=rate,foreach=False)
+            optimizer.zero_grad();loss(indices)[0].mean().backward();optimizer.step()
+            displacement=torch.cat([(p-original[k]).flatten() for (k,_),p in zip(base.named_parameters(),params)]).detach().double()
+            record_id=str(index) if "learning_rates" not in plan else f"{index}_{rate}"
+            record=dict(batch=index,record_id=record_id,learning_rate=rate,groups=names,geometry=geometry_by_block,gradient_identity_relative=residual,
+                        discrepancy=discrepancy,step_norm=float(displacement.norm()),
+                        first_order={name:float(g.double()@displacement) for name,g in zip(names,gradients)},before_loss=means,populations={})
+            for label,selection in [("step",indices),("check",check)]:
+                prediction,_=base_prediction(base,bp,rows["states"][selection],args.seed)
+                pred=prediction[:,active];truth=saved["truth"][selection];old=saved["baseline"][selection]
+                mask=groups(truth,old)
+                record["populations"][label]=dict(before=physical_counts(old,truth,old,mask),after=physical_counts(pred,truth,old,mask))
+                saved[f"prediction_{record_id}_{label}"]=pred
+            records.append(record)
     base.load_state_dict(original)
     if not all(torch.equal(v,original[k]) for k,v in base.state_dict().items()):raise ValueError("Restoration failed")
     np.savez(Path("/output/predictions.npz"),**saved)
