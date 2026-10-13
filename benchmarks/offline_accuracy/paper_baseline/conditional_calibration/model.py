@@ -6,7 +6,7 @@ from ..decoder_loss.coordinates import decode
 
 
 def partition(base,bins):
-    """Interior fit-only quantiles; repeated values cannot make empty intervals."""
+    """Fit-only quantiles; duplicates removed, empty extreme bins use fallback."""
     z=np.arcsinh(np.asarray(base,dtype=float)/1e-14)
     edges=np.unique(np.quantile(z,np.arange(1,bins)/bins)) if bins>1 else np.empty(0)
     return edges,np.searchsorted(edges,z,side="right")

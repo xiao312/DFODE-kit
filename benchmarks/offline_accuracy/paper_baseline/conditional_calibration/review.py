@@ -15,8 +15,11 @@ def main():
     for seed in plan["seeds"]:
         rows=arrays(root/str(seed)/"predictions.npz");original=arrays(root/"prepared"/str(seed)/"training.npz")
         result=read_json(root/str(seed)/"result.json");active=np.array(result["active_species_indices"])
+        prep=arrays(root/"prepared"/str(seed)/"model/preprocessing.npz")
+        np.testing.assert_array_equal(active,np.flatnonzero(prep["active"]))
         np.testing.assert_array_equal(rows["source_indices"],original["source_indices"])
         np.testing.assert_array_equal(rows["truth"],original["delta"][:,active]);np.testing.assert_array_equal(rows["baseline"],original["base"][:,active])
+        np.testing.assert_array_equal(rows["initial"],original["states"][:,2:][:,active])
         n=len(rows["truth"]);fold=np.empty(n,dtype=int);fold[np.random.default_rng(seed+411).permutation(n)]=np.arange(n)%2
         np.testing.assert_array_equal(rows["fold"],fold);assert (np.bincount(fold)==n//2).all()
         d,b=rows["truth"],rows["baseline"];tau=1e-15+.1*abs(d);old=abs(b-d)<=tau;nt=abs(d)>1e-15/.9
