@@ -75,6 +75,12 @@ def score_arm(project, output, bindings, seed, arm, campaign):
     transfer = project / bindings["transfer_root"]
     result, gates, latency = {}, {}, []
     for population, rows in population_rows(prepared, transfer, str(seed)):
+        selection_path = output / "prepared" / str(seed) / "training-indices.npy"
+        if population == "training" and selection_path.exists():
+            selected = np.load(selection_path, allow_pickle=False)
+            full = arrays(prepared / str(seed) / "training.npz")
+            rows = {k:v[selected] for k,v in full.items()}
+            del full
         prediction_root = output / "fits" / f"{seed}-{arm}" / population
         report = read_json(prediction_root / "result.json")
         checked_file(prediction_root / "predictions.npz", report["prediction_sha256"])
@@ -107,7 +113,7 @@ def main():
         parser.error("Output already exists; inspect status/jobs instead of launching a duplicate")
     campaign = read_json(project / "research/campaign.json")
     bindings = read_json(project / "research/bindings.json")
-    if args.experiment not in ("EXP-20261013-hidden-features", "EXP-20261013-preservation", "EXP-20261013-linear"):
+    if args.experiment not in ("EXP-20261013-hidden-features", "EXP-20261013-preservation", "EXP-20261013-linear", "EXP-20261013-diversity"):
         raise ValueError("Use a registered experiment identifier")
     experiment = read_json(project / "research/experiments" / (args.experiment + ".json"))
     arms = [value["id"] for value in experiment["arms"]]

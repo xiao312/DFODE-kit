@@ -6,6 +6,22 @@ Keep the scientific mission, fixed physical evaluator, evidence and execution
 authority separate from candidate methods. Start here when continuing research.
 This directory does not replace historical experiments or production training.
 
+```mermaid
+flowchart LR
+  H[Hypothesis and fixed work] --> C[Isolated candidate worker]
+  X[States and model artifacts] --> C
+  C --> P[Signed predictions]
+  P --> E[Pinned physical scorer]
+  R[References held by controller] --> E
+  A[Fixed anchor and incumbent] --> E
+  E --> G[All development guards]
+  G --> L[Evidence ledger and next decision]
+  L --> H
+```
+
+The reference-to-worker path is absent. A development pass does not open the
+confirmation set or replace production automatically.
+
 ## Startup and completion
 
 1. Read `CHARTER.md`, `EVALUATION.md`, `OPERATING_PROTOCOL.md` and `status.json`.
@@ -15,7 +31,8 @@ This directory does not replace historical experiments or production training.
 5. Score physical predictions independently. Archive every result, then update the
    evidence ledger and status. A completed negative experiment is not a model gain.
 
-The current milestone is contract installation and real-array scorer parity.
+Contract installation and real-array scorer parity are complete. Read `status.json`
+for the current experiment and evidence links.
 The owner authorized execution and removed aggregate/time caps on 2026-10-13.
 Use one idle GPU and finite declared work per experiment. If contention appears,
 stop only our work, then wait or report. Candidate training still requires runtime

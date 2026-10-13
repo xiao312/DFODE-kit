@@ -149,6 +149,9 @@ The same isolated worker runs a separately registered preservation comparison;
 `hidden_features.preservation -> correction_scaling.objectives` adds only a
 training acceptance-interval penalty through an explicit trainer callback.
 It never changes scoring or the reference-free inference path.
+`hidden_features.resume -> campaign worker/admission + checked artifacts` reconciles
+stopped controllers by PID/start time and reuses complete fits. It preserves the
+interruption record and never overwrites partial evidence or kills foreign work.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

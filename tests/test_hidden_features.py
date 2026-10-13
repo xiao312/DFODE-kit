@@ -46,3 +46,14 @@ def test_preservation_penalty_allows_interval_and_penalizes_escape():
     assert loss > objective(outside,base,truth,mask,target,cfg)
     loss.backward()
     assert (outside.grad > 0).all()
+
+
+def test_diversity_selection_preserves_prefix_and_excludes_evaluation():
+    from benchmarks.offline_accuracy.paper_baseline.hidden_features.prepare import diversity_indices
+    unseen = np.array([10,12,17,20,22,24,29])
+    selected = diversity_indices(30, unseen, requested=20, prefix=10)
+    assert np.array_equal(selected[:10], np.arange(10))
+    assert not np.intersect1d(selected, unseen).size
+    assert len(np.unique(selected)) == 20
+    with pytest.raises(ValueError):
+        diversity_indices(30, np.array([1,12]), requested=20, prefix=10)

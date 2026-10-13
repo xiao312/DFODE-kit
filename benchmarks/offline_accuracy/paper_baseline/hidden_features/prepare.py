@@ -13,6 +13,16 @@ def save(path, value):
     Path(path).write_text(json.dumps(value, indent=2, allow_nan=False), encoding="utf-8")
 
 
+def diversity_indices(count, unseen, requested=50000, prefix=10000):
+    unseen = np.asarray(unseen)
+    if unseen.ndim != 1 or not np.issubdtype(unseen.dtype, np.integer) or np.any(unseen < prefix) or np.any(unseen >= count):
+        raise ValueError("Unseen indices must be valid and outside the original prefix")
+    selected = np.setdiff1d(np.arange(count), unseen)[:requested]
+    if len(selected) != requested or not np.array_equal(selected[:prefix], np.arange(prefix)):
+        raise ValueError("Insufficient disjoint training support")
+    return selected
+
+
 def stage(project, output, bindings, arms=("A", "B", "C")):
     root, transfer = project / bindings["prepared_root"], project / bindings["transfer_root"]
     for seed_text in bindings["seeds"]:
@@ -31,23 +41,32 @@ def stage(project, output, bindings, arms=("A", "B", "C")):
         scale[scale == 0] = 1
         scales = dict(hidden_offset=offset, hidden_scale=scale)
         np.savez(model_dir / "hidden-scales.npz", **scales)
-        training = {k:v[:10000] for k,v in full.items()}
+        if "S" in arms and len(arms) != 1:
+            raise ValueError("The diversity comparison has one separately registered population")
+        indices = (diversity_indices(len(full["states"]), arrays(transfer / "plan/selections.npz")[f"unseen_{seed}"])
+                   if "S" in arms else np.arange(10000))
+        np.save(destination / "training-indices.npy", indices)
+        training = {k:v[indices] for k,v in full.items()}
         for arm in arms:
             path = destination / ("train-" + arm)
             path.mkdir()
             cfg = config(seed, arm)
-            x = make_features(training["states"], b[:10000], h[:10000], prep, cfg, scales)
+            x = make_features(training["states"], training["base"], h[:10000] if arm == "B" else None, prep, cfg, scales)
             if arm != "B":
                 np.testing.assert_array_equal(x, training["features"])
             np.savez(path / "training.npz", features=x, base=training["base"], delta=training["delta"],
                      target=training["target"], active=prep["active"])
             save(path / "config.json", cfg)
-        del full, training, h, b
+        staged_training = training
+        del full, h, b
         for population, rows in population_rows(root, transfer, seed_text):
+            if population == "training":
+                rows = staged_training
             path = destination / ("input-" + population)
             path.mkdir()
             np.savez(path / "states.npz", states=rows["states"], source_indices=rows["source_indices"])
         save(destination / "manifest.json", dict(seed=seed, calibration_states=50000,
+             training_states=len(indices), unseen_overlap=0,
              calibration_labels_used=False, exact_frozen_base_replay=True,
              artifacts={str(p.relative_to(destination)):digest(p) for p in destination.rglob("*") if p.is_file()}))
 

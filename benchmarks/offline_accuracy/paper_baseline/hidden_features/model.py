@@ -13,7 +13,8 @@ ARMS = {"A": (119, [256, 256, 256], 177210),
         "B": (919, [256, 256, 256], 382010),
         "C": (119, [800, 256, 256], 381754),
         "P": (119, [256, 256, 256], 177210),
-        "L": (119, [], 6960)}
+        "L": (119, [], 6960),
+        "S": (119, [256, 256, 256], 177210)}
 
 
 def config(seed, arm):
@@ -24,6 +25,8 @@ def config(seed, arm):
         result.update(experiment="anchor-interval-preservation-v1", preservation_weight=1.)
     elif arm == "L":
         result.update(experiment="low-capacity-correction-v1")
+    elif arm == "S":
+        result.update(experiment="unseen-excluded-diversity-v1", training_count=50000)
     return result
 
 

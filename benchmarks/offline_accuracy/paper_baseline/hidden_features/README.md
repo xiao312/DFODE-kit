@@ -73,3 +73,28 @@ Smooth L1 objective and schedule, no preservation penalty. It remains nonlinear
 in physical state because the frozen base/features/decoder are nonlinear. Run
 with `--experiment EXP-20261013-linear`. This is one low-capacity control, not a
 width sweep. Weak fitting and weak transfer would close this capacity-only route.
+
+## Recovery
+
+`python -m benchmarks.offline_accuracy.paper_baseline.hidden_features.resume
+--project <root> --run <stopped-run>` reconciles PID/start-time identities and
+validates existing artifacts. Add `--execute` only after validation. It refuses a
+live original controller/worker, reuses complete fits, and runs missing workers.
+Partial fits require an explicit retry decision; they are never overwritten.
+Keep `interruption.json`, `recovery.json` and both source revisions. The GPU guard
+rechecks worker exit after non-atomic GPU/process reads to avoid an exit-time race.
+The regression tests simulate both this race and a real competing GPU process.
+
+## Follow-up: disjoint training diversity
+
+L reduces the train/U gap but fails to improve either population. Together with
+the larger-head failures, this motivates one data-diversity comparison, S. It uses
+A's head/features/loss/optimizer and 60M presentations, but 50k existing states.
+Keep the original 10k prefix; take the next eligible rows in the original seeded
+order after excluding every fixed U index. Freeze and hash those indices before
+fitting. D remains separate and unchanged. Candidate-training exposure is now50k;
+the fixed base still saw200k. Feature calibration stays unchanged at50k.
+
+Run `--experiment EXP-20261013-diversity`. This is not a restart of the historical
+MSE size ladder, and does not authorize a further size. It tests distinct-state
+coverage at matched presentations, not equal per-state optimization or equal time.

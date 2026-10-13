@@ -25,6 +25,12 @@ def main():
     table = []
     for seed in (20261011, 20261012):
         for population, rows in population_rows(args.project / binding["prepared_root"], args.project / binding["transfer_root"], str(seed)):
+            selection_path = args.run / "prepared" / str(seed) / "training-indices.npy"
+            if population == "training" and selection_path.exists():
+                selected = np.load(selection_path, allow_pickle=False)
+                full = arrays(args.project / binding["prepared_root"] / str(seed) / "training.npz")
+                rows = {k:v[selected] for k,v in full.items()}
+                del full
             d, base = rows["delta"][:, active], rows["base"][:, active]
             allowance = 1e-15 + .1 * abs(d)
             old = abs(base-d) <= allowance
