@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "SCREENING_BLOCK_REVIEWED",
+  "stage": "LOCAL_PREDICTABILITY_DIAGNOSTIC_REVIEWED",
   "active_experiment": null,
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
@@ -8,27 +8,29 @@
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/diversity-20261013/control-review.json",
-  "last_review_sha256": "6b031ad45b4cdccc8dd2e1493b8b74cd1cd3804599c6567f0ae2c8f0f5948b49",
+  "last_verified_result": "runs/offline-accuracy/local-predictability-20261013/review.json",
+  "last_review_sha256": "0a9fd75d42d97ba6d4c40c5336de4fc7174dcbc65b63dbcd338a5f494aa6e11f",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
     "runs/offline-accuracy/linear-correction-20261013",
-    "runs/offline-accuracy/diversity-20261013"
+    "runs/offline-accuracy/diversity-20261013",
+    "runs/offline-accuracy/local-predictability-20261013"
   ],
   "budget": {
     "configurations": 6,
     "primary_fits": 12,
+    "post_screening_diagnostics": 1,
     "allocated_gpu_seconds": null,
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Design a training-derived local residual predictability diagnostic. No repeated loss, width or size sweep without a new discriminating rationale. Register any new candidate before fitting.",
+  "next_action": "Register a training-derived species-specific distance diagnostic against the fixed global-feature control. Current global neighbors contain some signal but damage too many base passes; no local-table, loss, width or size sweep is justified.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
   "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention.",
   "confirmation_opened": false,
   "always_on_agent_service": false,
-  "focused_tests_passed": 107
+  "focused_tests_passed": 112
 }

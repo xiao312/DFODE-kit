@@ -158,6 +158,8 @@ hidden_features resource monitor` owns a read-only local-variation diagnostic.
 `neighbors -> PyTorch` constructs graphs from features and IDs, without labels;
 `analysis -> pinned reference scorer + stable decoder` measures full-target and
 residual transfer on those same graphs. It cannot promote a model or change data.
+`local_predictability.review -> saved arrays` recounts physical outcomes;
+`summary -> reviewed report` exports aggregate evidence without state arrays.
 
 `offline_accuracy.paired.plan -> run -> fit -> coordinates` owns the GBCT target
 adaptation and paired increment/state error-scale experiment. It reads the frozen

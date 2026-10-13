@@ -53,3 +53,6 @@ selection, label-free worker inputs and stable reconstruction tests pass.
 The run checks query/library identities and recomputes sampled neighbor searches
 independently on CPU. A separate review recounts all physical pass/repair/damage
 counts from saved arrays. No result can promote a candidate.
+`summary --run <verified-run> --output <new-json>` exports small aggregate review
+data; optional `--receipt <new-json>` prepares the inline source record. Neither
+export includes private state arrays, model weights or reference labels.

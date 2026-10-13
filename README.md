@@ -15,10 +15,10 @@ In practice, DFODE-kit sits between:
 
 ## Precision-conditioning research review
 
-Latest results: [research-contract screening block (2026-10-13)](research/RESULTS.md).
-The contract and independent scorer checks are installed. Twelve GPU fits tested
-hidden features, capacity, preservation and training diversity. None meets the
-unchanged physical accuracy gates. Continued GBCT bases remain incumbents.
+Latest results: [local predictability diagnostic (2026-10-13)](research/RESULTS.md).
+Nearby states contain some correction signal, but transferring their corrections
+damages too many accurate predictions. This diagnostic and the earlier twelve
+GPU fits produced no promoted candidate. Continued GBCT bases remain incumbents.
 The [contract index](research/README.md) links the mission, evaluator, evidence
 ledger and restart state. The HTML below retains the earlier baseline campaign,
 not these newer correction results.
