@@ -53,10 +53,15 @@ def run_worker(project, input_dir, output, args, state, gpu, model=None):
         while child.poll() is None:
             time.sleep(2)
             foreign = processes_on_gpu(gpu) - descendants(os.getpid())
+            # GPU accounting and /proc are not atomic. Our worker can exit
+            # between these reads; recheck it before interpreting an orphan PID.
+            if child.poll() is not None:
+                break
             if foreign:
                 child.terminate()  # Only our Bubblewrap child; never another user's job.
                 child.wait(timeout=15)
-                save(state, dict(status="WAITING_RESOURCE", output=str(output), elapsed_seconds=time.monotonic()-started))
+                save(state, dict(status="WAITING_RESOURCE", output=str(output), foreign_gpu_pids=sorted(foreign),
+                                 elapsed_seconds=time.monotonic()-started))
                 raise RuntimeError("Resource contention: stopped our own worker; preserve partial outputs")
         elapsed = time.monotonic()-started
         save(state, dict(status="COMPLETE" if child.returncode == 0 else "FAILED", output=str(output), elapsed_seconds=elapsed))
