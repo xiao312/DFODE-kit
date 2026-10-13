@@ -1,0 +1,21 @@
+{
+  "experiment_id": "EXP-20261013-paired-base-errors",
+  "status": "REGISTERED",
+  "question": "Are errors from the two continued bases sufficiently complementary for a fixed prediction mean to repair and preserve increments?",
+  "evidence": ["EXP-20261013-species-heads", "EXP-20261013-element-projection"],
+  "parent_run": "runs/offline-accuracy/element-projection-20261013",
+  "review_sha256": "03e255e1172835f7a50c4b8531f3d36801017ed4ab9d2e8f87a790d7f4ebc15e",
+  "seeds": [20261011, 20261012],
+  "selection_seed": 20261013,
+  "rows": 20000,
+  "population": "One common training-pool diagnostic: align namespace/source IDs, exclude union of both protected U and historical first10k candidate-fit IDs. Select20k from sorted remaining IDs using fixed RNG. Both bases saw this pool. Not two independent replicates.",
+  "arms": ["physical-mean", "asinh-mean"],
+  "rules": "Fixed equal weights: (b11+b12)/2 or 1e-14*sinh((asinh(b11/1e-14)+asinh(b12/1e-14))/2), FP64. No fitted weights, clipping, reference routing or temperature switch. AR unchanged and asserted equal.",
+  "measurements": "Protected scoring and independent counts versus EACH base; per-species and floor/weak/active error correlation, joint pass table, opposite error directions, mean repair/damage, oracle union. Correlation uses signed asinh errors to reduce pooled amplitude dominance; constant groups yield null.",
+  "verification": "Exact aligned physical states, references, species, snapshots; source-ID uniqueness and namespace; pinned prediction provenance; independent scorer recount; saved arithmetic replay. Cached prediction diagnostic, not fresh isolated candidate inference or latency measurement.",
+  "work": "One20k common population, two deterministic means, one CPU thread, no GPU fit or reference calculation.",
+  "decision": "If both fixed means fail to beat both bases, close averaging and use error agreement to distinguish shared systematic error from seed variation. If a mean improves with guards, register fresh state-only full-population inference and cost test; do not promote cached arithmetic. Two bases imply extra runtime, not a free gain.",
+  "output": "runs/offline-accuracy/paired-base-errors-20261013",
+  "confirmation_access": false,
+  "promotion_allowed": false
+}

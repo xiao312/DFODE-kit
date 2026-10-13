@@ -1,0 +1,23 @@
+# Paired frozen-base error diagnostic
+
+Responsibility: measure repeatable versus seed-dependent prediction errors.
+This module does not train, select weights, deploy a reference oracle or qualify
+a candidate. Both bases already saw the training pool.
+
+Inputs: registered JSON plan, pinned prepared base arrays, source IDs and fixed
+U selections. Output: two deterministic mean predictions, protected scorecards,
+independent count checks and grouped error agreement. Exclude the union of both
+seeds' U and historical head-fit IDs. Align and assert all physical row fields.
+
+Dependencies: research-contract adapter/replay, kinetic-features independent
+recount, frozen prepared caches. No production dependent. Trusted analysis has
+labels, but mean construction accepts base predictions only. This is cached
+arithmetic, not a claim of isolated fresh inference or measured deployment cost.
+No network, secret, fitting or confirmation input is required.
+
+Example: `python -m benchmarks.offline_accuracy.paper_baseline.paired_base.run
+--project .` checks the plan; add `--execute` to save a new result. Never overwrite.
+Run with one BLAS/OMP thread. Verify:
+`python -m pytest tests/test_paired_base.py -q`.
+Expected: alignment rejects duplicates/mismatches, mean has no label dependency,
+zero/constant correlation is explicit, and pass-overlap identities hold.

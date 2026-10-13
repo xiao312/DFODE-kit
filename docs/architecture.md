@@ -356,6 +356,11 @@ initial-rate formulas. Its separate state-only inference worker receives the
 private mechanism and frozen weights/scaler, not reference arrays. The trusted
 review process scores full saved outputs. No production dependency is added.
 
+`paired_base` reads pinned prepared caches through the research-contract adapter,
+aligns a common training-only population, and uses the protected scorer plus an
+independent recount. It has no training or production dependent. Cached mean
+predictions do not establish fresh inference isolation or runtime cost.
+
 `element_projection` uses the same guarded diagnostic controller and state-only
 base replay. A mechanism-derived constraint matrix is its only added metadata.
 It performs no training. Its declared projection/fallback is scored as returned,

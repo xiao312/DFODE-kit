@@ -1,6 +1,30 @@
 # Signed-increment research results
 
-## Latest: species-specific heads do not improve transfer
+## Latest: conservation projection is not an accuracy solution
+
+The no-fit projection test is **valid negative**. Amplitude weighting raises
+check acceptance by only 0.035 / 0.019 percentage points. It returns 4,456 /
+4,289 negative endpoints and costs 142 / 147 times the base in this SVD
+implementation. Uniform weighting reduces acceptance to 33.35 / 33.32%.
+
+Both projections remove nearly all elemental imbalance, but that does not
+establish correct species increments. The amplitude version repairs 9,389 /
+9,006 components and damages 8,978 / 8,784. No rank fallback occurred. The
+unchanged accuracy and validity gates fail. Do not optimize this implementation
+for speed before there is a useful accuracy result.
+
+Exact state-only replay, independent CPU formula samples, inactive-AR checks
+and the full protected physical recount passed. The review initially stopped
+on a NumPy-integer/Cantera API mismatch; the native-index fix did not change
+predictions or the scorer. Review:
+`03e255e1172835f7a50c4b8531f3d36801017ed4ab9d2e8f87a790d7f4ebc15e`.
+
+These are inherited training-pool diagnostic populations; no projection was
+fitted and no independent confirmation was opened. GBCT remains the incumbent.
+Next: compare aligned errors of the two frozen bases. This tests whether their
+remaining errors contain useful cancelling variation before another fit.
+
+## Previous: species-specific heads do not improve transfer
 
 The four-fit parameter-sharing test is **valid negative**. Independent species
 heads fit about as well as a nearly equal-size shared head, but damage more

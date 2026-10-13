@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "stage": "ELEMENT_PROJECTION_RUNNING",
-  "active_experiment": "EXP-20261013-element-projection",
-  "active_jobs": [{"experiment":"EXP-20261013-element-projection","controller_pid":3858643,"controller_start_ticks":"1050143218","source":"09ceafe","run":"runs/offline-accuracy/element-projection-20261013","worker_identity_file":"runs/offline-accuracy/element-projection-20261013/active-job.json","state":"RUNNING"}],
+  "stage": "PAIRED_BASE_DIAGNOSTIC_REGISTERED",
+  "active_experiment": "EXP-20261013-paired-base-errors",
+  "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/species-heads-20261013/review.json",
-  "last_review_sha256": "ad0f77c14d381ab1805471a1c8038291f48f19952817fb0da02078dc6d48a91f",
+  "last_verified_result": "runs/offline-accuracy/element-projection-20261013/review.json",
+  "last_review_sha256": "03e255e1172835f7a50c4b8531f3d36801017ed4ab9d2e8f87a790d7f4ebc15e",
   "completed_runs": [
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -29,7 +29,8 @@
     "runs/offline-accuracy/selective-correction-20261013",
     "runs/offline-accuracy/selective-nonlinear-20261013",
     "runs/offline-accuracy/kinetic-features-20261013",
-    "runs/offline-accuracy/species-heads-20261013"
+    "runs/offline-accuracy/species-heads-20261013",
+    "runs/offline-accuracy/element-projection-20261013"
   ],
   "budget": {
     "configurations": 15,
@@ -39,7 +40,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and run element-projection via guarded gradient_probe.run; no fitting, declared algebraic correction and input-only rank fallback. Independent review before next decision.",
+  "next_action": "Run paired_base.run on registered common training-only20k after tests. No new fit or reference-dependent selection. Score means against both bases, inspect grouped error agreement and choose the next discriminating experiment.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
