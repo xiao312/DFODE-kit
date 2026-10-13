@@ -32,7 +32,7 @@ def main():
         np.testing.assert_array_equal(saved["base"],rows["base"]);np.testing.assert_array_equal(saved["source_indices"],rows["source_indices"])
         gas=ct.Solution(str(checked_file(staged/"model/mechanism.yaml",binding["mechanism_sha256"])))
         require(gas.species_names==binding["species"],"Species axis")
-        a=np.array([[gas.n_atoms(k,j)*gas.atomic_weights[j]/gas.molecular_weights[k] for k in np.flatnonzero(active)] for j in range(gas.n_elements)])
+        a=np.array([[gas.n_atoms(int(k),j)*gas.atomic_weights[j]/gas.molecular_weights[k] for k in np.flatnonzero(active)] for j in range(gas.n_elements)])
         a=a[np.any(a!=0,axis=1)];np.testing.assert_array_equal(a,np.load(staged/"projection-model/element-matrix.npy"))
         timing=read_json(root/str(seed)/"result.json")["records"]
         for arm in plan["arms"]:
