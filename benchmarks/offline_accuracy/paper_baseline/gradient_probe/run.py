@@ -18,7 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
-    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features","EXP-20261013-species-heads","EXP-20261013-element-projection","EXP-20261013-bounded-base-screen","EXP-20261013-strict-consensus-screen"])
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features","EXP-20261013-species-heads","EXP-20261013-element-projection","EXP-20261013-bounded-base-screen","EXP-20261013-strict-consensus-screen","EXP-20261013-consensus-distill"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)
@@ -50,8 +50,10 @@ def main():
         for relative,expected in report["artifacts"].items():
             if relative.startswith(prefix):checked_file(parent/relative,expected)
         source=parent/"prepared"/str(seed);dest=output/"prepared"/str(seed);dest.mkdir(parents=True)
-        if plan.get("selection") in ("kinetic_training_pool","species_head_pool","element_projection_pool","bounded_base_screen"):
-            if plan["selection"]=="bounded_base_screen":
+        if plan.get("selection") in ("kinetic_training_pool","species_head_pool","element_projection_pool","bounded_base_screen","consensus_distill"):
+            if plan["selection"]=="consensus_distill":
+                from ..consensus_distill.prepare import stage,execute
+            elif plan["selection"]=="bounded_base_screen":
                 from ..paired_base.screen_prepare import stage,execute
             elif plan["selection"]=="kinetic_training_pool":
                 from ..kinetic_features.prepare import stage,execute

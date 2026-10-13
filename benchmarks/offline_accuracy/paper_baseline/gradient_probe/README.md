@@ -70,6 +70,9 @@ sharing. Read its README; no kinetic features enter either arm.
 Its worker receives states and model-only assets; no training labels are mounted.
 `EXP-20261013-bounded-base-screen` uses the same guard for the full U/D
 inference test. Its two-model mount has no labels; see `paired_base/README.md`.
+`EXP-20261013-consensus-distill` stages common50k teacher fractions and calls
+the existing trainer with its explicit bounded decoder. Inference mounts one
+base and the compressed head only; see `consensus_distill/README.md`.
 
 Run `python -m pytest tests/test_gradient_probe.py -q`. Expect known conflicting,
 orthogonal and zero-gradient cases and a correctly normalized group sum. Check

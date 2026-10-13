@@ -188,3 +188,11 @@ only write new ignored artifacts; no secrets, labels or incumbent files change.
 Verification: the module tests cover Smooth L1 values/gradients, sign partitions,
 constant correction, historical config parity and failed/changed progression
 records. Full model replay remains mandatory for both new fits.
+# Explicit alternative-decoder callbacks
+
+`train.fit` keeps its historical decoder and exact-base initialization checks
+by default. The separately registered consensus compression passes an explicit
+prediction callback and an initial-prediction verifier. This supports its
+sigmoid-fraction decoder without changing old asinh experiments. Diagnostics
+use that same declared decoder; the objective remains a separate callback.
+

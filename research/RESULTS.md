@@ -1,6 +1,36 @@
 # Signed-increment research results
 
-## Latest: bounded consensus gain transfers, but two guards fail
+## Latest: strict consensus passes physical gates, but is too slow
+
+The strict interval retains base signs and limits magnitude growth. Fresh
+isolated replay passes **every physical gate** on fullU20k andD1023 for both
+anchor directions. The result is still **accuracy-only / trade-off**.
+
+| Population | Continued base11 /12 | Strict consensus11 /12 |
+|---|---:|---:|
+| Same-source unseen20k | 72.241 /72.275% | 72.788 /72.816% |
+| Development1023 | 68.296 /68.800% | 68.901 /69.414% |
+
+Development repairs518 /516 and damages159 /152 components. Damage is0.392 /
+0.372% of base successes. No added sign errors, severe events or negative
+endpoints occur. Total inference costs2.18-2.22x, above the unchanged1.5x guard.
+No incumbent is replaced. Review:
+`46905c6683b5eb26de706569a0c9d35d9ced75c551dd0ac88bc03217017f8a24`.
+
+This method can only repair near-threshold failures. It retains existing wrong
+signs and does not solve severe magnitude errors. Its two directions share one
+base pair; no independent confirmation or ensemble replication is claimed.
+
+The intermediate zero-inclusive restriction was also retained: it gained
+0.55-0.62pp but added wrong-sign counts by returning zero. Changing to[b,0.9b]
+was a new declared prediction rule, not a scorer change or silent repair.
+Forty-three focused tests and separate source/math review passed.
+
+Next: compress the teacher's bounded adjustment into a small head on one frozen
+base's800 hidden features. Compare with a training-derived constant fraction.
+The physical gates and complete inference-cost requirement remain unchanged.
+
+## Previous: bounded consensus gain transfers, but two guards fail
 
 Fresh state-only inference confirms a gain beyond the candidate diagnostic rows.
 The fixed bounded midpoint is **trade-off only**, not a new incumbent.

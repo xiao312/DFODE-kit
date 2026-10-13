@@ -1,0 +1,19 @@
+{
+ "experiment_id":"EXP-20261013-consensus-distill","status":"REGISTERED",
+ "hypothesis":"A small head using one frozen base's hidden features can imitate the useful strict two-base restraint while removing the second base from inference.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/strict-consensus-screen-20261013","control_review_sha256":"46905c6683b5eb26de706569a0c9d35d9ced75c551dd0ac88bc03217017f8a24",
+ "selection":"consensus_distill","seeds":[20261011,20261012],"selection_seed":20261013,"fit_rows":50000,
+ "arms":["head","constant"],"widths":[64],"parameters":55034,
+ "batches":6000,"batch_size":10000,"learning_rate":0.0001,"final_learning_rate":0.000001,
+ "target":"m=min(0.1*abs(b),0.1*(1e-15+0.1*abs(b))); alpha=clip(sign(b)*(b-q)/(2*m),0,1), alpha=0 when m=0. This saturation IS the teacher rule, not a label-error correction. Check physical teacher reconstruction and record roundoff. q is the other frozen model, not a chemistry reference.",
+ "model":"Own frozenbase800lasthidden ->64GELU->58logits; sigmoid gives alpha. Return b-sign(b)*m*alpha, constrained to interval[b,0.9b]. Shared frozenforward, no hiddenfeature centering/scaling, no second base at inference. Zero final weights/logits initialize alpha0.5, notidentity; explicitly score that initialcontrol.",
+ "objective":"Mean soft-target BCEWithLogits over all58components, FP32head/FP64targets andloss; no reference-dependent weights or masks. Existing Adam/cosine fixed6000updates/60M presentations, finalcheckpointonly. Oneheadfit perseed. Constant uses per-species mean teacherfraction on same50k; analyticmean is not another neuralfit.",
+ "exposure":"One common50k from sorted intersection of both preparedtrainingIDsets excluding UNIONbothU and first10kheadfit IDs; fixedselectionRNG. Bothbases sawcommonrows. Candidatehead never seesU/D labels/states duringfit. Base/teacher historicaltraining and calibration exposure remain. Oneoverlappingteacherpair, not independentensemble replication.",
+ "controls":"Eachanchor, initialalpha0.5, per-species constantalpha, fixed strictteacher. Onlyhead uses input-dependent fraction. No modelcount or width sweep.",
+ "evaluation":"Fitting50k diagnostics plus fullU20k/D1023; unchangedprotected gates againstownanchor/incumbent. State-only inference with ONLYownbase/head/constant artifacts. Reload exactreplay, independently verifyalpha/cap/baseparity, IDs andfullphysicalcounts, actualupdates/latency. No promotion inherited fromteacher.",
+ "prechecks":"Zero-cap, teacher physicalreconstruction, fractionrange, sign/magnitude/AR, BCEgradient,55034parameters, no frozenbasegradient, exactsharedforwardbaseparity andcached/freshheadreplay. Allreference tolerances unchanged.",
+ "decision":"Head must passallgates and exceedconstant to support usefulfeature-dependentcompression. Ifbothsimilarlyimprove, uniformshrinkbias remains plausible. Ifstudentdoesnottransfer, teacherlossreduction isnotphysicalgain; close thiscompressor and select a discriminating alternative, notwidthsweep.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_fit_seconds":600,"maximum_worker_seconds":600},
+ "run":"runs/offline-accuracy/consensus-distill-20261013","confirmation_access":false
+}

@@ -356,6 +356,12 @@ initial-rate formulas. Its separate state-only inference worker receives the
 private mechanism and frozen weights/scaler, not reference arrays. The trusted
 review process scores full saved outputs. No production dependency is added.
 
+`consensus_distill` uses the same guarded controller to stage common50k teacher
+fractions, then calls the existing correction trainer through explicit decoder
+callbacks. Its inference uses one frozen base plus a small hidden-feature head
+or training-mean fraction control. The protected scorer is unchanged. No
+production dependent or second-base inference mount is introduced.
+
 `paired_base` reads pinned prepared caches through the research-contract adapter,
 aligns a common training-only population, and uses the protected scorer plus an
 independent recount. It has no training or production dependent. Cached mean

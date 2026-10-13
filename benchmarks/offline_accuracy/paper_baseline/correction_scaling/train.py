@@ -12,8 +12,8 @@ from ..decoder_loss.fit import occupancy_sample
 from .model import cached_prediction
 
 
-def compact(model,cache,active,config):
-    predicted,c = cached_prediction(model,cache,active,config)
+def compact(model,cache,active,config,prediction_function=cached_prediction):
+    predicted,c = prediction_function(model,cache,active,config)
     ref = cache["delta"][:,active]
     ratio = abs(predicted[:,active]-ref)/(1e-15+.1*abs(ref))
     nontrivial = abs(ref)>1e-15/.9
@@ -23,11 +23,16 @@ def compact(model,cache,active,config):
         coordinate_rmse=float(np.sqrt(np.mean(ce**2))))
 
 
-def fit(training,development,active,config,destination,objective_function=objective,model_factory=head):
+def fit(training,development,active,config,destination,objective_function=objective,model_factory=head,
+        prediction_function=cached_prediction,initial_prediction_check=None):
     started = time.monotonic()
     model = model_factory(config,training["features"].shape[1],int(active.sum()))
     initial = weight_hash(model)
-    np.testing.assert_array_equal(cached_prediction(model,training,active,config)[0],training["base"])
+    initial_prediction=prediction_function(model,training,active,config)[0]
+    if initial_prediction_check is None:
+        np.testing.assert_array_equal(initial_prediction,training["base"])
+    else:
+        initial_prediction_check(initial_prediction,training,active,config)
     tensor = lambda value:torch.as_tensor(value,device="cuda")
     x = tensor(training["features"])
     truth = tensor(training["delta"][:,active])
@@ -60,9 +65,9 @@ def fit(training,development,active,config,destination,objective_function=object
             step = completed+1
             if step%config["diagnostics_every_updates"]==0:
                 record = dict(update=step,loss_before_update=float(loss.detach()),learning_rate=lr,
-                    training=compact(model,training,active,config),elapsed_seconds=time.monotonic()-started)
+                    training=compact(model,training,active,config,prediction_function),elapsed_seconds=time.monotonic()-started)
                 if not config.get("training_only_probe") and development is not None:
-                    record["development"] = compact(model,development,active,config)
+                    record["development"] = compact(model,development,active,config,prediction_function)
                 history.append(record)
                 with (destination/"progress.jsonl").open("a") as handle:
                     handle.write(json.dumps(record,allow_nan=False)+"\n")
