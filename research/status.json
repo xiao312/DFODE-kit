@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "KINETIC_FEATURES_REGISTERED",
+  "stage": "KINETIC_FEATURES_AWAITING_RECOUNT",
   "active_experiment": "EXP-20261013-kinetic-features",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",

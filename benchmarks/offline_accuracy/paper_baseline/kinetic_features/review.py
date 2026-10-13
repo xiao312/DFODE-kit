@@ -23,6 +23,13 @@ def recount(pred, truth, base, scored, active, initial):
     R=repairs/int((~old).sum()); D=damage/int(old.sum())
     require(abs(passed.mean()-(old.mean()+(1-old.mean())*R-old.mean()*D))<3e-16,"Repair identity differs")
     nt=np.abs(d)>1e-15/.9
+    masks=dict(all=np.ones_like(nt),nontrivial=nt,floor_dominated=~nt,
+               weak_nontrivial=nt&(abs(d)<=1e-12),active_increment=abs(d)>1e-12)
+    for name,mask in masks.items():
+        group=scored["groups"][name]
+        require(int(mask.sum())==group["components"] and int(passed[mask].sum())==group["pass_count"],"Group counts differ")
+        require(int((~old&passed&mask).sum())==group["repaired"] and int((old&~passed&mask).sum())==group["damaged"],"Group transitions differ")
+        if mask.any():np.testing.assert_allclose(np.quantile((abs(y-d)/tolerance)[mask],.99),group["normalized_error"]["p99"],rtol=1e-13)
     require(int(((np.sign(y)!=np.sign(d))&nt).sum())==scored["nontrivial_sign"]["wrong_sign_count"],"Sign counts differ")
     require(int(((initial+pred)<0).sum())==scored["endpoint_diagnostics"]["negative_components"],"Negative count differs")
     for event in scored["small_target_events"]:
@@ -72,9 +79,22 @@ def main():
             factor=np.ones_like(z); nonzero=z!=0; factor[nonzero]=-np.expm1(-z[nonzero])/z[nonzero]
             expected=np.r_[(1e-6*net)[active],(1e-6*net*factor)[active]]
             np.testing.assert_allclose(rows["rate_raw"][index],expected,rtol=5e-13,atol=1e-30)
+        # Score raw feature approximations on these same rows. They are controls,
+        # not newly trained or protected-U/D-qualified predictors.
+        raw_scores=[]
+        for mode,columns in (("euler",slice(0,58)),("frozen-exponential",slice(58,116))):
+            estimate=np.zeros_like(original["base"]); estimate[:,active]=rows["rate_raw"][:,columns]
+            for population,sl in dict(fitting=slice(0,20000),check=slice(30000,None)).items():
+                subset={k:v[sl] for k,v in original.items()}
+                rawscore=score(dict(prediction=estimate[sl],source_indices=subset["source_indices"]),subset,binding["species"],f"{seed}:{mode}:{population}")
+                recount(estimate[sl],subset["delta"],subset["base"],rawscore,active,subset["states"][:,2:])
+                raw_scores.append(dict(seed=seed,arm=mode,population=population,candidate=rawscore))
+        scores.extend(raw_scores)
         timings=read_json(root/str(seed)/"inference/result.json")["records"]
         for arm in plan["arms"]:
             trained=root/str(seed)/arm; replay=arrays(trained/"training-replay.npz")
+            actual=next(r for r in read_json(root/str(seed)/"result.json")["records"] if r["arm"]==arm)
+            require(actual["updates_completed"]==6000 and actual["row_presentations"]==60000000 and actual["parameter_count"]==plan["parameters"][arm],"Actual fitting work differs")
             np.testing.assert_array_equal(replay["prediction"],rows[arm][:20000]); np.testing.assert_array_equal(replay["coordinate"],rows[arm+"_coordinate"][:20000])
             checked_file(staged/"inference-model"/arm/"weights.pt",digest(trained/"weights.pt"))
             config=read_json(trained/"config.json")
@@ -94,7 +114,9 @@ def main():
         checks={t["arm"]:t for t in table if t["seed"]==seed and t["population"]=="check"}
         advance.append(checks["kinetic"]["gate"]["passed"] and all(checks["kinetic"]["acceptance"]>checks[c]["acceptance"] for c in ("ordinary","capacity")))
     save(root/"protected-scores.json",dict(records=scores)); verify_evaluator_lock(project)
-    save(root/"review.json",dict(status="verified",table=table,advance=all(advance),candidate=False,confirmation_opened=False,report_sha256=digest(root/"report.json"),score_sha256=digest(root/"protected-scores.json")))
+    kinetic_timing=all(t["latency_ratio"]<=policy["maximum_inference_latency_ratio"] for t in table if t["arm"]=="kinetic")
+    save(root/"review.json",dict(status="verified",table=table,advance=all(advance),latency_within_anchor_budget=kinetic_timing,
+        qualification="Training-pool diagnostic only; accuracy-only if latency exceeds budget; U/D not evaluated",candidate=False,confirmation_opened=False,report_sha256=digest(root/"report.json"),score_sha256=digest(root/"protected-scores.json")))
     print(root/"review.json")
 
 
