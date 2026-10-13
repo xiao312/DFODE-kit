@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "ELEMENT_PROJECTION_REGISTERED",
+  "stage": "ELEMENT_PROJECTION_RUNNING",
   "active_experiment": "EXP-20261013-element-projection",
-  "active_jobs": [],
+  "active_jobs": [{"experiment":"EXP-20261013-element-projection","controller_pid":3858643,"controller_start_ticks":"1050143218","source":"09ceafe","run":"runs/offline-accuracy/element-projection-20261013","worker_identity_file":"runs/offline-accuracy/element-projection-20261013/active-job.json","state":"RUNNING"}],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,

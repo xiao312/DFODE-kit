@@ -36,6 +36,7 @@ def main():
         a=a[np.any(a!=0,axis=1)];np.testing.assert_array_equal(a,np.load(staged/"projection-model/element-matrix.npy"))
         timing=read_json(root/str(seed)/"result.json")["records"]
         for arm in plan["arms"]:
+            np.testing.assert_array_equal(saved[arm][:,~active],rows["base"][:,~active])
             discrepancy=0.
             for index in np.linspace(0,49999,32,dtype=int):
                 b=rows["base"][index,active];scale=np.ones_like(b) if arm=="uniform" else 1e-14+abs(b);scale/=scale.max()
@@ -54,7 +55,11 @@ def main():
                 table.append(entry);scores.append(dict(seed=seed,arm=arm,population=population,candidate=candidate,base=baseline))
         advance.append(next(t for t in table if t["seed"]==seed and t["arm"]=="amplitude" and t["population"]=="check")["gate"]["passed"])
     save(root/"protected-scores.json",dict(records=scores));verify_evaluator_lock(project)
-    save(root/"review.json",dict(status="verified",table=table,advance=all(advance),candidate=False,confirmation_opened=False,report_sha256=digest(root/"report.json"),score_sha256=digest(root/"protected-scores.json")))
+    save(root/"review.json",dict(status="verified",table=table,advance=all(advance),candidate=False,confirmation_opened=False,
+        effective_exposure=dict(projection_fit_rows=0,prediction_reference_access=False,base_previously_saw_pool=True,
+            inherited_staging_note="correction_fit_count/head_result fields in prepared exposure.json describe unused historical head provenance, not this no-fit predictor; only base/preprocessing/element matrix are mounted"),
+        cpu_check_scope="32 implementation samples per arm/seed, not componentwise precision certification",
+        report_sha256=digest(root/"report.json"),score_sha256=digest(root/"protected-scores.json")))
     print(root/"review.json")
 
 
