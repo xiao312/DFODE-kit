@@ -72,7 +72,11 @@ def main():
     if args.mode=="train":
         plan=read_json("/input/config.json")
         if plan["seed"]!=args.seed:raise ValueError("Seed mismatch")
-        result=fit(arrays("/input/training.npz"),plan,destination)
+        if plan.get("optimizer_kind")=="irls":
+            from .convex import fit_refine
+            result=fit_refine(arrays("/input/training.npz"),plan,destination)
+        else:
+            result=fit(arrays("/input/training.npz"),plan,destination)
         save(destination/"result.json",dict(status="complete",environment=env,config=plan,**result))
         return
     rows=arrays("/input/states.npz")

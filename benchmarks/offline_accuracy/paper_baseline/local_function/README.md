@@ -54,3 +54,20 @@ base from state-only inputs for all three populations. The trusted controller
 compares the saved base arrays outside the sandbox. `review` then independently
 recounts tails, gate failures, snapshot scores and damage by original error
 margin. These post-fit checks do not change predictions or select checkpoints.
+
+## Fixed-basis optimization control
+
+The separately registered refinement experiment reuses each arm's exact geometry
+and Adam coefficients. It changes only coefficient optimization: 20 full-data
+iteratively reweighted least-squares steps for the same convex Smooth L1 plus L2
+objective. Basis and deployed coefficients stay FP32; normal equations, targets
+and solves use FP64. Each step uses weight 1/max(beta, abs(residual)). The positive
+ridge is 2e-6/K in each species' normal equations. Round each solution to FP32
+before the next step, and record the objective before and after rounding.
+No silent jitter, data exclusion or solver fallback is permitted. Stop on a
+nonfinite solve or an objective increase beyond the declared roundoff allowance.
+This is extra optimization work, not a matched-work comparison with Adam.
+
+`convex.py` owns the fixed-design solve and training-only conditioning records.
+It depends on this module's basis and existing decoder; the runner selects it
+only through a new frozen manifest. The reference scorer is unchanged.

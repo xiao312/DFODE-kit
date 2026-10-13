@@ -17,6 +17,25 @@ from .model import select_centres
 
 
 def stage(project,output,binding,plan):
+    if plan.get("parent_run"):
+        parent=project/plan["parent_run"]
+        review=read_json(checked_file(parent/"review.json",plan["parent_review_sha256"]))
+        report=read_json(checked_file(parent/"report.json",review["report_sha256"]))
+        for relative,expected in report["artifacts"].items():
+            if relative.startswith("prepared/"):checked_file(parent/relative,expected)
+        shutil.copytree(parent/"prepared",output/"prepared")
+        for seed in plan["seeds"]:
+            prep=output/"prepared"/str(seed)
+            for arm in plan["arms"]:
+                path=prep/("train-"+arm)
+                save(path/"config.json",dict(plan,seed=seed,arm=arm))
+                for name,dest in [("geometry.npz","geometry.npz"),("weights.pt","initial-weights.pt")]:
+                    relative=f"fits/{seed}-{arm}/model/{name}"
+                    shutil.copyfile(checked_file(parent/relative,report["artifacts"][relative]),path/dest)
+            metadata=read_json(prep/"manifest.json")
+            metadata["artifacts"]={str(p.relative_to(prep)):digest(p) for p in prep.rglob("*") if p.is_file() and p.name!="manifest.json"}
+            save(prep/"manifest.json",metadata)
+        return
     prior=project/"runs/offline-accuracy/species-distance-20261013"
     review=read_json(checked_file(prior/"review.json","fa5caa1b06632a7406fea11d3edb91f51f81cd43bb071eb2c443ae4a1adfc249"))
     report=read_json(checked_file(prior/"report.json",review["report_sha256"]))

@@ -1,6 +1,34 @@
 # Signed-increment research results
 
-## Latest: species-specific distance diagnostic
+## Latest: trained fixed-centre local functions
+
+**Valid negative result. GBCT remains the incumbent.** Both distances used the
+same 128 centres, 7,424 learned coefficients, 50k training states and work budget.
+Unlike the earlier neighbor diagnostic, these models use fixed learned weights
+at inference, with no reference-library lookup.
+
+| Predictor | Same-source unseen, 20k | Development, 1,023 |
+|---|---:|---:|
+| Global-distance local correction | 72.03 / 72.10% | 68.16 / 68.50% |
+| Species-distance local correction | 71.49 / 71.62% | 67.81 / 68.06% |
+| Continued GBCT | 72.24 / 72.27% | 68.30 / 68.80% |
+
+Values are seed 11 / 12. Species distance did **not** beat global distance here.
+On development it repaired 1,081 / 962 base failures, but damaged 1,370 / 1,401
+base successes. The global model repaired 585 / 547 and damaged 665 / 728.
+Both models introduce negative endpoints and take about 2.41-2.50 times measured
+base latency. Neither qualifies. Full nominal-label scoring, state-only replay,
+fresh base replay, tail/count/gate recounts and snapshot damage checks passed.
+No confirmation data was opened. The four fits used about 55 seconds of recorded
+fit time; this is not GPU allocation time.
+
+The neighbor result cannot be treated as a guarantee for a trained local model.
+The next registered control keeps this basis and objective fixed and uses 20
+full-data convex coefficient updates. It asks whether Adam left useful fitting
+work undone. It is additional optimization, not a matched-work architecture test.
+See [the experiment](experiments/EXP-20261013-local-optimum.json) and the ledger.
+
+## Previous: species-specific distance diagnostic
 
 **Result: better local information, but no better predictor than the base.**
 The continued GBCT models remain the incumbents. The physical acceptance rule

@@ -324,6 +324,13 @@ The CLI now uses lighter command discovery and deferred heavy imports for improv
 
 ## Architectural end state of the recent refactor
 
+The research-only local-function module uses `local_function.run` for admission,
+`model` for frozen distance kernels, `worker` for Adam fits and state-only replay,
+and `convex` for separately registered fixed-basis optimization controls. Both
+paths share the existing isolation and protected scorer. `postcheck` and
+`audit_metrics` independently verify saved predictions; they do not modify the
+contract or production models. See the module README for interfaces.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.
