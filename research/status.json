@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "SELECTIVE_CORRECTION_REGISTERED",
+  "stage": "SELECTIVE_CORRECTION_RUNNING",
   "active_experiment": "EXP-20261013-selective-correction",
-  "active_jobs": [],
+  "active_jobs": [{"controller_pid":3841713,"controller_start_ticks":"1049827977","worker_pid":3842007,"worker_start_ticks":"1049830655","seed":20261012,"source_commit":"7635e0d","run":"runs/offline-accuracy/selective-correction-20261013","lease":"runs/research-control/EXP-20261013-selective-correction.lease.json"}],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,

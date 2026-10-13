@@ -41,7 +41,7 @@ replay, fresh base replay and independent full-population recount passed.
 Review hash: `68dd5c05db2827841dd34e53c743d89e001e0334cac982a1d1fbeb9c2d8b5c23`.
 Close this low-step continuation family provisionally; no more LR/batch sweep.
 
-Next is a training-only [conditional scalar-bias check](experiments/EXP-20261013-conditional-calibration.json).
+The following training-only [conditional scalar-bias check](experiments/EXP-20261013-conditional-calibration.json) is now complete (above).
 Two-fold evaluation compares one species constant with16 training-derived
 base-output bins. It tests repeatable output-dependent bias, not a new loss or
 another large network. It does not open development or confirmation data.
@@ -109,7 +109,7 @@ counts and rejected gates. State-only replay, independent physical recount,
 and exact frozen-base replay passed. This closes the global-shift explanation
 provisionally. It does not rule out a useful input-dependent model.
 
-Next: a [training-only parameter-gradient probe](experiments/EXP-20261013-gradient-probe.json)
+The subsequent [training-only parameter-gradient probe](experiments/EXP-20261013-gradient-probe.json)
 of the continued base. Measure actual Adam-step repairs and damage before
 choosing another optimizer or parameter-sharing intervention. No new candidate
 or independent-confirmation claim is made.
