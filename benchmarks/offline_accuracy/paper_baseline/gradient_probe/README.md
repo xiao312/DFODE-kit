@@ -46,6 +46,10 @@ separate full-parent, training-only scalar diagnostic. Its manifest selects
 `conditional_calibration.worker`; it does not execute gradient probes. Read
 that module's README for its different finite work and fold boundaries.
 
+`EXP-20261013-selective-correction` uses an explicit separate staging branch
+to exclude the old head's10k and U20k rows, then runs `selective_correction.worker`.
+It reuses admission/isolation, not the gradient experiment's data selection.
+
 `python -m benchmarks.offline_accuracy.paper_baseline.gradient_probe.run
 --project <root> --output <new-dir>` performs discovery; `--execute` admits the
 registered diagnostic. Outputs are selected training IDs, group statistics,

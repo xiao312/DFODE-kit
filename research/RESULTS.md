@@ -1,5 +1,26 @@
 # Signed-increment research results
 
+## Latest diagnostic: output-bin calibration does not transfer
+
+**Valid negative.** In two-fold checks within the50k training pool,16
+base-output bins per species lose0.038 /0.040 percentage points versus the
+base. They repair26,661 /24,884 components but damage27,765 /26,041.
+They also create26,878 /36,750 negative endpoints. A matched constant control
+is less harmful, but does not improve on the base either. Close scalar-bias
+calibration provisionally. These are training-pool cross-fit results, not U/D
+scores or independent confirmation.
+
+Both folds use fit-only edges and shifts; query labels do not enter prediction.
+Twelve focused tests, separate source review, artifact-only replay and independent
+physical recount passed. Review hash:
+`2f3c474dd9e51968bb082a71b0771c87f0bacee283e58ab2479b190f56c8b6da`.
+
+The next unresolved question is whether useful corrections can be selected
+from permitted features while retaining the base elsewhere. This is different
+from changing correction amplitude: prior global damping failed. Any learned
+selector must be fitted and calibrated on rows not used to train its frozen
+correction, and checked on a third disjoint training-pool subset before U/D.
+
 ## Latest: broader support does not rescue base continuation
 
 **Valid negative result. The continued GBCT incumbent is unchanged.** The

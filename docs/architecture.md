@@ -341,6 +341,11 @@ and the interval-consensus learner for training-only cross-fit checks. It change
 scalar output resolution, not scoring. Its independent review does not open U/D
 or confirmation. See its README for fold exposure and artifact interfaces.
 
+`selective_correction.prepare/model/worker/review` tests a learned selector
+between frozen predictions. It uses the same diagnostic controller and the
+historical checked correction loader. The selector adds no references to its
+inference inputs. Full candidate qualification remains a separate controller path.
+
 The research Pages publisher can consume the reference pilot's static report,
 figures, summary and analysis provenance. This is a one-way artifact dependency:
 `reference analysis/renderers -> publish_pages -> research-pages deployment`.
