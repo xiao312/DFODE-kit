@@ -1,0 +1,14 @@
+{
+ "experiment_id":"EXP-20261013-representation-pairs","status":"REGISTERED",
+ "hypothesis":"Different target coordinates induce complementary errors beyond the diversity produced by two GBCT initializations at matched training work.",
+ "source_run":"runs/offline-accuracy/consensus-distill-20261013","source_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "campaign":"runs/offline-accuracy/matched-targets-200k-20261009/campaign","campaign_verification_sha256":"f000d9b75a140c97cd5f11eea2365af003b89dda30aeed1dec576a09c6b8be24",
+ "seeds":[20261011,20261012],"targets":["gbct","state-boxcox","signed-power","scaled-asinh"],"objective":"increment","rows":50000,
+ "models":"Existing matched18k-final checkpoints only:200k states,180M presentations,4x800GELU,shared input preparation,paired initialization,12k coordinate warmup then6k physical log loss. Target-specific normalizations are part of representation. No selecting stronger losses or checkpoints after scores.",
+ "pairings":"Own18kGBCT with each other representation of same seed; control own18kGBCT with otherseed18kGBCT. One fixed physical midpoint and one historical strict k0.1 consensus per pair. Also score individual members. No fitted weights, cap scan, queryreference or temperature route.",
+ "population":"Exact common50k from reviewed distillation, excluding both U/headfit IDs. All bases saw these rows. No U/D/confirmation predictions are analysed. Provenance hashes may include historical development artifacts without reading their values.",
+ "evaluation":"Compare pair against own matched18kGBCT for representation hypothesis and continuedGBCT for practical usefulness. Full protected groups and independent pass/repair recount, asinh-error correlation and pass overlap by primary magnitude. Oracle union descriptive only, never inference. No latency claim.",
+ "decision":"A mixed representation must beat the same-rule two-seed control in both seeds to support diversity benefit. Only a fixed rule that also passes every physical gate versus continuedanchors on bothseeds can advance to a separately registered state-only U/D screen. Otherwise use measured error structure to choose a new rationale; do not scan ensemble weights.",
+ "resources":{"cpu_threads":1,"gpu_workers":0,"maximum_seconds":600,"new_fits":0},
+ "run":"runs/offline-accuracy/representation-pairs-20261013","confirmation_access":false
+}

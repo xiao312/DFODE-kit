@@ -84,3 +84,13 @@ Example: `python -m benchmarks.offline_accuracy.paper_baseline.paired_base.relia
 --project . --execute`. Without `--execute`, verify the manifest and inputs only.
 Verify `pytest tests/test_pair_reliability.py -q`; expect query-reference-free
 routing, fixed bin edges, sparse-group identity and damage-budget checks.
+
+`representation_pairs.py` compares already-trained, equal-work target variants
+on the same50k training-only population. The fixed physical mean and strict
+consensus are compared with same-target/two-seed controls and the stronger
+continued anchor. No new fit, development selection or runtime qualification is
+performed. Target normalization changes with representation; all other matched
+work identities must pass. Paired errors and oracle overlap describe opportunity,
+not a reference-dependent prediction rule. Run the module with `--project .`
+for validation, then `--execute` for the registered diagnostic. Independent
+physical recount and the existing paired-base tests are required.
