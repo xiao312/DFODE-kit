@@ -1,6 +1,37 @@
 # Signed-increment research results
 
-## Latest: teacher compression does not retain the gain
+## Latest: strict consensus meets the current development gates
+
+The checked GPU implementation is **development-qualified, pending supervisor
+promotion and independent confirmation**. The incumbent remains continued GBCT.
+
+| Population | Base11 /12 | Candidate11 /12 |
+|---|---:|---:|
+| Same-source unseen20k | 72.241 /72.275% | 72.788 /72.816% |
+| Development1023 | 68.296 /68.800% | 68.901 /69.414% |
+
+All protected physical gates pass. Development repairs518 /516 components and
+damages159 /152; damage is0.392 /0.372% of base successes. No new sign errors,
+severe events or negative endpoints occur. Total latency is1.21-1.25x the
+historical anchor, below1.5x. It is1.70-1.73x an equally optimized single base:
+the cost qualification depends on the current implementation comparator.
+
+The GPU inverse has less than9e-12 allowance units of numerical drift and changes
+zero pass decisions. Twenty focused tests, exact replay, independent full counts
+and separate source review passed. Review found an invalid-input rejection gap;
+the checked revision fixes it and repeats inference/timing in a new directory.
+The old results remain intact. Checked review:
+`1ab4e738c79e8eb9f08aa233a6d457ef01dbf59dd566ad648dde2d03ae952244`.
+
+This is a small one-step development gain, not the main research objective
+solved. The rule cannot fix wrong signs or severe errors. Both directions share
+one base pair, and the development sets have been used repeatedly.
+
+Next: a training-only cross-fit test of species/disagreement reliability. Can
+input-only agreement identify when a larger move to the smaller same-sign base
+prediction is useful? Fixed bins and preservation rules are registered first.
+
+## Previous: teacher compression does not retain the gain
 
 The small head is **valid negative**, not a new incumbent. It costs1.37-1.40x
 the base, within the1.5x runtime limit, but gains only0.002 /0.017 percentage

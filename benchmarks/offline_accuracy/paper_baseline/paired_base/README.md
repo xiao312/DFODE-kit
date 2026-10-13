@@ -69,3 +69,18 @@ The reviewed GPU decoder rejects invalid states and encoded overflow before its
 branch substitutions. The validation revision is replayed in a new run directory;
 old outputs remain unchanged. This check adds a device synchronization, so timing
 is measured again. No training is repeated.
+
+`reliability.py` is a registered, training-only cross-fit diagnostic. It asks
+whether a fixed species/disagreement table can select useful smaller-magnitude
+predictions from the other base. Four input-derived log-ratio bins are fixed
+before evaluation. Tables learn only on one25k fold and predict the other25k.
+The selector sees b,q and frozen table entries, never query reference values.
+Both zero and opposite-sign alternatives are excluded. This is a learned
+prediction rule, not a manual temperature switch or an inference certificate.
+Outputs: fitting/check scores, tables, row IDs and source hashes. Cached replay
+does not qualify a runtime candidate. Dependencies and trusted-data boundary are
+the same as the paired-cache diagnostic above. No protected evaluator changes.
+Example: `python -m benchmarks.offline_accuracy.paper_baseline.paired_base.reliability
+--project . --execute`. Without `--execute`, verify the manifest and inputs only.
+Verify `pytest tests/test_pair_reliability.py -q`; expect query-reference-free
+routing, fixed bin edges, sparse-group identity and damage-budget checks.
