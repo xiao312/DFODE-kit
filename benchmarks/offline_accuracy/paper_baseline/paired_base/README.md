@@ -21,3 +21,11 @@ Run with one BLAS/OMP thread. Verify:
 `python -m pytest tests/test_paired_base.py -q`.
 Expected: alignment rejects duplicates/mismatches, mean has no label dependency,
 zero/constant correlation is explicit, and pass-overlap identities hold.
+
+The separately registered `bounded.py` diagnostic uses the saved common rows.
+It applies a declared cap of 0.1 times an anchor-prediction scale to the physical
+midpoint adjustment. This cap does not enter the physical scorer. It stays on
+the convex segment and thus preserves nonnegative endpoints when both input
+endpoints are nonnegative. `python -m
+benchmarks.offline_accuracy.paper_baseline.paired_base.bounded --project .`
+checks the plan; `--execute` saves results. No fitted parameters or new labels.

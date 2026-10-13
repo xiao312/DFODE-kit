@@ -1,0 +1,21 @@
+{
+  "experiment_id": "EXP-20261013-bounded-base-mean",
+  "status": "REGISTERED",
+  "hypothesis": "Capping the physical midpoint adjustment preserves the seed-averaging repair signal while restricting movement of already accurate predictions.",
+  "evidence": ["Paired physical mean raises acceptance75.45% from72.20/72.32%, but damages5.7% of base successes"],
+  "parent_run": "runs/offline-accuracy/paired-base-errors-20261013",
+  "review_sha256": "a20c10418806ae3c84a31c70102d180e188ca7b94a727142a82a215f65ce0cb1",
+  "seeds": [20261011, 20261012],
+  "fraction": 0.1,
+  "rule": "For each anchor b and other base q, return b+clip((q-b)/2, -k*(1e-15+0.1*abs(b)), k*(1e-15+0.1*abs(b))), k=0.1. This is declared constrained architecture, not hidden postprocessing; the cap is a prediction scale, never the reference-based scoring allowance. No state renormalization or positivity clip.",
+  "rationale": "Enew<=Ebase+k*(1+0.1*Ebase); hence Ebase<=(1-k)/(1+0.1*k) suffices for pass preservation in exact arithmetic. k is chosen prospectively to permit at most one tenth of a predicted-budget movement, not optimized on diagnostic outcomes.",
+  "changed": "Only adjustment bound versus registered unbounded physical midpoint. Apply each anchor direction consistently to all states/species, no temperature switch or unknown-reference routing.",
+  "fixed": "Same common20k rows, two frozen bases, species order, physical criterion and all gates. No retraining or new references. One seed pair is not two independent ensemble replicates.",
+  "controls": ["each anchor", "unbounded physical midpoint"],
+  "verification": "Exact parent hashes and ID/state alignment; independent scalar formula samples, bound/segment/AR checks, protected score plus independent recount; preservation theorem checked on every component with a numerical margin; raw and returned predictions retained.",
+  "advance": "If each anchored variant gains at least0.005 against its own incumbent and all physical guards pass, perform fresh isolated fullU/D inference with measured cost. Failure closes this specific bounded mean, not all possible ensembles. No latency claim from cached arithmetic.",
+  "work": "One CPU thread, two vectorized20k passes, no training, no GPU or confirmation. Fixed final result, no cap scan.",
+  "output": "runs/offline-accuracy/bounded-base-mean-20261013",
+  "promotion_allowed": false,
+  "confirmation_access": false
+}

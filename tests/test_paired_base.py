@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement
+from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement, bounded_mean
 
 
 def test_alignment_reorders_and_rejects_missing_or_duplicate():
@@ -29,3 +29,21 @@ def test_overlap_partition_and_constant_correlation():
     assert result["both_fail_opposite"] == 1
     assert agreement(truth, truth, truth, np.ones(4, bool))["correlation"] is None
     assert agreement(truth, truth, truth, np.zeros(4, bool))["components"] == 0
+
+
+def test_bounded_mean_preservation_and_convexity():
+    d = np.r_[0., np.logspace(-32, -3, 60), -np.logspace(-32, -3, 60)]
+    bound = .9/1.01
+    for direction in (-1, 1):
+        b = d + direction * (bound-1e-10) * (1e-15+.1*abs(d))
+        other = b + direction * 1e-2
+        p = bounded_mean(b, other)
+        assert np.all(abs(p-d) <= 1e-15+.1*abs(d))
+        assert np.all(p >= np.minimum(b, other)) and np.all(p <= np.maximum(b, other))
+
+
+def test_bounded_mean_is_not_hidden_positivity_clip():
+    value = bounded_mean(np.array([-1.]), np.array([-2.]))
+    assert value[0] < -1
+    with pytest.raises(ValueError):
+        bounded_mean(np.array([0.]), np.array([1.]), fraction=1.)

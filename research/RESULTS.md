@@ -1,6 +1,29 @@
 # Signed-increment research results
 
-## Latest: conservation projection is not an accuracy solution
+## Latest: two-base averaging has a repair signal, but fails preservation
+
+On one aligned common20k training-pool population, the physical mean reaches
+**75.450%**, versus **72.202% / 72.323%** for its two input bases. The asinh
+mean reaches75.321%. This is one pair of models, not two independent repeats.
+
+The physical mean repairs85,404 /84,252 components but damages47,728 /47,974
+against the respective bases. Damage is5.70 /5.72%, above the2% guard. It has
+zero negative endpoints but increases some severe-event counts. The asinh mean
+has60 negative endpoints. Neither is qualified, and latency was not measured.
+
+The bases both pass725,764 of1,160,000 components; exactly one passes224,966;
+both fail209,270. Their signed asinh-error correlation is0.670 overall, not a
+physical-error correlation or proof of systematic bias. The oracle union is
+descriptive, not an inference policy. Independent categorical recount verified
+the overlap and repair identities. Review:
+`a20c10418806ae3c84a31c70102d180e188ca7b94a727142a82a215f65ce0cb1`.
+
+Next is one fixed bounded midpoint adjustment. It limits prediction movement
+without changing the physical allowance. No weight or bound scan is authorized
+by this trial. Cached arithmetic still requires later isolated replay and cost
+measurement before it could qualify as a predictor.
+
+## Previous: conservation projection is not an accuracy solution
 
 The no-fit projection test is **valid negative**. Amplitude weighting raises
 check acceptance by only 0.035 / 0.019 percentage points. It returns 4,456 /

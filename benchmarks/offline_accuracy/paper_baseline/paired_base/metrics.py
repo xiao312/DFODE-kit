@@ -39,3 +39,22 @@ def agreement(first, second, truth, mask):
                 opposite_error=int((((a < d) & (b > d)) | ((a > d) & (b < d))).sum()),
                 both_fail_opposite=int((~pa & ~pb & (np.sign(a-d) != np.sign(b-d))).sum()),
                 oracle_union_pass=int((pa | pb).sum()))
+
+
+def bounded_mean(anchor, other, fraction=.1):
+    """Declared prediction-space trust region; this is NOT the scoring allowance.
+
+    Stay on the segment from anchor to its physical midpoint with other. The
+    input-only cap bounds movement by fraction*(1e-15+.1*abs(anchor)).
+    With an exact base error E, E_new <= E + fraction*(1+.1*E).
+    Thus E <= (1-fraction)/(1+.1*fraction) is sufficient for preservation.
+    No labels or unknown acceptance flags enter this inference operation.
+    """
+    anchor, other = np.asarray(anchor, dtype=np.float64), np.asarray(other, dtype=np.float64)
+    if anchor.shape != other.shape or not np.isfinite(anchor).all() or not np.isfinite(other).all():
+        raise ValueError("Invalid predictions")
+    if not 0 < fraction < 1:
+        raise ValueError("Require a finite strict fractional bound")
+    change = .5 * other - .5 * anchor
+    cap = fraction * (1e-15 + .1 * np.abs(anchor))
+    return anchor + np.minimum(np.maximum(change, -cap), cap)
