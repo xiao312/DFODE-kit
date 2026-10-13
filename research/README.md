@@ -19,8 +19,12 @@ flowchart LR
   L --> H
 ```
 
-The reference-to-worker path is absent. A development pass does not open the
+During inference, the candidate receives no reference labels. Training receives
+only the declared training labels. A development pass does not open the
 confirmation set or replace production automatically.
+
+Read [the first screening results](RESULTS.md) for the measured comparisons and
+their meaning. Continued GBCT remains the incumbent; no correction was promoted.
 
 ## Startup and completion
 

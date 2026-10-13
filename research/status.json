@@ -1,25 +1,34 @@
 {
   "schema_version": 1,
-  "stage": "FIRST_COMPARISON_RUNNING",
-  "active_experiment": "EXP-20261013-hidden-features",
-  "active_jobs": [
-    {
-      "host": "lh40902",
-      "run": "runs/offline-accuracy/hidden-features-20261013",
-      "live_state": "runs/offline-accuracy/hidden-features-20261013/active-job.json",
-      "lease": "runs/research-control/EXP-20261013-hidden-features.lease.json",
-      "resume_rule": "Read lease and live state; match PID plus start ticks. Do not launch a duplicate."
-    }
-  ],
+  "stage": "SCREENING_BLOCK_REVIEWED",
+  "active_experiment": null,
+  "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
-  "last_verified_result": "https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6137254405",
+  "fixed_anchor": "continued-gbct-two-seed",
+  "scientific_objective_achieved": false,
+  "candidate_promotions": 0,
+  "result_summary": "research/RESULTS.md",
+  "last_verified_result": "runs/offline-accuracy/diversity-20261013/control-review.json",
+  "last_review_sha256": "6b031ad45b4cdccc8dd2e1493b8b74cd1cd3804599c6567f0ae2c8f0f5948b49",
+  "completed_runs": [
+    "runs/offline-accuracy/hidden-features-20261013",
+    "runs/offline-accuracy/preservation-20261013",
+    "runs/offline-accuracy/linear-correction-20261013",
+    "runs/offline-accuracy/diversity-20261013"
+  ],
   "budget": {
-    "configurations": 0,
-    "primary_fits": 0,
-    "allocated_gpu_seconds": 0
+    "configurations": 6,
+    "primary_fits": 12,
+    "allocated_gpu_seconds": null,
+    "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
+    "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Collect the registered six fits, independently recount raw predictions, apply unchanged gates, then select one evidence-based next experiment.",
+  "next_action": "Design a training-derived local residual predictability diagnostic. No repeated loss, width or size sweep without a new discriminating rationale. Register any new candidate before fitting.",
+  "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
-  "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention."
+  "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention.",
+  "confirmation_opened": false,
+  "always_on_agent_service": false,
+  "focused_tests_passed": 107
 }

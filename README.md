@@ -15,16 +15,16 @@ In practice, DFODE-kit sits between:
 
 ## Precision-conditioning research review
 
-Latest experiment: [frozen correction transfer and targeted reference audit
-(2026-10-13)](https://github.com/xiao312/DFODE-kit/issues/3#issuecomment-6137254405).
-The correction loses accuracy even on unseen states from the training snapshots.
-No tested positive damping factor improves unseen acceptance; the sampled tail
-labels pass the reference checks. Continued GBCT bases remain incumbents. No new
-fit or size progression was launched. The HTML below retains the earlier baseline
-campaign rather than these newer correction results.
+Latest results: [research-contract screening block (2026-10-13)](research/RESULTS.md).
+The contract and independent scorer checks are installed. Twelve GPU fits tested
+hidden features, capacity, preservation and training diversity. None meets the
+unchanged physical accuracy gates. Continued GBCT bases remain incumbents.
+The [contract index](research/README.md) links the mission, evaluator, evidence
+ledger and restart state. The HTML below retains the earlier baseline campaign,
+not these newer correction results.
 
-1. [Overall status and measured results](https://xiao312.github.io/DFODE-kit/flame-conditioning/):
-   acceptance/tolerance/cost plots, all current methods, and train/development scores.
+1. [Earlier baseline results and visuals](https://xiao312.github.io/DFODE-kit/flame-conditioning/):
+   acceptance/tolerance/cost plots, method diagrams, and train/development scores.
 2. [Method catalogue and flowcharts](docs/research-method-catalogue.md):
    canonical names, target formulas and complete recipe steps.
 3. [Accuracy definitions and next-run protocol](docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs):
