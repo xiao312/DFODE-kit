@@ -9,7 +9,7 @@ from benchmarks.offline_accuracy.paired.runtime import configure
 from ..correction_scaling.model import load_base, base_prediction
 from ..adaptive.model import base_preprocessing
 from ..hidden_features.prepare import save
-from .metrics import bounded_mean
+from .metrics import bounded_mean, strict_shrink
 
 
 def load_models(seeds):
@@ -21,10 +21,13 @@ def base_only(models, states, seed):
     return base_prediction(model, base_preprocessing(prep), states, seed)[0]
 
 
-def predict(models, states, seed, fraction):
+def predict(models, states, seed, fraction, mode="bounded"):
     other = next(value for value in models if value != seed)
     b, q = base_only(models, states, seed), base_only(models, states, other)
-    return bounded_mean(b, q, fraction), b, q
+    result=bounded_mean(b, q, fraction)
+    if mode=="strict-shrink": result=strict_shrink(b,result,fraction)
+    elif mode!="bounded": raise ValueError("Unknown prediction rule")
+    return result, b, q
 
 
 def main():
@@ -33,10 +36,11 @@ def main():
     plan = read_json("/input/config.json"); rows = arrays("/input/states.npz")
     if set(rows) != {"states", "source_indices"}: raise ValueError("Unexpected inference fields")
     models = load_models(plan["seeds"])
-    prediction, base, other = predict(models, rows["states"], args.seed, plan["fraction"])
+    mode=plan.get("mode","bounded")
+    prediction, base, other = predict(models, rows["states"], args.seed, plan["fraction"],mode)
     del models
     models = load_models(plan["seeds"])
-    replay = predict(models, rows["states"], args.seed, plan["fraction"])
+    replay = predict(models, rows["states"], args.seed, plan["fraction"],mode)
     for actual, expected in zip(replay, (prediction, base, other)): np.testing.assert_array_equal(actual, expected)
     timings = dict(anchor=[], candidate=[])
     states = rows["states"][:1024]
@@ -44,7 +48,7 @@ def main():
         for name in ("anchor", "candidate") if repeat % 2 == 0 else ("candidate", "anchor"):
             torch.cuda.synchronize(); start = time.monotonic()
             if name == "anchor": base_only(models, states, args.seed)
-            else: predict(models, states, args.seed, plan["fraction"])
+            else: predict(models, states, args.seed, plan["fraction"],mode)
             torch.cuda.synchronize()
             if repeat: timings[name].append(time.monotonic()-start)
     elapsed = time.monotonic()-started

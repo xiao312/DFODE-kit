@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "CONSENSUS_SHRINK_REGISTERED",
-  "active_experiment": "EXP-20261013-consensus-shrink",
+  "stage": "STRICT_CONSENSUS_SCREEN_REGISTERED",
+  "active_experiment": "EXP-20261013-strict-consensus-screen",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -33,7 +33,8 @@
     "runs/offline-accuracy/element-projection-20261013",
     "runs/offline-accuracy/paired-base-errors-20261013",
     "runs/offline-accuracy/bounded-base-mean-20261013",
-    "runs/offline-accuracy/bounded-base-screen-20261013"
+    "runs/offline-accuracy/bounded-base-screen-20261013",
+    "runs/offline-accuracy/consensus-shrink-20261013"
   ],
   "budget": {
     "configurations": 15,
@@ -43,7 +44,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Run paired_base.shrink cached diagnostic; unchangedcap plus explicitsign/magnituderestriction. FullU/D scores and repairloss decide whether costoptimization is justified. No promotion from cachedoutputs; no capscan.",
+  "next_action": "Run EXP-20261013-strict-consensus-screen via guardedcontroller then paired_base.screen_review. If allphysicalchecks passbutcostfails, register prediction-preserving efficiency or teachercompression experiment. No sign/magnitude-gate relaxation, no capscan.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

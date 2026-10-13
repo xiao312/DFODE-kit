@@ -47,3 +47,9 @@ diagnostic. It restricts the bounded output to the interval between anchor and
 zero. Magnitude cannot increase; sign cannot reverse. It cannot repair wrong
 base signs, and is not a positivity fix or a new accuracy allowance. Without
 `--execute`, only validate the plan and parent evidence. No new inference claim.
+
+`EXP-20261013-strict-consensus-screen` changes that restriction to the interval
+between b and0.9b. This retains nonzero base signs, unlike the zero-inclusive
+restriction. The same state-only worker and full review support the explicit
+`mode: strict-shrink`; historical `bounded` behavior is unchanged. This still
+cannot repair severe or wrong-sign base errors. It is not a universal solution.

@@ -72,3 +72,17 @@ def shrink_only(anchor, bounded_prediction):
     if anchor.shape != bounded_prediction.shape or not np.isfinite(anchor).all() or not np.isfinite(bounded_prediction).all():
         raise ValueError("Invalid predictions")
     return np.minimum(np.maximum(bounded_prediction, np.minimum(anchor, 0.)), np.maximum(anchor, 0.))
+
+
+def strict_shrink(anchor, bounded_prediction, fraction=.1):
+    """Keep between anchor and (1-fraction)*anchor, preserving nonzero sign.
+
+    Combined with bounded_mean this reduces, never enlarges, that movement.
+    This cannot fix base wrong signs; it also cannot create new wrong signs.
+    """
+    if not 0 < fraction < 1: raise ValueError("Invalid fraction")
+    anchor, bounded_prediction = np.asarray(anchor), np.asarray(bounded_prediction)
+    if anchor.shape != bounded_prediction.shape or not np.isfinite(anchor).all() or not np.isfinite(bounded_prediction).all():
+        raise ValueError("Invalid predictions")
+    inner = (1-fraction)*anchor
+    return np.minimum(np.maximum(bounded_prediction, np.minimum(anchor, inner)), np.maximum(anchor, inner))

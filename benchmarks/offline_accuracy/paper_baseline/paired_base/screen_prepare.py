@@ -8,6 +8,8 @@ from ..hidden_features.campaign import run_worker
 
 
 def stage(project, dest, seed, plan):
+    if plan.get("prior_screen_run"):
+        checked_file(project/plan["prior_screen_run"]/"review.json",plan["prior_screen_review_sha256"])
     review = read_json(checked_file(project / plan["diagnostic_run"] / "review.json", plan["diagnostic_review_sha256"]))
     if not all(item["physical_gate"]["passed"] for item in review["summary"]):
         raise ValueError("Diagnostic physical gate did not pass")

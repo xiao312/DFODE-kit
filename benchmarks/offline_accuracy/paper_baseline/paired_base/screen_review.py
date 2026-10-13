@@ -45,6 +45,10 @@ def main():
             # Separate sign/min arithmetic, rather than calling candidate clipping.
             step=(q-b)/2; cap=plan["fraction"]*(1e-15+.1*abs(b))
             expected=b+np.sign(step)*np.minimum(abs(step),cap)
+            if plan.get("mode")=="strict-shrink":
+                expected=np.sign(b)*np.maximum((1-plan["fraction"])*abs(b),np.minimum(abs(b),np.sign(b)*expected))
+                require(np.array_equal(np.sign(y),np.sign(b)),"Strict sign preservation")
+                require(np.all(abs(y)<=abs(b)),"Magnitude preservation")
             np.testing.assert_array_equal(expected,y)
             np.testing.assert_array_equal(y[:,~active],b[:,~active])
             old_error=abs(b[:,active]-rows["delta"][:,active])/(1e-15+.1*abs(rows["delta"][:,active]))

@@ -1,0 +1,18 @@
+{
+ "experiment_id":"EXP-20261013-strict-consensus-screen","status":"REGISTERED",
+ "hypothesis":"Strict sign-preserving magnitude restraint retains near-threshold consensus gain while preventing the zero-induced sign failures of the prior zero-inclusive interval.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/bounded-base-screen-20261013","control_review_sha256":"373b230b45bb097f8ad38e8157434d4fa78127c7c94302470634e0e57d3fb0db",
+ "diagnostic_run":"runs/offline-accuracy/bounded-base-mean-20261013","diagnostic_review_sha256":"b71285042a271a877bedee6ac9215f0411b16880d41bf312fdde77e4a20431a7",
+ "prior_screen_run":"runs/offline-accuracy/consensus-shrink-20261013","prior_screen_review_sha256":"ac3c959440932a0343d9272db416378baab3daab1192e2396815c2377b69ea7a",
+ "selection":"bounded_base_screen","seeds":[20261011,20261012],"fraction":0.1,"mode":"strict-shrink",
+ "populations":["same_source_unseen","development"],"counts":{"same_source_unseen":20000,"development":1023},
+ "batches":1,"batch_size":21023,"work_note":"No fitting. Fixed perpopulation freshprediction+reload/replay+6timingpasses, discardfirst; oneidleGPU.",
+ "rule":"Compute unchanged k0.1 bounded midpoint, then restrict output to closedinterval between b and (1-k)*b. This declaredprediction architecture retains sign and cannot increase absvalue; it does not alter physical scoring. No reference, temperature switch, prediction normalization or endpoint clipping.",
+ "rationale":"Prior restriction retained0.55-0.62pp gain but turned some small correctlysigned nontrivial predictions into zero. Newinterval removes that specific measured failure. k stays0.1; no bound scan. Historicalzero-inclusive result remains validtradeoff.",
+ "exposure":"Same fullU20k/D1023. Ownanchor sawU, othercache lacks44/38 rows; no claimabout all historicalexposure. Oneoverlappingpair, not independentensemble replication. D is repeatedlyused development.",
+ "verification":"Unchangedisolated mounts, bothweights pinned, exactreload/replay, rawbounded results reconstructible from savedbasepair, independent interval and fullscore recount, sign/magnitude/AR/repair-range tests, allgates and completelatency. No automaticpromotion.",
+ "decision":"If physicalguards pass and latencyfails, preserve accuracy-only result then testimplementation efficiency or teachercompression prospectively. If accuracyfails, stoptheseconstraintvariants rather than tweak thresholds. No severeerror improvement claim.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":300},
+ "run":"runs/offline-accuracy/strict-consensus-screen-20261013","confirmation_access":false
+}

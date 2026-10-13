@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement, bounded_mean, shrink_only
+from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement, bounded_mean, shrink_only, strict_shrink
 
 
 def test_alignment_reorders_and_rejects_missing_or_duplicate():
@@ -56,3 +56,12 @@ def test_shrink_has_explicit_sign_and_magnitude_constraint():
     np.testing.assert_array_equal(pred,[-2.,-1.,0.,0.,0.,1.,2.])
     for threshold in [0., .5, 1., 2., 3.]:
         assert not np.any((abs(pred)>=threshold)&(abs(base)<threshold))
+
+
+def test_strict_shrink_retains_sign_and_bounded_movement():
+    b=np.r_[0.,np.logspace(-320,-2,200),-np.logspace(-320,-2,200)]
+    q=-b*100
+    raw=bounded_mean(b,q);out=strict_shrink(b,raw)
+    np.testing.assert_array_equal(np.sign(out),np.sign(b))
+    assert np.all(abs(out)<=abs(b))
+    assert np.all(abs(out-b)<=abs(raw-b))
