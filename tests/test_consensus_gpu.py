@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import pytest
 from benchmarks.offline_accuracy.paired.coordinates import decode
 from benchmarks.offline_accuracy.paper_baseline.paired_base.gpu_model import inverse
 
@@ -23,3 +24,9 @@ def test_stacked_inverse_matches_scalar_formula_and_is_finite():
         np.testing.assert_allclose(value[i].numpy(),reference,rtol=3e-13,atol=1e-30)
         np.testing.assert_array_equal(mask[i].numpy(),flags)
     assert np.isfinite(value.numpy()).all()
+
+
+@pytest.mark.parametrize("initial,z",[(-1.,0.),(float("nan"),0.),(float("inf"),0.),(0.,float("nan")),(.1,float("inf")),(.1,-float("inf")),(.1,-1e200)])
+def test_invalid_inverse_inputs_fail_closed(initial,z):
+    with pytest.raises(ValueError):
+        inverse(torch.tensor([initial],dtype=torch.float64),torch.tensor([z],dtype=torch.float64))

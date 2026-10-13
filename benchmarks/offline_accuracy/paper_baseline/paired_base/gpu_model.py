@@ -14,6 +14,8 @@ def inverse(initial, coordinate):
     GBCT decoder. Expose the mask, never apply another endpoint repair.
     """
     encoded=1e-6*.25*coordinate*coordinate.abs()
+    valid=torch.isfinite(initial).all() & (initial>=0).all() & torch.isfinite(encoded).all()
+    if not bool(valid):raise ValueError("Invalid GPU inverse input or encoded overflow")
     b0=initial.pow(.1);b1=b0+.1*encoded
     ratio=.1*encoded/torch.where(b0>0,b0,torch.ones_like(b0))
     moderate=ratio.abs()<.5

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "CONSENSUS_GPU_REGISTERED",
-  "active_experiment": "EXP-20261013-consensus-gpu",
+  "stage": "CONSENSUS_GPU_VALIDATION_REVISION_REGISTERED",
+  "active_experiment": "EXP-20261013-consensus-gpu-checked",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -46,7 +46,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Run tests then guarded gradient_probe.run EXP-20261013-consensus-gpu; full state-only GPU inverse parity and timing. Review via paired_base.screen_review. No training or active job yet; incumbent unchanged.",
+  "next_action": "Predecessor GPU run passes current numerical gates but separate review found missing invalid-input rejection. Run registered validation-only revision then full recount and cost. Preserve predecessor outputs. No training repeated and incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

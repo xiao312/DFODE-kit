@@ -65,3 +65,7 @@ The latency record includes the old anchor and an optimized single-base control.
 Verify `pytest tests/test_consensus_gpu.py tests/test_paired_base.py -q` in the
 pinned environment. Expected: inverse branches, masks, finite results, inactive
 species and scalar agreement. Full replay remains a server-only evidence check.
+The reviewed GPU decoder rejects invalid states and encoded overflow before its
+branch substitutions. The validation revision is replayed in a new run directory;
+old outputs remain unchanged. This check adds a device synchronization, so timing
+is measured again. No training is repeated.

@@ -1,0 +1,17 @@
+{
+ "experiment_id":"EXP-20261013-consensus-gpu-checked","status":"REGISTERED",
+ "hypothesis":"Explicit invalid-input rejection preserves the valid-input accuracy of the device reconstruction while retaining its measured cost benefit.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "control_run":"runs/offline-accuracy/strict-consensus-screen-20261013","control_review_sha256":"46905c6683b5eb26de706569a0c9d35d9ced75c551dd0ac88bc03217017f8a24",
+ "diagnostic_run":"runs/offline-accuracy/bounded-base-mean-20261013","diagnostic_review_sha256":"b71285042a271a877bedee6ac9215f0411b16880d41bf312fdde77e4a20431a7",
+ "selection":"bounded_base_screen","seeds":[20261011,20261012],"fraction":0.1,"mode":"strict-shrink","backend":"gpu-decode",
+ "populations":["same_source_unseen","development"],"counts":{"same_source_unseen":20000,"development":1023},
+ "batches":1,"batch_size":21023,"maximum_budget_arithmetic_drift":0.000001,
+ "revision_of":"EXP-20261013-consensus-gpu",
+ "changed":"Validation only: reject negative/nonfinite initial state and nonfinite encoded coordinate, including finite raw-coordinate overflow. One synchronized validity reduction. No changes to valid-input arithmetic, weights, rule or scoring.",
+ "fixed":"All settings/exposure, full population IDs and six timing trials from predecessor. Repeat inference, not fitting. Both historical and optimized single-anchor costs reported.",
+ "prechecks":"Nine inverse tests including invalid branches; full exact reload, CPU mask parity, independent formula and scorer counts. Maximum1e-6budgetdrift and zero passflips versus historical strictteacher, no silentfallback.",
+ "decision":"Allgates plus checked failure behavior permits development-qualified pending supervisor review. Incumbent and fixedanchor unchanged. This does not improve severeerrors or establish independentconfirmation. Cost advantage versus historical implementation is not an architectural speed claim.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":300},
+ "run":"runs/offline-accuracy/consensus-gpu-checked-20261013","confirmation_access":false
+}
