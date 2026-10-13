@@ -58,3 +58,17 @@ def bounded_mean(anchor, other, fraction=.1):
     change = .5 * other - .5 * anchor
     cap = fraction * (1e-15 + .1 * np.abs(anchor))
     return anchor + np.minimum(np.maximum(change, -cap), cap)
+
+
+def shrink_only(anchor, bounded_prediction):
+    """Declared sign/magnitude-preserving restriction of an existing update.
+
+    Project onto the physical segment between anchor and zero. This cannot
+    increase |prediction|, hence cannot introduce a new severe-overprediction
+    event at any fixed magnitude threshold. It cannot fix a wrong base sign.
+    This is an experimental inference restriction, not a change to scoring.
+    """
+    anchor, bounded_prediction = np.asarray(anchor), np.asarray(bounded_prediction)
+    if anchor.shape != bounded_prediction.shape or not np.isfinite(anchor).all() or not np.isfinite(bounded_prediction).all():
+        raise ValueError("Invalid predictions")
+    return np.minimum(np.maximum(bounded_prediction, np.minimum(anchor, 0.)), np.maximum(anchor, 0.))

@@ -41,3 +41,9 @@ timing. The independent review uses the protected scorer and unchanged gates.
 Review with `python -m
 benchmarks.offline_accuracy.paper_baseline.paired_base.screen_review --project .
 --run <run>`. No automatic incumbent update or confirmation access.
+
+`shrink.py --project . --execute` (as a module) is a separate registered cached
+diagnostic. It restricts the bounded output to the interval between anchor and
+zero. Magnitude cannot increase; sign cannot reverse. It cannot repair wrong
+base signs, and is not a positivity fix or a new accuracy allowance. Without
+`--execute`, only validate the plan and parent evidence. No new inference claim.

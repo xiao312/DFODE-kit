@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement, bounded_mean
+from benchmarks.offline_accuracy.paper_baseline.paired_base.metrics import align_indices, means, agreement, bounded_mean, shrink_only
 
 
 def test_alignment_reorders_and_rejects_missing_or_duplicate():
@@ -47,3 +47,12 @@ def test_bounded_mean_is_not_hidden_positivity_clip():
     assert value[0] < -1
     with pytest.raises(ValueError):
         bounded_mean(np.array([0.]), np.array([1.]), fraction=1.)
+
+
+def test_shrink_has_explicit_sign_and_magnitude_constraint():
+    base=np.array([-2., -2., -2., 0., 2., 2., 2.])
+    proposal=np.array([-3., -1., 1., 1., -1., 1., 3.])
+    pred=shrink_only(base,proposal)
+    np.testing.assert_array_equal(pred,[-2.,-1.,0.,0.,0.,1.,2.])
+    for threshold in [0., .5, 1., 2., 3.]:
+        assert not np.any((abs(pred)>=threshold)&(abs(base)<threshold))

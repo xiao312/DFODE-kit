@@ -1,6 +1,40 @@
 # Signed-increment research results
 
-## Latest: two-base averaging has a repair signal, but fails preservation
+## Latest: bounded consensus gain transfers, but two guards fail
+
+Fresh state-only inference confirms a gain beyond the candidate diagnostic rows.
+The fixed bounded midpoint is **trade-off only**, not a new incumbent.
+
+| Population | Base, seed11 /12 | Bounded consensus, anchor11 /12 |
+|---|---:|---:|
+| Same-source unseen20k | 72.241 /72.275% | 73.255 /73.292% |
+| Development1023 | 68.296 /68.800% | 69.439 /69.825% |
+
+Development repairs988 /923 components and damages310 /315. Damage is0.765 /
+0.772% of prior successes. All four populations return zero negative endpoints.
+However, seed11 U has55 severe events at epsilon1e-9/eta1e-8 versus54 before.
+The complete two-model inference costs2.14-2.16x; the limit remains1.5x.
+Neither a small event increase nor excess runtime is waived.
+
+The bound can repair only errors up to E=1.11111 in exact arithmetic. This is
+a near-threshold repair result, not a solution for severe magnitude errors.
+Both anchor directions use one overlapping pair, not independent ensemble
+replications. No confirmation data was opened. Review:
+`373b230b45bb097f8ad38e8157434d4fa78127c7c94302470634e0e57d3fb0db`.
+
+Exact reload/replay, protected full scores and independent counts passed. The
+first review stopped because44 /38 U rows have no counterpart in the other
+seed's prepared training cache. Review now records parity on the overlapping
+rows and full fresh replay on all rows; **no scored row was dropped**. Cache
+absence does not prove absence from all earlier calibration exposure. A test
+command named a nonexistent adapter test; the corrected41-test run passed on
+both local and server environments before inference.
+
+Next: one declared restriction that cannot increase anchor magnitude or reverse
+its sign. It has a general severe-event protection property, but can lose useful
+repairs. Check that trade-off before any speed optimization or new fit.
+
+## Previous: two-base averaging has a repair signal, but fails preservation
 
 On one aligned common20k training-pool population, the physical mean reaches
 **75.450%**, versus **72.202% / 72.323%** for its two input bases. The asinh
