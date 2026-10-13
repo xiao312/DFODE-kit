@@ -1,0 +1,25 @@
+{
+  "experiment_id":"EXP-20261013-gradient-average",
+  "status":"REGISTERED",
+  "hypothesis":"Minibatch variability contributes to fresh-Adam update damage after reducing finite-step amplitude; averaging seven disjoint training batches may improve the same excluded check batches.",
+  "evidence":["EXP-20261013-gradient-probe","EXP-20261013-step-scale"],
+  "control_run":"runs/offline-accuracy/step-scale-20261013",
+  "control_review_sha256":"852c1fa79e109e0ad025734374158d90a39bb7f7d5519aac9aa8827ccf4be0c7",
+  "parent_run":"runs/offline-accuracy/local-function-20261013",
+  "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "seeds":[20261011,20261012],"batches":8,"batch_size":1024,
+  "learning_rate":1e-7,"gradient_batches":"leave_one_out",
+  "changed_factor":"Gradient support grows from one 1024-state batch to all seven non-check batches (7168 states). Existing 1e-7 step-scale results are controls, not rerun.",
+  "fixed":"Same 8192 rows, each excluded check batch, original weights, frozen preprocessing, physical log loss, Adam reset/settings, lr 1e-7 and 1024-row forward shapes.",
+  "selection":"Identical default_rng(seed+137) permutation prefix8192; check is next cyclic batch, gradient excludes that entire batch. No optimizer steps are chained.",
+  "exposure":"Training data only; existing base/preprocessing history; no U/D or confirmation. More gradient rows/work are the declared factor.",
+  "prechecks":"Original decoder/gradient/restoration checks; exact selected-ID parity with control; independent fit/check disjointness and physical recount",
+  "work":"16 fresh Adam steps total; each uses 7x1024 rows and six group gradients. One GPU/CPU thread, no candidate export, finite fixed work.",
+  "outcomes":{
+    "check_repair_and_preservation_improve":"Register a bounded large-batch low-step continued-base fit and matched-work control, full protected U/D gates",
+    "fit_only_or_mixed":"Close step-noise explanation provisionally; do not launch another batch/LR sweep",
+    "roundtrip_or_gradient_failure":"Stop numerical interpretation and preserve reproducer"
+  },
+  "run":"runs/offline-accuracy/gradient-average-20261013",
+  "promotion":false,"confirmation_access":false
+}

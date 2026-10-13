@@ -48,11 +48,16 @@ def main():
         rows=[]
         for item in record["records"]:
             index=item["batch"];effects={}
-            if controls:
+            if controls and plan.get("gradient_batches")!="leave_one_out":
                 old=controls[record["seed"]]["records"][index]
                 if item["geometry"]!=old["geometry"] or item["before_loss"]!=old["before_loss"]:
                     raise ValueError("Gradient or initial objective changed from control")
-            for label,selection in [("step",batches[index]),("check",batches[(index+1)%8])]:
+            fit=np.array(item.get("fit_indices",batches[index]));check=np.array(item.get("check_indices",batches[(index+1)%8]))
+            if np.intersect1d(fit,check).size:raise ValueError("Check batch entered gradient fit")
+            if plan.get("gradient_batches")=="leave_one_out":
+                np.testing.assert_array_equal(np.sort(np.r_[fit,check]),np.arange(len(data["truth"])))
+                if len(fit)!=7168 or len(check)!=1024:raise ValueError("Unexpected leave-one-out support")
+            for label,selection in [("step",fit),("check",check)]:
                 before=recount(data["truth"][selection],data["baseline"][selection],data["baseline"][selection])
                 after=recount(data["truth"][selection],data["baseline"][selection],data[f"prediction_{item.get('record_id',str(index))}_{label}"])
                 for phase,counts in [("before",before),("after",after)]:
@@ -64,7 +69,7 @@ def main():
                 effects[label]={group:dict(net_passes=after[group]["passes"]-before[group]["passes"],
                     repaired=after[group]["repaired"],damaged=after[group]["damaged"],
                     loss_change=None if before[group]["loss"] is None else after[group]["loss"]-before[group]["loss"]) for group in before}
-            rows.append(dict(batch=index,learning_rate=item.get("learning_rate",1e-6),cosine_pass_fail={key:value["cosines"][1][2] for key,value in item["geometry"].items()},
+            rows.append(dict(batch=index,fit_states=len(fit),check_states=len(check),learning_rate=item.get("learning_rate",1e-6),cosine_pass_fail={key:value["cosines"][1][2] for key,value in item["geometry"].items()},
                              step_norm=item["step_norm"],first_order=item["first_order"],effects=effects))
         summaries.append(dict(seed=record["seed"],status="VERIFIED_TRAINING_DIAGNOSTIC",rows=rows,
             decoder_max=max(r["discrepancy"]["maximum"] for r in record["records"]),seconds=record["seconds"]))

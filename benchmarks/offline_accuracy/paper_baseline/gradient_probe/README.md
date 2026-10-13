@@ -33,6 +33,12 @@ step. The existing 1e-6 result remains the control; it is not rerun. Use
 `--experiment EXP-20261013-step-scale` and a new output directory. This tests
 finite-step amplitude, not another objective or a promoted predictor.
 
+`EXP-20261013-gradient-average` holds the 1e-7 step fixed and uses all seven
+non-check batches for each gradient. Forward passes retain 1024-row shapes.
+The existing one-batch result is the control. Fitting and check row identities
+are saved; the recount checks that they do not overlap. This is a gradient
+sample-size diagnostic, not equal-FLOP training or independent confirmation.
+
 ## Interface, dependencies and boundary
 
 `python -m benchmarks.offline_accuracy.paper_baseline.gradient_probe.run

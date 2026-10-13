@@ -27,7 +27,9 @@ def main():
     x=torch.as_tensor((input_features(rows["states"])-bp["x_offset"])/bp["x_scale"],dtype=torch.float32,device="cuda")
     y=tensor(rows["delta"][:,active]);initial=tensor(rows["states"][:,2:][:,active])
     def loss(indices):
-        prediction=differentiable_decode(initial[indices],base(x[indices]).double()*tensor(bp["y_scale"])+tensor(bp["y_offset"]),base_config(args.seed))
+        # Preserve deployed 1024-row matrix shapes when accumulating batches.
+        prediction=torch.cat([differentiable_decode(initial[chunk],base(x[chunk]).double()*tensor(bp["y_scale"])+tensor(bp["y_offset"]),base_config(args.seed))
+                              for chunk in np.split(indices,len(indices)//plan["batch_size"])])
         values=torch.log1p(abs(prediction-y[indices])/(1e-15+.1*abs(y[indices])))
         if not torch.isfinite(values).all():raise ValueError("Nonfinite physical objective")
         return values,prediction
@@ -35,6 +37,8 @@ def main():
     records=[];saved={"source_indices":rows["source_indices"],"truth":rows["delta"][:,active],"baseline":rows["base"][:,active]}
     for index,indices in enumerate(batches):
         base.load_state_dict(original);check=batches[(index+1)%len(batches)]
+        if plan.get("gradient_batches")=="leave_one_out":
+            indices=np.concatenate([batch for j,batch in enumerate(batches) if j!=(index+1)%len(batches)])
         masks=groups(saved["truth"][indices],saved["baseline"][indices]);names=list(masks)
         values,pred=loss(indices)
         diff=abs(pred.detach().cpu().numpy()-saved["baseline"][indices])/(1e-15+.1*abs(saved["truth"][indices]))
@@ -63,6 +67,7 @@ def main():
             displacement=torch.cat([(p-original[k]).flatten() for (k,_),p in zip(base.named_parameters(),params)]).detach().double()
             record_id=str(index) if "learning_rates" not in plan else f"{index}_{rate}"
             record=dict(batch=index,record_id=record_id,learning_rate=rate,groups=names,geometry=geometry_by_block,gradient_identity_relative=residual,
+                        fit_indices=indices.tolist(),check_indices=check.tolist(),
                         discrepancy=discrepancy,step_norm=float(displacement.norm()),
                         first_order={name:float(g.double()@displacement) for name,g in zip(names,gradients)},before_loss=means,populations={})
             for label,selection in [("step",indices),("check",check)]:

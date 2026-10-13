@@ -1,6 +1,25 @@
 # Signed-increment research results
 
-## Latest: species-constant calibration
+## Latest diagnostic: finite base-update size
+
+On 16 independent training-batch probes, fresh Adam at 1e-6 reduced predicted
+first-order pass and fail losses, but damaged acceptance on all 16 separate
+check batches. At 1e-7, actual fitting loss decreased in all 16 probes. Check
+acceptance improved in 11, fell in 4, and tied in 1. The seed-level effects
+remain mixed. At 1e-8, changes are smaller, without a clear balanced result.
+
+These are **training-only, single-step diagnostics**, not a new predictor or
+development result. Each probe restores the original model. Do not combine
+their predictions as if they came from one trained candidate. The
+[count summary](results/base-step-diagnostics-20261013.json) and immutable
+reviews retain those distinctions. Decoder parity and independent recounts
+passed. No PCGrad benefit is established.
+
+Next, average gradients over seven non-check batches at fixed 1e-7. This
+registered [gradient-support diagnostic](experiments/EXP-20261013-gradient-average.json)
+separates minibatch variability from step size. No further step-size sweep.
+
+## Previous: species-constant calibration
 
 **Valid negative result. The continued GBCT base remains the incumbent.**
 Physical-interval consensus improves training acceptance by only 0.047 / 0.052
