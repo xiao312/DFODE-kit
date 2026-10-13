@@ -46,6 +46,13 @@ def main():
                 record=next(r for r in report["records"] if r["seed"]==seed and r["arm"]==arm)
                 expected=record["populations"][population]["candidate"]
                 saved=arrays(args.run/"fits"/f"{seed}-{arm}"/population/"predictions.npz")
+                if plan.get("model_kind")=="base_polish":
+                    inference=read_json(args.run/"fits"/f"{seed}-{arm}"/population/"result.json")
+                    for field,key in [("domain_correction","inverse_domain_correction_count"),("anchor_domain_correction","anchor_inverse_domain_correction_count")]:
+                        if saved[field].shape!=saved["prediction"].shape or saved[field].dtype!=bool or int(saved[field].sum())!=inference[key]:raise ValueError("Domain handling recount differs")
+                    if population=="training":
+                        cached=arrays(args.run/"fits"/f"{seed}-{arm}"/"fit/training-replay.npz")
+                        np.testing.assert_array_equal(cached["domain_correction"],saved["domain_correction"])
                 np.testing.assert_array_equal(saved["source_indices"],rows["source_indices"])
                 pred=saved["prediction"];y=pred[:,active];passed=abs(y-d)<=tau
                 if int(passed.all(axis=1).sum())!=expected["all_active_species_state_pass_count"]:raise ValueError("State recount differs")

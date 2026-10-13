@@ -24,10 +24,10 @@ def main():
         np.testing.assert_array_equal(base_prediction(base,bp,rows["states"],args.seed)[0],rows["base"])
         models,frozen_prep,detail=fit(base,bp,rows,None,rows,cfg,dest,fixed_preprocessing=prep)
         for key,value in prep.items():np.testing.assert_array_equal(frozen_prep[key],value)
-        prediction,_=base_prediction(models[1],bp,rows["states"],args.seed)
+        prediction,domain_mask=base_prediction(models[1],bp,rows["states"],args.seed)
         replay=copy.deepcopy(base);replay.load_state_dict(torch.load(dest/"weights.pt",weights_only=True,map_location="cuda"))
         np.testing.assert_array_equal(prediction,base_prediction(replay,bp,rows["states"],args.seed)[0])
-        np.savez(dest/"training-replay.npz",prediction=prediction,coordinate=np.empty((len(prediction),0)))
+        np.savez(dest/"training-replay.npz",prediction=prediction,coordinate=np.empty((len(prediction),0)),domain_correction=domain_mask)
         detail["history"]=[dict(row,update=row["updates"]) for row in detail["history"]]
         save(dest/"result.json",dict(status="complete",config=cfg,environment=env,**detail,total_seconds=time.perf_counter()-started,
              preprocessing_sha256=digest("/input/model/preprocessing.npz"),exact_reload=True,training_only=True))
@@ -36,9 +36,12 @@ def main():
     if set(rows)!={"states","source_indices"}:raise ValueError("State-only inputs required")
     anchor,prep=load_base(Path("/model"),args.seed);bp=base_preprocessing(prep)
     candidate=copy.deepcopy(anchor);candidate.load_state_dict(torch.load("/model/weights.pt",weights_only=True,map_location="cuda"))
-    def call(states):return base_prediction(candidate,bp,states,args.seed)[0]
-    prediction=call(rows["states"]);np.testing.assert_array_equal(prediction,call(rows["states"]))
-    np.savez(dest/"predictions.npz",prediction=prediction,coordinate=np.empty((len(prediction),0)),source_indices=rows["source_indices"])
+    def call(states):return base_prediction(candidate,bp,states,args.seed)
+    prediction,domain_mask=call(rows["states"]);again,again_mask=call(rows["states"])
+    np.testing.assert_array_equal(prediction,again);np.testing.assert_array_equal(domain_mask,again_mask)
+    _,anchor_mask=base_prediction(anchor,bp,rows["states"],args.seed)
+    np.savez(dest/"predictions.npz",prediction=prediction,coordinate=np.empty((len(prediction),0)),source_indices=rows["source_indices"],
+             domain_correction=domain_mask,anchor_domain_correction=anchor_mask)
     sample=rows["states"][:1023];calls=dict(candidate=lambda:call(sample),anchor=lambda:base_prediction(anchor,bp,sample,args.seed))
     times={name:[] for name in calls}
     for function in calls.values():function()
@@ -47,7 +50,8 @@ def main():
             torch.cuda.synchronize();start=time.perf_counter();calls[name]();torch.cuda.synchronize()
             times[name].append(time.perf_counter()-start)
     save(dest/"result.json",dict(status="complete",environment=env,exact_repeat=True,states=len(prediction),timing_states=len(sample),
-         timings=times,prediction_sha256=digest(dest/"predictions.npz")))
+         timings=times,prediction_sha256=digest(dest/"predictions.npz"),
+         inverse_domain_correction_count=int(domain_mask.sum()),anchor_inverse_domain_correction_count=int(anchor_mask.sum())))
 
 
 if __name__=="__main__":main()
