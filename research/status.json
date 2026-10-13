@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "stage": "GRADIENT_PROBE_REGISTERED",
+  "stage": "GRADIENT_PROBE_RUNNING",
   "active_experiment": "EXP-20261013-gradient-probe",
-  "active_jobs": [],
+  "active_jobs": [{"kind":"controller","pid":3794804,"start_ticks":"1049372777","source":"a366ab6","run":"runs/offline-accuracy/gradient-probe-20261013","lease":"runs/research-control/EXP-20261013-gradient-probe.lease.json"}],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
@@ -29,7 +29,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Test and execute the registered gradient_probe.run on two seeds, using training data only. Interval calibration completed and independently recounted; do not repeat.",
+  "next_action": "Reconnect to gradient-probe controller PID/start identity. Source a366ab6 seals active-job before its final update: preserve original report and independently verify all immutable artifacts, explicitly recording mutable status drift. Do not rerun for this metadata defect. Local ordering fix is not yet on running server.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

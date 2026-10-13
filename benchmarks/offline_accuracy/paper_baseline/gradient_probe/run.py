@@ -53,9 +53,9 @@ def main():
         elapsed+=run_worker(project,dest,output/str(seed),["--seed",str(seed)],output/"active-job.json",args.gpu,dest/"model",worker_module="benchmarks.offline_accuracy.paper_baseline.gradient_probe.worker")
         records.append(read_json(output/str(seed)/"result.json"));verify_evaluator_lock(project)
         print(json.dumps(dict(seed=seed,status=records[-1]["status"])),flush=True)
+    save(output/"active-job.json",dict(status="COMPLETE_AWAITING_RECOUNT"))
     save(output/"report.json",dict(records=records,worker_wall_seconds=elapsed,artifacts={str(p.relative_to(output)):digest(p) for p in output.rglob("*") if p.is_file()}))
     save(output/"verification.json",dict(report_sha256=digest(output/"report.json")))
-    save(output/"active-job.json",dict(status="COMPLETE_AWAITING_RECOUNT"))
 
 
 if __name__=="__main__":main()
