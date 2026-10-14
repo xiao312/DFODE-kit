@@ -1,5 +1,20 @@
 # Reaction-aware model: implementation complete, GPU admission blocked
 
+## UUID telemetry compatibility recovery
+
+The schema-repaired run reached1000 updates of seed11/pool-state, then the old
+occupancy logger failed because it matched CUDA_VISIBLE_DEVICES against host
+indices only. This is a reproducible telemetry defect, not a numerical result.
+The fix accepts exact UUID or index and rejects missing/ambiguous matches. No
+protected file, model, objective, sampling or schedule changes in this repair.
+
+The restricted `--telemetry-repair` recovery requires exactly1000 gradient records,
+one1000-update progress record, no weights/optimizer checkpoint, no other arms or
+second seed, and dead preceding controller identities. It archives the partial
+worker, creates a new exclusive recovery lease and starts the same fit fresh.
+Record the interrupted200,000 row presentations separately from the final declared
+600,000. No completed fit is rerun or partial state presented as a final result.
+
 ## Authorized repair and implementation recovery (2026-10-14)
 
 The owner authorized the narrow GPU UUID repair and integrity-lock update. Source

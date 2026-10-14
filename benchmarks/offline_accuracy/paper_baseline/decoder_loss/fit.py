@@ -15,7 +15,10 @@ from .coordinates import torch_decode,physical_loss
 
 def occupancy_sample(step):
     selected = os.environ.get("CUDA_VISIBLE_DEVICES")
-    gpu = next(row for row in inventory() if row["index"]==selected)
+    matches = [row for row in inventory() if selected in (row["index"], row["uuid"])]
+    if len(matches) != 1:
+        raise ValueError("Cannot identify exactly one selected GPU for occupancy telemetry")
+    gpu = matches[0]
     lines = subprocess.check_output(["nvidia-smi","--query-compute-apps=pid,gpu_uuid",
         "--format=csv,noheader,nounits"],text=True,timeout=15).splitlines()
     other = [int(pid.strip()) for pid,uuid in (line.split(",") for line in lines)
