@@ -54,6 +54,9 @@ gain. The full 12-fit matrix and matching warmup hashes are required for publica
 historical ID aliases, and diagram steps. The selection helpers import its names.
 Do not rename immutable run IDs or maintain a second display-name dictionary.
 The catalogue describes recipes; executable experiment plans still own parameters.
+Reaction pooling/attention recipes share one fixed-crossover correction entry.
+Their diagrams distinguish affinity inputs from learned attention and link to the
+current research results. They do not imply hard conservation or model promotion.
 `node scripts/build_research_method_catalogue.mjs --write` generates the linked
 GitHub review page. Without `--write`, it checks for drift and writes nothing.
 `ReviewGuide.jsx` explains the three splits and shows saved training/development

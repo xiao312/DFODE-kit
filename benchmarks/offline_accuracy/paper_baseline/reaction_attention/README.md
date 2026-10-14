@@ -91,3 +91,10 @@ Check with `python -m pytest tests/test_reaction_structure_review.py -q`.
 It changes only the work horizon (including the fractional cosine schedule), with
 fresh identical initial heads. Its reviewer requires exact graph/scaler/features,
 initialization and non-work configuration parity with the completed3000-step arms.
+
+`EXP-20261014-reaction-visibility` compares state-only attention with structural
+support against a fixed prior mixture:90% structural weights plus10% uniform
+weight over all reactions. Both have identical parameters and initial tensors.
+This changes reaction visibility, not physical inputs or target labels. It is not
+a tuned reaction mask, temperature gate, or claim that distant channels must help.
+No affinity is evaluated at inference in either arm. The mass is fixed before fitting.

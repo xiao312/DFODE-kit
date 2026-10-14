@@ -1,17 +1,18 @@
 {
   "schema_version": 1,
-  "stage": "REACTION_WORK_REGISTERED",
-  "active_experiment": "EXP-20261014-reaction-work",
+  "stage": "REACTION_VISIBILITY_REGISTERED",
+  "active_experiment": "EXP-20261014-reaction-visibility",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
   "scientific_objective_achieved": false,
   "candidate_promotions": 0,
   "result_summary": "research/RESULTS.md",
-  "last_verified_result": "runs/offline-accuracy/reaction-attention-20261014-retry1/review.json",
-  "last_review_sha256": "e8220d934a5a204840eb3a99e31de6580d21c8850939867e0bbc9f35f9797292",
+  "last_verified_result": "runs/offline-accuracy/reaction-work-20261014/review.json",
+  "last_review_sha256": "23177b8d2404b9cc4f3833ed9d235241f1ca59ef0bd6134a621fc35bf80f29f7",
   "development_qualified_pending_promotion": ["EXP-20261013-consensus-gpu-checked"],
   "completed_runs": [
+    "runs/offline-accuracy/reaction-work-20261014",
     "runs/offline-accuracy/reaction-attention-20261014-retry1",
     "runs/offline-accuracy/hidden-features-20261013",
     "runs/offline-accuracy/preservation-20261013",
@@ -51,13 +52,13 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Precheck and execute gradient_probe.run --experiment EXP-20261014-reaction-work on one admitted idle GPU. Fresh12000-update attention pair, same data/initialization/objective as completed3000-step control. Then reaction_attention.review verifies exact control parity and full populations. Do not rerun original fits; incumbent unchanged.",
+  "next_action": "Run registered reaction-visibility precheck and then execute on one idle admitted GPU. All work-extension candidates rejected; no more update extensions. New control changes only fixed global attention prior. Full populations and exact historical local-control replay required. Incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",
   "resource_authority": "Owner removed aggregate/time caps; one idle GPU at a time; wait or report contention.",
   "confirmation_opened": false,
   "always_on_agent_service": false,
-  "focused_tests_passed": 94,
-  "focused_test_scope": "Tests run for species-distance change; this is not the total repository test count."
+  "focused_tests_passed": 46,
+  "focused_test_scope": "Pinned-server CPU verification for reaction model, work manifest, recovery, GPU-binding, occupancy and protected contract. Not total repository tests; local catalogue tests separately4passed."
 }

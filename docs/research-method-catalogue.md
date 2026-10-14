@@ -4,7 +4,7 @@
 
 This is the naming and diagram reference for the offline representation study. The [live report](https://xiao312.github.io/DFODE-kit/flame-conditioning/) contains measured results and the split/tolerance review guide. [Issue #3](https://github.com/xiao312/DFODE-kit/issues/3) records decisions. Old comments and artifact IDs remain historical records; use the mappings here to read them.
 
-The [accuracy protocol](agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs) distinguishes CVODE tolerance parameters, state-based error scaling, increment-based error scaling and custom magnitude-dependent budgets. Later runs must compare both error scales; the existing results are unchanged.
+The [accuracy protocol](agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs) distinguishes CVODE tolerance parameters, state-based error scaling, increment-based error scaling and custom magnitude-dependent budgets. It records the earlier dual-scaling study. The current signed-increment campaign uses its protected [evaluation contract](../research/EVALUATION.md); see [current results](../research/RESULTS.md) for its unchanged rule and decisions.
 
 ## Three different concepts
 
@@ -29,7 +29,7 @@ flowchart TD
   n3 --> n4
 ```
 
-Current campaign: 10,000 selected training states per seed from 10,010 accepted rows; 1,023 development states. Four training and two development snapshots come from one flame realization. Development has been inspected repeatedly. Current independent-test performance is **not evaluated**, not zero. Older CFD test results concern older models. Local-table training scores are resubstitution scores, not leave-one-out validation.
+Historical 10k campaign: 10,000 selected training states per seed from 10,010 accepted rows; 1,023 development states. Later experiments declare their training and candidate-unseen populations in [research manifests](../research/experiments/). Four training and two development snapshots come from one flame realization. Development has been inspected repeatedly. Current independent-test performance is **not evaluated**, not zero. Older CFD test results concern older models. Local-table training scores are resubstitution scores, not leave-one-out validation.
 
 ## Representation index
 
@@ -173,12 +173,36 @@ flowchart TD
   n3 --> n4
 ```
 
+<a id="representation-fixed-asinh-correction"></a>
+### Fixed-crossover asinh correction
+
+Representation ID: `fixed-asinh-correction`.
+
+`c = asinh(d/s) - asinh(b/s); predicted d = s*sinh(asinh(b/s) + predicted c); s = 1e-14`
+
+b is the frozen base increment. The reference-derived c is a training label, never an inference input. The crossover is fixed; it is not abs(b) or a changed accuracy allowance. Coordinate Smooth L1 trains the head; physical acceptance judges it.
+
+```mermaid
+flowchart TD
+  n0["State inputs"]
+  n1["Frozen base predicts increment b"]
+  n2["Head predicts correction c"]
+  n3["Fixed-crossover inverse gives signed increment"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+```
+
 ## Method index
 
 Click a method name for its steps. Diagrams summarize the recipe, including fitting where labelled; they are not per-query cost diagrams.
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `pool-state` | [Reaction pooling — state only](#pool-state) | Reaction-aware correction |
+| `pool-affinity` | [Reaction pooling + affinity](#pool-affinity) | Reaction-aware correction |
+| `attention-state` | [Reaction attention — state only](#attention-state) | Reaction-aware correction |
+| `attention-affinity` | [Reaction attention + affinity](#attention-affinity) | Reaction-aware correction |
 | `correction-scaling-coordinate-sl1` | [Continued-base correction — coordinate Smooth L1](#correction-scaling-coordinate-sl1) | Direct correction scaling |
 | `correction-scaling-physical` | [Continued-base correction — physical supervision](#correction-scaling-physical) | Direct correction scaling |
 | `correction-scaling-direct` | [Continued-base correction — direct supervision](#correction-scaling-direct) | Direct correction scaling |
@@ -249,6 +273,94 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="pool-state"></a>
+### Reaction pooling — state only
+
+Artifact ID: `pool-state`. Family: Reaction-aware correction.
+
+Run arm pool-state in EXP-20261014-reaction-attention. Reactant, product and collider maps form reaction tokens; fixed positive structural weights combine them for each species. No chemical-potential evaluation at inference. All species use the same declared pipeline. Stoichiometry guides aggregation, not hard output conservation. The 32-wide head has 20,449 parameters. Work and results are versioned separately; a longer run is not a new method. See research/RESULTS.md for qualification, not just development accuracy.
+
+```mermaid
+flowchart TD
+  n0["T, pressure, composition"]
+  n1["Frozen GBCT base and prepared state features"]
+  n2["Separate reactant/product/collider reaction tokens"]
+  n3["Fixed reaction pooling for each species"]
+  n4["Predict fixed-asinh correction"]
+  n5["Decode physical increment; score repair, damage and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="pool-affinity"></a>
+### Reaction pooling + affinity
+
+Artifact ID: `pool-affinity`. Family: Reaction-aware correction.
+
+Run arm pool-affinity in EXP-20261014-reaction-attention. Reactant, product and collider maps form reaction tokens; fixed positive structural weights combine them for each species. Reaction affinity is minus Gibbs energy change divided by R*T, evaluated from the input state and scaled on training rows. All species use the same declared pipeline. Stoichiometry guides aggregation, not hard output conservation. The 32-wide head has 20,449 parameters. Work and results are versioned separately; a longer run is not a new method. See research/RESULTS.md for qualification, not just development accuracy.
+
+```mermaid
+flowchart TD
+  n0["T, pressure, composition"]
+  n1["Frozen GBCT base and prepared state features"]
+  n2["Separate reactant/product/collider reaction tokens plus input-state affinity"]
+  n3["Fixed reaction pooling for each species"]
+  n4["Predict fixed-asinh correction"]
+  n5["Decode physical increment; score repair, damage and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="attention-state"></a>
+### Reaction attention — state only
+
+Artifact ID: `attention-state`. Family: Reaction-aware correction.
+
+Run arm attention-state in EXP-20261014-reaction-attention. Reactant, product and collider maps form reaction tokens; two-head learned attention with a structural log prior combine them for each species. No chemical-potential evaluation at inference. All species use the same declared pipeline. Stoichiometry guides aggregation, not hard output conservation. The 32-wide head has 22,561 parameters. Work and results are versioned separately; a longer run is not a new method. See research/RESULTS.md for qualification, not just development accuracy.
+
+```mermaid
+flowchart TD
+  n0["T, pressure, composition"]
+  n1["Frozen GBCT base and prepared state features"]
+  n2["Separate reactant/product/collider reaction tokens"]
+  n3["Two-head species-to-reaction attention"]
+  n4["Predict fixed-asinh correction"]
+  n5["Decode physical increment; score repair, damage and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
+
+<a id="attention-affinity"></a>
+### Reaction attention + affinity
+
+Artifact ID: `attention-affinity`. Family: Reaction-aware correction.
+
+Run arm attention-affinity in EXP-20261014-reaction-attention. Reactant, product and collider maps form reaction tokens; two-head learned attention with a structural log prior combine them for each species. Reaction affinity is minus Gibbs energy change divided by R*T, evaluated from the input state and scaled on training rows. All species use the same declared pipeline. Stoichiometry guides aggregation, not hard output conservation. The 32-wide head has 22,561 parameters. Work and results are versioned separately; a longer run is not a new method. See research/RESULTS.md for qualification, not just development accuracy.
+
+```mermaid
+flowchart TD
+  n0["T, pressure, composition"]
+  n1["Frozen GBCT base and prepared state features"]
+  n2["Separate reactant/product/collider reaction tokens plus input-state affinity"]
+  n3["Two-head species-to-reaction attention"]
+  n4["Predict fixed-asinh correction"]
+  n5["Decode physical increment; score repair, damage and cost"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+  n4 --> n5
+```
 
 <a id="correction-scaling-coordinate-sl1"></a>
 ### Continued-base correction — coordinate Smooth L1
@@ -1590,5 +1702,7 @@ flowchart TD
 - [GBCT and paired-scaling plan](../benchmarks/offline_accuracy/paired/README.md), [configuration](../benchmarks/offline_accuracy/paired/plan.py), and [stable coordinates](../benchmarks/offline_accuracy/paired/coordinates.py).
 
 - [Fuel source-recipe replication](../benchmarks/offline_accuracy/paper_baseline/README.md) and [original-source audit](agents/fuel-baseline-replication.md).
+
+- [Reaction structure, affinity and attention](../benchmarks/offline_accuracy/paper_baseline/reaction_attention/README.md) and [current physical results](../research/RESULTS.md).
 
 Executable plans and saved run configurations own numerical parameters. This registry owns review names, diagrams and alias mappings. A display-name change never rewrites a run artifact.

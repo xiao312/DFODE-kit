@@ -24,6 +24,9 @@ export const representations = [
   {id:"gbct", name:"GBCT transformed-state rate", formula:"z = sign(q) * abs(q)^0.5 / 0.5; q = [B(Y+d)-B(Y)]/h; B power = 0.1",
     detail:"Matched target adaptation of GBCT, with h=1e-6 s. Stable state difference, signed square-root rate, then train-only mean/RMS normalization. Not a reproduction of the published network, dataset or loader normalization.",
     flow:["Initial state Y and reference increment d", "Stable Box-Cox difference, exponent 0.1", "Divide by h = 1e-6 s", "Signed power, exponent 0.5", "Train-only mean/RMS scaling"]},
+  {id:"fixed-asinh-correction", name:"Fixed-crossover asinh correction", formula:"c = asinh(d/s) - asinh(b/s); predicted d = s*sinh(asinh(b/s) + predicted c); s = 1e-14",
+    detail:"b is the frozen base increment. The reference-derived c is a training label, never an inference input. The crossover is fixed; it is not abs(b) or a changed accuracy allowance. Coordinate Smooth L1 trains the head; physical acceptance judges it.",
+    flow:["State inputs", "Frozen base predicts increment b", "Head predicts correction c", "Fixed-crossover inverse gives signed increment"]},
 ];
 export const targetNames = Object.fromEntries(representations.map(row=>[row.id,row.name]));
 targetNames.zero = "Zero-increment control";
@@ -35,6 +38,12 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  ...["pool","attention"].flatMap(mode=>["state","affinity"].map(extra=>({
+    id:`${mode}-${extra}`, name:`Reaction ${mode === "pool" ? "pooling" : "attention"}${extra === "affinity" ? " + affinity" : " — state only"}`,
+    target:"fixed-asinh-correction",family:"Reaction-aware correction",
+    detail:`Run arm ${mode}-${extra} in EXP-20261014-reaction-attention. Reactant, product and collider maps form reaction tokens; ${mode === "pool" ? "fixed positive structural weights" : "two-head learned attention with a structural log prior"} combine them for each species. ${extra === "affinity" ? "Reaction affinity is minus Gibbs energy change divided by R*T, evaluated from the input state and scaled on training rows." : "No chemical-potential evaluation at inference."} All species use the same declared pipeline. Stoichiometry guides aggregation, not hard output conservation. The 32-wide head has ${mode === "pool" ? "20,449" : "22,561"} parameters. Work and results are versioned separately; a longer run is not a new method. See research/RESULTS.md for qualification, not just development accuracy.`,
+    flow:["T, pressure, composition", "Frozen GBCT base and prepared state features", `Separate reactant/product/collider reaction tokens${extra === "affinity" ? " plus input-state affinity" : ""}`, mode === "pool" ? "Fixed reaction pooling for each species" : "Two-head species-to-reaction attention", "Predict fixed-asinh correction", "Decode physical increment; score repair, damage and cost"],
+  }))),
   {id:"correction-scaling-coordinate-sl1",name:"Continued-base correction — coordinate Smooth L1",
     target:"gbct",family:"Direct correction scaling",
     detail:"Bounded-influence coordinate supervision, beta=log(1.1). Same frozen continued bases, 10k rows, features, zero-output 3x256 head, fixed asinh crossover 1e-14, 6k updates and batch 10k as the completed direct-MSE controls. No physical decoder in the loss gradient path. Linear loss tail, not a hard cap. No preservation penalty, balancing, capacity or label change. Training-tail inspection and a training-mean constant control precede fitting. Physical acceptance, repair/damage and conditional tails decide success; lower coordinate loss alone does not.",

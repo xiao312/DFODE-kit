@@ -22,6 +22,11 @@ def main():
     prepared,transfer=project/binding['prepared_root'],project/binding['transfer_root']
     active=np.array([s!='AR' for s in binding['species']]);summary=[];scores=[]
     gates={a:{} for a in plan['arms']};timings={a:[] for a in plan['arms']}
+    historical=None;historical_report=None
+    if plan.get('historical_control_run'):
+        historical=project/plan['historical_control_run']
+        previous=read_json(checked_file(historical/'review.json',plan['historical_control_review_sha256']))
+        historical_report=read_json(checked_file(historical/'report.json',previous['report_sha256']))
     selections=arrays(transfer/'plan/selections.npz');excluded=[];allids={}
     for seed in plan['seeds']:
         with np.load(prepared/str(seed)/'training.npz') as saved:ids=saved['source_indices']
@@ -69,6 +74,10 @@ def main():
         records=read_json(trained/'result.json')['records']
         for r in records:
             require(r['updates_completed']==plan['batches'] and r['row_presentations']==plan['batches']*plan['batch_size'] and r['exact_reload'],'Work/replay mismatch')
+            if 'global_prior_mass' in plan:
+                cfg=read_json(trained/r['arm']/'config.json')
+                require(cfg['global_prior_mass']==plan['global_prior_mass']==.1,'Visibility mass changed')
+                require(r['parameter_count']==22561,'Visibility parameter count changed')
         for mode in ('pool','attention'):
             pair=[r['initial_weights_sha256'] for r in records if r['arm'].startswith(mode+'-')]
             if pair:require(len(pair)==2 and len(set(pair))==1,'Affinity initialization differs')
@@ -92,6 +101,11 @@ def main():
             stateonly=arrays(staged/('input-'+population)/'states.npz');require(set(stateonly)=={'states','source_indices'},'Inference boundary')
             for key,value in stateonly.items():np.testing.assert_array_equal(value,rows[key])
             saved=arrays(trained/population/'predictions.npz');np.testing.assert_array_equal(saved['source_indices'],rows['source_indices']);np.testing.assert_array_equal(saved['base'],rows['base'])
+            if historical is not None:
+                relative=f'{seed}/{population}/predictions.npz'
+                previous=arrays(checked_file(historical/relative,historical_report['artifacts'][relative]))
+                for key in ('source_indices','base','attention-state','attention-state_coordinate'):
+                    np.testing.assert_array_equal(saved[key],previous[key])
             baseline=score(dict(prediction=rows['base'],source_indices=rows['source_indices']),rows,binding['species'],f'{seed}:{population}')
             measured=read_json(trained/population/'result.json');require(measured['label_free_input'],'Missing input check')
             checked_file(trained/population/'predictions.npz',measured['prediction_sha256'])

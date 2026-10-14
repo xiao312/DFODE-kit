@@ -50,6 +50,18 @@ All eight training curves still improve late in the short run. The next register
 control uses12000 updates for the two attention arms, with identical data,
 initialization and objective. It tests the work budget before changing features.
 
+The work control is now complete and rejected. At12000 updates, state-only
+attention reaches U72.401/72.496%, D69.112/69.618%; affinity reaches
+U72.380/72.512%, D69.178/69.564%. Same-source gains remain below0.5 points,
+damage is4.0-5.1%, and error tails/negative endpoints and latency still fail.
+Exact initialization/features/configuration parity and full replay were verified.
+Review `23177b8d2404b9cc4f3833ed9d235241f1ca59ef0bd6134a621fc35bf80f29f7`.
+Four fits consumed507.48 observed worker seconds, no interrupted attempts.
+This fractional-cosine work-policy extension improves fitting slightly, not enough
+to justify more of the same. The next controlled test changes only attention
+visibility: structural support versus a fixed10% uniform global prior, with the
+same22561 parameters. No affinity or temperature-dependent routing is used.
+
 The preceding interval-readout trial is complete and rejected. Development
 acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval
 supervision, versus68.30/68.80% for the base. Its four fits, state-only replay,

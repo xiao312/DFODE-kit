@@ -40,6 +40,8 @@ def main():
             updates=plan['batches'],batch_size=plan['batch_size'],width=plan['width'],heads=plan['heads'],
             diagnostics_every_updates=plan['diagnostics_every_updates'],learning_rate=plan['learning_rate'],
             final_learning_rate=plan['final_learning_rate'],wall_seconds=plan['resources']['maximum_fit_seconds'])
+        if 'global_prior_mass' in plan:
+            config['global_prior_mass']=plan['global_prior_mass']
         save(dest/'config.json',config)
         factory=lambda c,_inputs,_outputs:ReactionHead(c,graph).to('cuda')
         model,record=fit(training,None,active,config,dest,model_factory=factory,prediction_function=cached_prediction)

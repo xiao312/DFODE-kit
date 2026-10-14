@@ -100,3 +100,22 @@ def test_work_extension_preserves_recipe():
         assert before[key]==after[key]
     assert after['arms']==['attention-state','attention-affinity']
     assert after['batches']==4*before['batches']
+
+
+def test_global_visibility_changes_only_prior_not_parameters():
+    torch=pytest.importorskip('torch')
+    from benchmarks.offline_accuracy.paper_baseline.reaction_attention.model import ReactionHead
+    gas,_=problem();graph=metadata(gas,gas.species_names)
+    cfg=dict(seed=20261011,width=32,heads=2,arm='attention-state',global_prior_mass=.1)
+    local=ReactionHead(cfg,graph);global_head=ReactionHead(dict(cfg,arm='attention-global'),graph)
+    assert sum(p.numel() for p in local.parameters())==sum(p.numel() for p in global_head.parameters())
+    for key,value in local.state_dict().items():
+        torch.testing.assert_close(value,global_head.state_dict()[key],rtol=0,atol=0)
+    x=torch.randn(2,2+gas.n_species+int(graph['active'].sum())+gas.n_reactions)
+    q,r=local.tokens(x)
+    wl=local.attention_weights(q,r);wg=global_head.attention_weights(q,r)
+    assert torch.count_nonzero(wl[...,local.pooling==0])==0
+    assert torch.all(wg>0)
+    torch.testing.assert_close(wg.sum(-1),torch.ones_like(wg.sum(-1)))
+    torch.testing.assert_close(local(x),global_head(x),rtol=0,atol=0)
+    with pytest.raises(ValueError):ReactionHead(dict(cfg,arm='attention-global',global_prior_mass=0),graph)

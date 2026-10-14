@@ -16,9 +16,15 @@ class ReactionHead(nn.Module):
         if width % self.heads:
             raise ValueError('Width must divide into attention heads')
         self.width = width; self.mode, extra = config['arm'].split('-')
-        if self.mode not in ('pool', 'attention') or extra not in ('state', 'affinity'):
+        if self.mode not in ('pool', 'attention') or extra not in ('state', 'affinity', 'global'):
             raise ValueError('Unknown reaction model arm')
+        if extra == 'global' and self.mode != 'attention':
+            raise ValueError('Global visibility is an attention-only ablation')
         self.use_affinity = extra == 'affinity'
+        self.global_visibility = extra == 'global'
+        self.global_prior_mass = config.get('global_prior_mass', 0.)
+        if self.global_visibility and not 0 < self.global_prior_mass < 1:
+            raise ValueError('Global attention requires a declared prior mass')
         n, reactions = graph['reactant'].shape
         self.n_species = n; self.n_reactions = reactions
         active = np.flatnonzero(graph['active']); self.n_active = len(active)
@@ -70,7 +76,13 @@ class ReactionHead(nn.Module):
         batch = len(q); part = self.width//self.heads
         query = self.query(q).reshape(batch,self.n_active,self.heads,part).transpose(1,2)
         key = self.key(r).reshape(batch,self.n_reactions,self.heads,part).transpose(1,2)
-        return (query@key.transpose(-1,-2)/np.sqrt(part)+self.log_prior).softmax(-1)
+        prior = self.log_prior
+        if self.global_visibility:
+            # Fixed mixture, not a label-dependent or temperature-dependent gate.
+            # Buffers/trainable tensors stay identical to the local control.
+            prior = ((1-self.global_prior_mass)*self.pooling+
+                     self.global_prior_mass/self.n_reactions).log()
+        return (query@key.transpose(-1,-2)/np.sqrt(part)+prior).softmax(-1)
 
     def forward(self, x):
         q,r = self.tokens(x); value = self.value(r)
