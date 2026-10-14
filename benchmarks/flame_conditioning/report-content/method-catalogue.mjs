@@ -38,6 +38,9 @@ const localFlow = target => ["Input state", "Training-only scaling and rank redu
 const inputFlow = finish => ["T, pressure, composition", "Inverse T, log pressure, log-like partial pressures", "Separate 2x32 tanh network per species", "4k coordinate warmup", finish, "Inverse asinh gives increment"];
 
 export const recipes = [
+  {id:"attention-global",name:"Reaction attention — mixed global prior",target:"fixed-asinh-correction",family:"Reaction-aware correction",
+    detail:"State-only attention with the same22,561 parameters as attention-state. A fixed prior mixture uses90% structural weights and10% uniform weight over all reactions. This opens remote channels and changes relative weights on existing support; the experiment tests that combined prior change. No affinity, reference-dependent inference, temperature switch or hard conservation. EXP-20261014-reaction-visibility owns the paired finite work and physical evaluation.",
+    flow:["State inputs and frozen GBCT base", "Same reactant/product/collider reaction tokens", "Fixed90% structural plus10% uniform prior", "Two-head attention with unchanged parameters", "Same fixed-asinh correction and physical evaluation"]},
   ...["pool","attention"].flatMap(mode=>["state","affinity"].map(extra=>({
     id:`${mode}-${extra}`, name:`Reaction ${mode === "pool" ? "pooling" : "attention"}${extra === "affinity" ? " + affinity" : " — state only"}`,
     target:"fixed-asinh-correction",family:"Reaction-aware correction",

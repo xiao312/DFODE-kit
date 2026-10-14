@@ -62,6 +62,28 @@ to justify more of the same. The next controlled test changes only attention
 visibility: structural support versus a fixed10% uniform global prior, with the
 same22561 parameters. No affinity or temperature-dependent routing is used.
 
+The visibility trial is also complete and rejected. The mixed prior reaches
+U72.174/72.489%, D69.001/69.416%, versus the exact repeated local control
+U72.182/72.464%, D69.097/69.466%. Training is slightly worse in both seeds;
+development decreases by0.096/0.051 points. Historical local predictions and
+coordinates match exactly on every population. No prior-mass sweep follows.
+Review `ac320d3e0e1e0e32ee1a684fc5a9d475c299fbdaa07bbc2933a2a146b0737dba`.
+Four fits consumed173.05 observed worker seconds. The10% value is prior mass,
+not measured attention mass; it also changes weights within existing support.
+
+**Current conclusion:** the compact attention structure has a small matched
+advantage over pooling. Added affinity is weak/mixed; extra work and weak global
+visibility do not solve preservation, transfer or cost. This does not establish
+that transformers, thermodynamics or global context are generally ineffective.
+The remaining reaction-input question is whether reaction-resolved kinetic scales
+help where affinity alone does not. That needs a training-only diagnostic and a
+new registered comparison, not more tuning of the closed recipes. No new fit is
+running. The incumbent and protected contract are unchanged.
+
+Review the [canonical method diagrams](../docs/research-method-catalogue.md#pool-state).
+All16 completed fits used one GPU at a time; other workloads were not modified.
+Focused verification:47 pinned-server tests and4 local catalogue tests pass.
+
 The preceding interval-readout trial is complete and rejected. Development
 acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval
 supervision, versus68.30/68.80% for the base. Its four fits, state-only replay,

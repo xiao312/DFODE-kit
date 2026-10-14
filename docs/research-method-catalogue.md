@@ -199,6 +199,7 @@ Click a method name for its steps. Diagrams summarize the recipe, including fitt
 
 | Stable artifact ID | Canonical name | Family |
 | --- | --- | --- |
+| `attention-global` | [Reaction attention — mixed global prior](#attention-global) | Reaction-aware correction |
 | `pool-state` | [Reaction pooling — state only](#pool-state) | Reaction-aware correction |
 | `pool-affinity` | [Reaction pooling + affinity](#pool-affinity) | Reaction-aware correction |
 | `attention-state` | [Reaction attention — state only](#attention-state) | Reaction-aware correction |
@@ -273,6 +274,26 @@ Report aliases: `base` → `long-state-boxcox`.
 The zero-increment control always returns zero; it is not fitted.
 
 ## Method steps
+
+<a id="attention-global"></a>
+### Reaction attention — mixed global prior
+
+Artifact ID: `attention-global`. Family: Reaction-aware correction.
+
+State-only attention with the same22,561 parameters as attention-state. A fixed prior mixture uses90% structural weights and10% uniform weight over all reactions. This opens remote channels and changes relative weights on existing support; the experiment tests that combined prior change. No affinity, reference-dependent inference, temperature switch or hard conservation. EXP-20261014-reaction-visibility owns the paired finite work and physical evaluation.
+
+```mermaid
+flowchart TD
+  n0["State inputs and frozen GBCT base"]
+  n1["Same reactant/product/collider reaction tokens"]
+  n2["Fixed90% structural plus10% uniform prior"]
+  n3["Two-head attention with unchanged parameters"]
+  n4["Same fixed-asinh correction and physical evaluation"]
+  n0 --> n1
+  n1 --> n2
+  n2 --> n3
+  n3 --> n4
+```
 
 <a id="pool-state"></a>
 ### Reaction pooling — state only
