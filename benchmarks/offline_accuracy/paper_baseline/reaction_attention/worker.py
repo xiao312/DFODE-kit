@@ -28,11 +28,10 @@ def main():
     b,_=base_prediction(base,base_preprocessing(prep),rows['states'],args.seed)
     np.testing.assert_array_equal(b,rows['base'])
     ordinary=features(rows['states'],b,prep,cfg).astype(np.float32)
-    np.testing.assert_array_equal(ordinary,rows['features'])
     started=time.monotonic();raw=affinity(gas,rows['states']);scaler=fit_scaler(raw)
     x=pack(ordinary,raw,scaler);feature_seconds=time.monotonic()-started
     np.savez('/output/scaler.npz',**scaler)
-    np.savez('/output/feature-audit.npz',raw_affinity=raw,source_indices=rows['source_indices'])
+    np.savez('/output/feature-audit.npz',raw_affinity=raw,ordinary=ordinary,source_indices=rows['source_indices'])
     training=dict(features=x,base=b,delta=rows['delta'],target=encode(b[:,active],rows['delta'][:,active],cfg))
     records=[]
     for arm in plan['arms']:

@@ -33,6 +33,7 @@ def main():
         np.testing.assert_array_equal(train['source_indices'],ids)
         full=arrays(prepared/str(seed)/'training.npz');ix=align_indices(full['source_indices'],ids)
         for key,value in train.items():np.testing.assert_array_equal(value,full[key][ix])
+        expected_features=full['features'][ix]
         del full
         for key,value in arrays(staged/'fit-input/training.npz').items():np.testing.assert_array_equal(value,train[key])
         for name in ('base-weights.pt','preprocessing.npz'):checked_file(staged/'inference-model'/name,digest(prepared/str(seed)/name))
@@ -40,6 +41,7 @@ def main():
         require(gas.species_names==binding['species'],'Mechanism axis differs')
         checked_file(staged/'inference-model/mechanism.yaml',binding['mechanism_sha256'])
         graph=arrays(trained/'graph.npz');audit=arrays(trained/'feature-audit.npz');scaler=arrays(trained/'scaler.npz')
+        np.testing.assert_array_equal(audit['ordinary'],expected_features)
         np.testing.assert_array_equal(graph['product'],gas.product_stoich_coeffs)
         np.testing.assert_array_equal(graph['reactant'],gas.reactant_stoich_coeffs)
         # Reconstruct collider and graph weights separately from metadata().

@@ -1,5 +1,27 @@
 # Reaction-aware model: implementation complete, GPU admission blocked
 
+## Authorized repair and implementation recovery (2026-10-14)
+
+The owner authorized the narrow GPU UUID repair and integrity-lock update. Source
+`c1caf83` passes32 focused tests and the full isolation probe on GPU2, with exactly
+one visible device. The host query confirms index2 is device minor2. Scoring,
+mounts, labels, network isolation and the scientific manifest remain unchanged.
+
+The registered infrastructure retry then stopped before any optimizer step:
+the common-row reference payload has no optional cached `features` column.
+The worker incorrectly indexed it after already computing state-only features.
+The correction removes that invalid assumption and saves the computed features
+for an independent full comparison against the original prepared cache. It does
+not change model inputs, rows, objective, batches or seeds.
+
+`reaction_attention.resume` is restricted to this observed pre-optimizer failure.
+It requires dead controller/worker identities, exactly the log and graph artifact
+in the failed worker directory, no second-seed work, an unchanged plan and an
+idle GPU. It archives that worker directory, preserves both previous leases, and
+creates an exclusive recovery lease. No completed fit is repeated. This is an
+implementation repair, not another transient infrastructure retry or scientific
+negative result. Use `--execute` only after its read-only check passes.
+
 ## Implemented, not a result claim
 
 Source `9a06d04` contains the registered four-arm comparison, separate reactant,
