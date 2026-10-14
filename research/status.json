@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "REACTION_ATTENTION_IMPLEMENTED_PENDING_PRECHECK",
+  "stage": "REACTION_ATTENTION_BLOCKED_PROTECTED_GPU_BINDING",
   "active_experiment": "EXP-20261014-reaction-attention",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
@@ -50,7 +50,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Interval-readout completed and independently rejected (review fd324636 plus supplement bd4fb4f3). New reaction_attention 2x2 affinity/attention implementation requires pinned-server tests and idle-GPU admission before fitting. SSH restored using existing VPN; GPUs0/1 occupied at discovery, do not disturb. Inspect actual leases/process identity before launch. Prior strict consensus remains pending authorized promotion, incumbent unchanged.",
+  "next_action": "Reaction attention implemented9a06d04;27 CPU-focused tests pass,4 historical GPU tests skipped. Real-mechanism16-state zero-base check passes. No fit launched: protected sandbox maps only hostGPU2 but passes CUDA_VISIBLE_DEVICES=2; unchanged probes2-5 fail. Diagnostic identical mount with selector0/UUID succeeds. Do not modify protected sandbox/lock without owner authority. Read experiments/EXP-20261014-reaction-attention.preflight.md. Original PID250669/start1056116239 dead; retain original lease/output. After authorized repair register infrastructure retry/newlease, same scientific plan; do not duplicate. Incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

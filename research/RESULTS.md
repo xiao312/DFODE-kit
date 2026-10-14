@@ -8,6 +8,13 @@ frozen bases and physical contract apply. This is a factorial architecture/input
 test, not an LLM or a hard thermodynamic guarantee. Implementation and prechecks
 do not establish improved accuracy. See the module README and experiment manifest.
 
+Implementation is complete; training has **not started**. Seven new module tests
+and real-mechanism zero-head checks pass. The existing protected sandbox cannot
+initialize idle nonzero-index GPUs because it retains the host CUDA index after
+restricting device mounts. Diagnostic UUID selection succeeds with the same mounts.
+No protected file or lock was changed. See the experiment preflight note for the
+reproducer, verification limits and required owner-controlled infrastructure repair.
+
 The preceding interval-readout trial is complete and rejected. Development
 acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval
 supervision, versus68.30/68.80% for the base. Its four fits, state-only replay,
