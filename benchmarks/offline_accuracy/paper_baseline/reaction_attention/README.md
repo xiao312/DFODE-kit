@@ -86,3 +86,8 @@ It reports raw linear encoding ranks per species support, paired saved-score eff
 training curves and configuration parity. It fits no model and selects no checkpoint.
 Full rank does not mean the trained downstream network can invert the encoding.
 Check with `python -m pytest tests/test_reaction_structure_review.py -q`.
+
+`EXP-20261014-reaction-work` reuses the two attention arms at12000 updates.
+It changes only the work horizon (including the fractional cosine schedule), with
+fresh identical initial heads. Its reviewer requires exact graph/scaler/features,
+initialization and non-work configuration parity with the completed3000-step arms.

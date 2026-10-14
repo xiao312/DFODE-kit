@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "REACTION_ATTENTION_REVIEWED",
-  "active_experiment": "EXP-20261014-reaction-information",
+  "stage": "REACTION_WORK_REGISTERED",
+  "active_experiment": "EXP-20261014-reaction-work",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -51,7 +51,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Execute registered reaction_attention.structure_review with one CPU thread and no GPU. Review raw per-species encoding rank and final fitting curves; do not repeat completed reaction-attention fits. All four models rejected; incumbent unchanged. Then choose a discriminating follow-up, not a blind affinity/attention sweep.",
+  "next_action": "Precheck and execute gradient_probe.run --experiment EXP-20261014-reaction-work on one admitted idle GPU. Fresh12000-update attention pair, same data/initialization/objective as completed3000-step control. Then reaction_attention.review verifies exact control parity and full populations. Do not rerun original fits; incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

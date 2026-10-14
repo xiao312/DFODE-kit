@@ -40,6 +40,16 @@ presentations. Observed worker time308.35s is not GPU allocation time. The next
 registered diagnostic checks raw encoding rank, training variance in invisible
 directions, paired effects and fitting curves before choosing another fit.
 
+That diagnostic is complete (`49b95bc15983bdfc03aa1d54a69b6ba49d799d30481c7d6530ba2c9524a25392`).
+All raw channels together have rank59. Per-output support plus its direct query
+has rank46-56 for59 prepared species coordinates, and45-55 for58 base coordinates.
+Training variance outside these linear spans is3.1-12.7% /4.9-22.7%, respectively.
+This does not prove relevant physical ambiguity or characterize nonlinear affinity
+features. Do not claim all information is lost simply because each token averages.
+All eight training curves still improve late in the short run. The next registered
+control uses12000 updates for the two attention arms, with identical data,
+initialization and objective. It tests the work budget before changing features.
+
 The preceding interval-readout trial is complete and rejected. Development
 acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval
 supervision, versus68.30/68.80% for the base. Its four fits, state-only replay,

@@ -89,3 +89,14 @@ def test_common_architecture_weights_paired():
     a=ReactionHead(cfg,graph);b=ReactionHead(dict(cfg,arm='attention-affinity'),graph)
     for key,value in a.state_dict().items():
         torch.testing.assert_close(value,b.state_dict()[key],rtol=0,atol=0)
+
+
+def test_work_extension_preserves_recipe():
+    root=Path('research/experiments')
+    before=json.loads((root/'EXP-20261014-reaction-attention.json').read_text())
+    after=json.loads((root/'EXP-20261014-reaction-work.json').read_text())
+    for key in ('parent_run','parent_review_sha256','selection_seed','fit_rows',
+                'seeds','batch_size','learning_rate','final_learning_rate','width','heads','resources'):
+        assert before[key]==after[key]
+    assert after['arms']==['attention-state','attention-affinity']
+    assert after['batches']==4*before['batches']

@@ -1,0 +1,22 @@
+{
+ "experiment_id":"EXP-20261014-reaction-work","status":"REGISTERED",
+ "hypothesis":"The compact reaction-attention recipe is under-optimized at600k presentations; more fixed work improves fitting and transfer without changing features or objective.",
+ "evidence":["Reaction-attention sourcea2794bb: all8 training curves still improve from2000 to3000updates; attention improves12/12 matched aggregate comparisons but all candidates fail physical/cost gates.","Reaction-information review49b95bc15983bdfc03aa1d54a69b6ba49d799d30481c7d6530ba2c9524a25392: raw global rank59; per-query ranks46-56. Rank deficit is not yet evidence of physical ambiguity."],
+ "parent_run":"runs/offline-accuracy/consensus-distill-20261013",
+ "parent_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "control_run":"runs/offline-accuracy/reaction-attention-20261014-retry1",
+ "control_review_sha256":"e8220d934a5a204840eb3a99e31de6580d21c8850939867e0bbc9f35f9797292",
+ "selection":"reaction_attention","selection_seed":20261013,"fit_rows":20000,
+ "seeds":[20261011,20261012],"arms":["attention-state","attention-affinity"],
+ "batches":12000,"batch_size":200,"diagnostics_every_updates":3000,
+ "learning_rate":0.001,"final_learning_rate":0.00001,"width":32,"heads":2,
+ "objective":"Unchanged coordinate SmoothL1 beta=log(1.1), frozen continued GBCT, fixed-asinh decoder s1e-14. Adam cosine1e-3 to1e-5 across12000 updates. Fresh paired zero-output heads, final checkpoint only. No clipping, projection, gate or checkpoint selection.",
+ "changed_factor":"Work horizon3000 to12000updates, with the same cosine schedule parameterized by fractional work. This changes learning-rate history as part of the declared work policy; not an identical first3000-step continuation. Diagnostics every3000 do not alter optimizer steps.",
+ "fixed":"All architecture, parameter counts, states, labels, scalers, preprocessing, seeds, initialization, batch size, objective, decoder, evaluation populations and gates match the original attention arms. Parent common50k unchanged; first20k fitted. No new physical information.",
+ "exposure":"Same training20k. Full U20k and D1023 are repeated development evidence. Base has broader exposure. No confirmation access.",
+ "prechecks":"Exact source-ID, graph, scaler, feature-audit and initialization identity against short-budget arms; protected lock, idleGPU admission, state-only replay and independent physical recount.",
+ "evaluation":"Full required populations and every unchanged gate. Compare long-minus-short training and transfer effects by arm/seed. Do not promote from better fitting or a single development metric. Total inference costs remain measured; no expected cost improvement.",
+ "outcomes":{"training_and_transfer":"Quantify whether extra work buys balanced accuracy; qualification still requires all gates.","training_only":"Close work-extension line; use per-query information/feature-sharing evidence for next trial, not more updates.","neither":"Do not claim under-optimization; close this work policy and investigate parameterization or features.","accuracy_only":"Record rejected accuracy-only result if cost/preservation fails; optimization of inference would be separate."},
+ "resources":{"maximum_fit_seconds":1800,"gpu_workers":1,"cpu_threads":1},
+ "run":"runs/offline-accuracy/reaction-work-20261014","confirmation_access":false
+}

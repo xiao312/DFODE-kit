@@ -71,7 +71,22 @@ def main():
             require(r['updates_completed']==plan['batches'] and r['row_presentations']==plan['batches']*plan['batch_size'] and r['exact_reload'],'Work/replay mismatch')
         for mode in ('pool','attention'):
             pair=[r['initial_weights_sha256'] for r in records if r['arm'].startswith(mode+'-')]
-            require(len(pair)==2 and len(set(pair))==1,'Affinity initialization differs')
+            if pair:require(len(pair)==2 and len(set(pair))==1,'Affinity initialization differs')
+        if plan.get('control_run'):
+            control=project/plan['control_run']
+            oldreview=read_json(checked_file(control/'review.json',plan['control_review_sha256']))
+            oldreport=read_json(checked_file(control/'report.json',oldreview['report_sha256']))
+            oldresult=read_json(checked_file(control/str(seed)/'result.json',oldreport['artifacts'][f'{seed}/result.json']))
+            for name in ('graph.npz','scaler.npz','feature-audit.npz'):
+                checked_file(trained/name,oldreport['artifacts'][f'{seed}/{name}'])
+            for record in records:
+                previous=next(r for r in oldresult['records'] if r['arm']==record['arm'])
+                require(record['initial_weights_sha256']==previous['initial_weights_sha256'],'Work-control initialization differs')
+                oldcfg=read_json(checked_file(control/str(seed)/record['arm']/'config.json',oldreport['artifacts'][f'{seed}/{record["arm"]}/config.json']))
+                cfg=read_json(trained/record['arm']/'config.json')
+                for key in set(cfg)|set(oldcfg):
+                    if key not in ('experiment','updates','diagnostics_every_updates'):
+                        require(cfg.get(key)==oldcfg.get(key),f'Work control changed {key}')
         populations={'training':train};populations.update({p:r for p,r in population_rows(prepared,transfer,str(seed)) if p!='training'})
         for population,rows in populations.items():
             stateonly=arrays(staged/('input-'+population)/'states.npz');require(set(stateonly)=={'states','source_indices'},'Inference boundary')
