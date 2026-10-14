@@ -1,6 +1,6 @@
 # Signed-increment research results
 
-## October14: reaction structure and affinity implementation
+## October14: reaction structure, affinity and attention tested
 
 Registered `EXP-20261014-reaction-attention`: fixed stoichiometric pooling versus
 small two-head cross-attention, each without/with reaction affinity. The same
@@ -8,12 +8,37 @@ frozen bases and physical contract apply. This is a factorial architecture/input
 test, not an LLM or a hard thermodynamic guarantee. Implementation and prechecks
 do not establish improved accuracy. See the module README and experiment manifest.
 
-Implementation is complete; training has **not started**. Seven new module tests
-and real-mechanism zero-head checks pass. The existing protected sandbox cannot
-initialize idle nonzero-index GPUs because it retains the host CUDA index after
-restricting device mounts. Diagnostic UUID selection succeeds with the same mounts.
-No protected file or lock was changed. See the experiment preflight note for the
-reproducer, verification limits and required owner-controlled infrastructure repair.
+All eight GPU fits, state-only replay and protected/independent scoring are complete.
+The owner-authorized UUID binding repair preserves isolation and scoring. Two
+implementation interruptions are archived; one consumed1,000 updates before a
+telemetry failure. No completed fit was repeated. Review:
+`e8220d934a5a204840eb3a99e31de6580d21c8850939867e0bbc9f35f9797292`.
+
+| Model | Same-source unseen20k, seed11 /12 | Development1023, seed11 /12 |
+|---|---:|---:|
+| Continued GBCT | 72.241 /72.275% | 68.296 /68.800% |
+| Fixed reaction pooling | 72.082 /72.306% | 68.844 /69.266% |
+| Pooling + affinity | 72.152 /72.333% | 68.971 /69.259% |
+| Reaction attention | 72.182 /72.464% | 69.097 /69.466% |
+| Attention + affinity | 72.230 /72.435% | 69.245 /69.495% |
+
+**All candidates are rejected.** Attention improves all12 matched aggregate
+comparisons against pooling by0.078-0.275 percentage points, but adds2,112 parameters.
+Affinity improves9/12 comparisons by -0.029 to+0.148 points: a small, mixed effect,
+not evidence of a strong affinity benefit. There is no structure-free arm, so this
+experiment does not isolate the benefit of stoichiometry itself.
+
+Development gains coexist with insufficient same-source transfer,4.0-5.2% damage
+to base successes (limit2%), worse tails/negative endpoints and4.7-10.4x total
+inference latency (limit1.5x). No candidate promotion or confirmation occurred.
+Each fit used600k row presentations, not the historical60M budget. This compact
+recipe does not establish a capacity or optimization ceiling. Stoichiometry guides
+aggregation; it does not enforce conservation on returned increments.
+
+Successful worker time was289.31s; interrupted workers added19.04s and200k row
+presentations. Observed worker time308.35s is not GPU allocation time. The next
+registered diagnostic checks raw encoding rank, training variance in invisible
+directions, paired effects and fitting curves before choosing another fit.
 
 The preceding interval-readout trial is complete and rejected. Development
 acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval

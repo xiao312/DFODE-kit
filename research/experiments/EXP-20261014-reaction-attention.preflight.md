@@ -1,4 +1,12 @@
-# Reaction-aware model: implementation complete, GPU admission blocked
+# Reaction-aware model: preflight and recovery history
+
+## Current outcome
+
+All eight fits and full replay are complete and independently scored. All four
+candidates are rejected under the unchanged contract. See `research/RESULTS.md`.
+The blocked and no-fit descriptions below are historical, not current job status.
+The owner authorized the narrow UUID binding repair and corresponding lock update.
+No scoring rules, label mounts, network isolation or other users' jobs changed.
 
 ## UUID telemetry compatibility recovery
 

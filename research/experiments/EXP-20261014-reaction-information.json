@@ -1,0 +1,14 @@
+{
+  "experiment_id": "EXP-20261014-reaction-information",
+  "status": "REGISTERED",
+  "kind": "read-only structural and saved-result diagnostic",
+  "parent": "runs/offline-accuracy/reaction-attention-20261014-retry1",
+  "parent_review_sha256": "e8220d934a5a204840eb3a99e31de6580d21c8850939867e0bbc9f35f9797292",
+  "hypothesis": "Per-reaction averaging may restrict which species covariates each output can distinguish; do not assume it loses information globally without testing the concatenated map.",
+  "checks": ["Global rank of concatenated normalized reactant/product/collider maps", "Rank and singular spectrum available through each species structural support plus its own scalar input", "Separate prepared-Y and active-base-output axes", "Paired affinity and attention acceptance effects from already verified scores", "Final versus earlier training-only fit curves; no checkpoint selection", "Configuration and parameter-count parity"],
+  "exposure": "Pinned mechanism graph and completed experiment artifacts only. No new labels, fitting, inference, confirmation or development selection.",
+  "method": "SVD in FP64 with thresholds sigma_max*1e-12 and sigma_max*max(shape)*eps(float32). Report training-only covariance energy in null directions per seed. Rank is a property of the raw linear encoding, not a proof of learned invertibility, physical ambiguity, or information loss after nonlinear layers. Direct T/P retained; affinity nonlinear features not covered by this rank check.",
+  "resources": {"cpu_threads": 1, "maximum_species_maps": 118, "gpu": false},
+  "outcomes": {"full_rank": "Do not blame raw pooling alone; investigate fitting and downstream aggregation instead.", "rank_deficit": "Record missing linear directions; this does not prove chemically relevant ambiguity. Require a discriminating feature test before attributing accuracy failures.", "curves_improving": "A separately registered matched budget-extension control is justified, not evidence of eventual success."},
+  "output": "runs/offline-accuracy/reaction-information-20261014"
+}

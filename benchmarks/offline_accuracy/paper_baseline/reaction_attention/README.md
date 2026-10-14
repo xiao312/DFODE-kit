@@ -77,3 +77,12 @@ Source references: [Cantera3.2 kinetics](https://www.cantera.org/3.2/python/kine
 and [Torch2.8 attention](https://docs.pytorch.org/docs/2.8/generated/torch.nn.functional.scaled_dot_product_attention.html).
 The implementation uses explicit deterministic attention operations for inspectable
 weights and replay, with no dropout or mixed precision.
+
+## Structural diagnostic
+
+`python -m benchmarks.offline_accuracy.paper_baseline.reaction_attention.structure_review --project <root>`
+reads the completed, hash-bound run under `EXP-20261014-reaction-information`.
+It reports raw linear encoding ranks per species support, paired saved-score effects,
+training curves and configuration parity. It fits no model and selects no checkpoint.
+Full rank does not mean the trained downstream network can invert the encoding.
+Check with `python -m pytest tests/test_reaction_structure_review.py -q`.
