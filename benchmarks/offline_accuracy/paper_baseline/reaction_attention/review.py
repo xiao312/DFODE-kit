@@ -103,9 +103,24 @@ def main():
                     timings[arm].append(ratio)
     keys={f'{s}:{p}:{c}' for s in plan['seeds'] for p in ('same_source_unseen','development') for c in ('anchor','incumbent')}
     verdict={a:decision(gates[a],keys,max(timings[a]),policy) for a in plan['arms']}
+    interrupted=[]
+    for kind in ('schema','telemetry'):
+        path=root/f'{kind}-failure.json'
+        if path.exists():
+            failed=read_json(path)
+            interrupted.append(dict(kind=kind,record_sha256=digest(path),
+                worker_wall_seconds=failed['previous_state']['elapsed_seconds'],
+                optimizer_steps=failed['optimizer_steps_before_failure'],
+                row_presentations=failed['row_presentations_before_failure']))
+    resources=dict(successful_worker_wall_seconds=report['worker_wall_seconds'],
+        interrupted_attempts=interrupted,
+        total_observed_worker_wall_seconds=report['worker_wall_seconds']+sum(r['worker_wall_seconds'] for r in interrupted),
+        interrupted_row_presentations=sum(r['row_presentations'] for r in interrupted),
+        gpu_allocation_seconds=None,
+        note='Worker wall time is not GPU allocation time. Preflight time was not instrumented. Outside-controller contention checks are authoritative; PID-namespace occupancy counts can include the worker itself.')
     save(root/'protected-scores.json',dict(records=scores));verify_evaluator_lock(project)
     save(root/'review.json',dict(status='verified',summary=summary,decision=verdict,incumbent_unchanged=True,confirmation_opened=False,
-        report_sha256=digest(root/'report.json'),scores_sha256=digest(root/'protected-scores.json')))
+        report_sha256=digest(root/'report.json'),scores_sha256=digest(root/'protected-scores.json'),resources=resources))
     print(summary);print(verdict)
 
 

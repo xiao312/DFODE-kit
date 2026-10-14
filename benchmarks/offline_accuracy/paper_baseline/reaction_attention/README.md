@@ -21,6 +21,9 @@ mechanism. The first20k of the previous common50k are candidate-training states.
 Scaler fitting uses only those20k. Replay receives states and model artifacts,
 not labels. Outputs include metadata, training-only scalers, weights, histories,
 predictions, live feature-computation timing, and independent physical scores.
+The review records successful and archived interrupted worker time separately.
+Worker wall time is not GPU allocation time. Recovery guards refuse ambiguous
+artifacts or possible saved checkpoints; they do not authorize repeating fits.
 
 Affinity is `-delta_gibbs/(R*T)` in matching J/kmol units. It is asinh-compressed
 and standardized per reaction on training rows. Zero mole fractions use Cantera's
@@ -60,6 +63,8 @@ the controller monitors GPU contention, not a separate whole-worker deadline.
 ## Verification
 
 `python -m pytest tests/test_reaction_attention.py -q`
+
+`python -m pytest tests/test_reaction_attention_recovery.py tests/test_reaction_attention_retry.py -q`
 
 Expected: stoichiometric orientation, collider handling, affinity units/identity,
 training-only scaling, input validation, paired initialization, zero-base replay,
