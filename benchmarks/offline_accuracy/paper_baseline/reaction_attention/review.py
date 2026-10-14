@@ -42,6 +42,19 @@ def main():
         graph=arrays(trained/'graph.npz');audit=arrays(trained/'feature-audit.npz');scaler=arrays(trained/'scaler.npz')
         np.testing.assert_array_equal(graph['product'],gas.product_stoich_coeffs)
         np.testing.assert_array_equal(graph['reactant'],gas.reactant_stoich_coeffs)
+        # Reconstruct collider and graph weights separately from metadata().
+        collider=np.zeros_like(graph['reactant'])
+        for j,reaction in enumerate(gas.reactions()):
+            if reaction.third_body is not None:
+                body=reaction.third_body
+                collider[:,j]=[body.efficiencies.get(s,body.default_efficiency) for s in gas.species_names]
+        np.testing.assert_array_equal(graph['collider'],collider)
+        total=collider.sum(0);normalized=collider.copy()
+        normalized[:,total>0]/=total[total>0]
+        support=gas.reactant_stoich_coeffs+gas.product_stoich_coeffs+normalized
+        norm=support.sum(1);support[norm>0]/=norm[norm>0,None]
+        np.testing.assert_array_equal(graph['pooling'],support)
+        np.testing.assert_array_equal(graph['active'],active)
         np.testing.assert_array_equal(audit['source_indices'],ids)
         for j in np.linspace(0,len(ids)-1,32,dtype=int):
             x=train['states'][j];gas.set_unnormalized_mass_fractions(x[2:]);gas.TP=x[0],x[1]

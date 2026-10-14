@@ -79,3 +79,13 @@ def test_registered_factorial_and_work():
     assert plan['fit_rows']%plan['batch_size']==0
     assert plan['batches']*plan['batch_size']==600000
     assert not plan['confirmation_access']
+
+
+def test_common_architecture_weights_paired():
+    torch=pytest.importorskip('torch')
+    from benchmarks.offline_accuracy.paper_baseline.reaction_attention.model import ReactionHead
+    gas,_=problem();graph=metadata(gas,gas.species_names)
+    cfg=dict(seed=20261011,width=32,heads=2,arm='pool-affinity')
+    a=ReactionHead(cfg,graph);b=ReactionHead(dict(cfg,arm='attention-affinity'),graph)
+    for key,value in a.state_dict().items():
+        torch.testing.assert_close(value,b.state_dict()[key],rtol=0,atol=0)

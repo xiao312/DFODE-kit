@@ -51,6 +51,12 @@ GPU neural work uses the pinned environment; chemistry feature construction uses
 one CPU thread. Feature computation is included in inference cost, not hidden by
 a cache. Finiteness/axis failures stop execution; no clipping/normalization fallback.
 
+Limit: reaction tokens average prepared participant covariates. This is a compact
+first model, not a lossless representation of every reactant. Attention cannot
+recover information removed by that averaging. Negative results apply to this
+specific recipe. Neural fitting has a per-fit deadline and finite update count;
+the controller monitors GPU contention, not a separate whole-worker deadline.
+
 ## Verification
 
 `python -m pytest tests/test_reaction_attention.py -q`

@@ -18,9 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
-    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features","EXP-20261013-species-heads","EXP-20261013-element-projection","EXP-20261013-bounded-base-screen","EXP-20261013-strict-consensus-screen","EXP-20261013-consensus-distill","EXP-20261013-consensus-gpu","EXP-20261013-consensus-gpu-checked","EXP-20261013-interval-readout"])
-    # Extend admission only; scientific scoring and isolation remain protected.
-    p._option_string_actions['--experiment'].choices.append('EXP-20261014-reaction-attention')
+    p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features","EXP-20261013-species-heads","EXP-20261013-element-projection","EXP-20261013-bounded-base-screen","EXP-20261013-strict-consensus-screen","EXP-20261013-consensus-distill","EXP-20261013-consensus-gpu","EXP-20261013-consensus-gpu-checked","EXP-20261013-interval-readout","EXP-20261014-reaction-attention"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
     campaign=read_json(project/"research/campaign.json");lock=verify_evaluator_lock(project)
