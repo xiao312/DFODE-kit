@@ -1,5 +1,22 @@
 # Signed-increment research results
 
+## October14: reaction structure and affinity implementation
+
+Registered `EXP-20261014-reaction-attention`: fixed stoichiometric pooling versus
+small two-head cross-attention, each without/with reaction affinity. The same
+frozen bases and physical contract apply. This is a factorial architecture/input
+test, not an LLM or a hard thermodynamic guarantee. Implementation and prechecks
+do not establish improved accuracy. See the module README and experiment manifest.
+
+The preceding interval-readout trial is complete and rejected. Development
+acceptance was67.03/67.44% for point supervision and64.45/64.78% for interval
+supervision, versus68.30/68.80% for the base. Its four fits, state-only replay,
+protected scores and independent reconstruction were verified; the supplement
+checked loss denominators and raw logits. An interval objective did not preserve
+base successes in this affine recipe. This is not a proof against every interval
+method. Review `fd324636a74191eacfea254087fdbf09afa0124f4bc60e36813f04835b504d43`;
+supplement `bd4fb4f3dab6b0844f8d384a4f5be205265e8c869f9346465fb1d6d42cab331b`.
+
 ## Latest: strict consensus meets the current development gates
 
 The checked GPU implementation is **development-qualified, pending supervisor

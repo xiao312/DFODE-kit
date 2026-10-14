@@ -1,0 +1,20 @@
+{
+ "experiment_id":"EXP-20261014-reaction-attention","status":"REGISTERED",
+ "hypothesis":"Reaction-channel affinity and input-dependent species-to-reaction attention improve transferable corrections beyond fixed stoichiometric pooling.",
+ "evidence":["Species-derived distances improved local diagnostic transfer, but trained RBF and species-head recipes did not beat the base.","Species-level kinetic summaries failed; individual reaction connectivity and affinity have not been tested.","Mechanism rank54 equals elemental-nullspace dimension: do not attribute gains to an extra linear conservation restriction."],
+ "parent_run":"runs/offline-accuracy/consensus-distill-20261013",
+ "parent_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "selection":"reaction_attention","selection_seed":20261013,"fit_rows":20000,
+ "seeds":[20261011,20261012],"arms":["pool-state","pool-affinity","attention-state","attention-affinity"],
+ "batches":3000,"batch_size":200,"diagnostics_every_updates":1000,
+ "learning_rate":0.001,"final_learning_rate":0.00001,"width":32,"heads":2,
+ "objective":"Unchanged coordinate SmoothL1 beta=log(1.1), frozen continued GBCT and fixed-asinh decoder s1e-14. Adam cosine, no clipping, weight decay, dropout, gate, checkpoint selection or output projection. Final3000 only.",
+ "architecture":"Stoichiometric reactant/product/collider pooling of prepared species-Y and base-output covariates, T/P global context, optional train-standardized asinh affinity; 32-wide reaction/species identity tokens. Pool controls use normalized positive structural weights. Attention adds learned query/key two-head logits to log structural prior. Both share value projection, residual normalization/FFN and zero scalar species readout. All species modules apply jointly. No reaction-extent outputs or conservation guarantee.",
+ "control":"2x2 affinity versus aggregation factor. Shared available mechanism metadata and initial random tensors. Attention introduces extra query/key parameters, reported explicitly; architecture effect includes these parameters. No equal-capacity claim. Separate attention-free arms test whether added affinity alone helps.",
+ "exposure":"First20k of immutable common50k excluding union of both U populations and old10k fits. Both seeds share physical row IDs. All new scalers use only20k. Base/preprocessing exposure broader and recorded. Full U20k and D1023 repeatedly inspected; no independent confirmation.",
+ "prechecks":"Pinned mechanism/species order; E*S=0; reactant/product/collider orientation; finite affinity equals -S.T*mu/RT; irreversible flags; positive pooling support; train-only scaling; same initialization per factor; exact zero-head anchor and state-only saved replay; evaluator lock and clean source.",
+ "evaluation":"Full candidate-training20k, required U20k and D1023 per seed. Protected all-gate score plus independent physical counts, signed reconstruction, source/order/exposure checks, live end-to-end latency including Cantera thermodynamics. No training-loss or attention-weight causal claim.",
+ "outcomes":{"affinity_win":"Check matched arms and all physical guards; retain as information evidence only if transfer holds.","attention_win":"Support this attention recipe, but distinguish extra capacity. Require all gates for qualification.","training_only":"Reject candidate; inspect attention transfer and damage without widening blindly.","both_fail":"Close initial chemistry-token recipe, not all reaction-aware models; inspect information loss in aggregation before another fit."},
+ "resources":{"maximum_fit_seconds":1800,"maximum_worker_seconds":8000,"gpu_workers":1,"cpu_threads":1},
+ "run":"runs/offline-accuracy/reaction-attention-20261014","confirmation_access":false
+}

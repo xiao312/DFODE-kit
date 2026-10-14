@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "INTERVAL_READOUT_REGISTERED",
-  "active_experiment": "EXP-20261013-interval-readout",
+  "stage": "REACTION_ATTENTION_IMPLEMENTED_PENDING_PRECHECK",
+  "active_experiment": "EXP-20261014-reaction-attention",
   "active_jobs": [],
   "incumbent": "continued-gbct-two-seed",
   "fixed_anchor": "continued-gbct-two-seed",
@@ -50,7 +50,7 @@
     "allocation_note": "Not instrumented; recorded training/worker wall times are not GPU allocation time.",
     "caps": "Owner removed aggregate/time caps. Finite work is fixed per experiment."
   },
-  "next_action": "Execute registered interval-readout point/interval comparison after GPU admission and focused tests. Input-cell audit complete64/64 with1856qualifiedpairedcomponents, zeroincompatibility; independent boundaries passed. No current job. Strict checked GPU consensus pending authorized promotion; incumbent unchanged.",
+  "next_action": "Interval-readout completed and independently rejected (review fd324636 plus supplement bd4fb4f3). New reaction_attention 2x2 affinity/attention implementation requires pinned-server tests and idle-GPU admission before fitting. SSH restored using existing VPN; GPUs0/1 occupied at discovery, do not disturb. Inspect actual leases/process identity before launch. Prior strict consensus remains pending authorized promotion, incumbent unchanged.",
   "resume_rule": "Read run active-job.json and lease files. Match PID plus start ticks before work. Retain completed leases as provenance; do not repeat completed fits.",
   "m0": "Real-array counts reproduced for all six seed/population pairs; known MSE and Smooth L1 regressions rejected.",
   "isolation": "Bubblewrap state-only inference; read-only source/model/environment; no host home, references or network. Trusted controller remains outside.",

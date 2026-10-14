@@ -356,6 +356,14 @@ initial-rate formulas. Its separate state-only inference worker receives the
 private mechanism and frozen weights/scaler, not reference arrays. The trusted
 review process scores full saved outputs. No production dependency is added.
 
+`reaction_attention` reuses `gradient_probe.run` admission, guarded Bubblewrap
+workers and `correction_scaling.train`. Its `chemistry` module extracts separate
+reactant/product/collider matrices and state-only affinities; `model` builds fixed
+pooling or small transformer-style cross-attention corrections. `prepare` separates
+training labels from inference states; `review` uses the unchanged protected scorer
+and independent counts. See its README for the factorial comparison and cost rules.
+There is no production dependent or implied thermodynamic output guarantee.
+
 `consensus_distill` uses the same guarded controller to stage common50k teacher
 fractions, then calls the existing correction trainer through explicit decoder
 callbacks. Its inference uses one frozen base plus a small hidden-feature head
