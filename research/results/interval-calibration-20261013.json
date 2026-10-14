@@ -1,0 +1,1042 @@
+{
+  "experiment": "EXP-20261013-interval-calibration",
+  "source": "7f95dcff",
+  "review_sha256": "14baf8946b9df28ff5e8526d64188ecfd9e3beb057a6a1068ee689ae048771f8",
+  "status": "VALID_NEGATIVE",
+  "incumbent_changed": false,
+  "latency_ratios": {"smooth_l1":[1.3800022388163158,1.379169932478012,1.3872773648654144,1.325842152995338],"interval":[1.3922525550903828,1.3621131687450225,1.396869494317111,1.3145841521612902]},
+  "rule": "abs(prediction-reference) <= 1e-15 + 0.1*abs(reference)",
+  "population_note": "T=50000 candidate-training states; U=20000 candidate-unseen/base-seen states; D=1023 repeated development states; nominal labels; no independent confirmation",
+  "table": [
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7217024137931034,
+      "base": 0.7217472413793103,
+      "repaired": 8252,
+      "damaged": 8382,
+      "damage_rate": 0.004004649636155938,
+      "p99": 12.048625946279012,
+      "nontrivial": 0.7140336429751678,
+      "weak": 0.5156035228834699,
+      "active": 0.725793440527081,
+      "sign_errors": 42106,
+      "negative": 5081
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7222168965517242,
+      "base": 0.7217472413793103,
+      "repaired": 9716,
+      "damaged": 8354,
+      "damage_rate": 0.003991272137967872,
+      "p99": 12.037120723448512,
+      "nontrivial": 0.7145705406253149,
+      "weak": 0.5157944305859594,
+      "active": 0.7263508429863648,
+      "sign_errors": 42296,
+      "negative": 21440
+    },
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7221793103448276,
+      "base": 0.7224068965517242,
+      "repaired": 3203,
+      "damaged": 3467,
+      "damage_rate": 0.004137271000200479,
+      "p99": 12.03647868385156,
+      "nontrivial": 0.7145504115336261,
+      "weak": 0.5173844361826044,
+      "active": 0.7262026790639778,
+      "sign_errors": 16500,
+      "negative": 2036
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.722269827586207,
+      "base": 0.7224068965517242,
+      "repaired": 3466,
+      "damaged": 3625,
+      "damage_rate": 0.004325816952906471,
+      "p99": 12.02580683270242,
+      "nontrivial": 0.7146465725713105,
+      "weak": 0.51736847983916,
+      "active": 0.7263054661014952,
+      "sign_errors": 16588,
+      "negative": 8496
+    },
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6833181649644386,
+      "base": 0.6829642363568948,
+      "repaired": 188,
+      "damaged": 167,
+      "damage_rate": 0.0041211164030303775,
+      "p99": 18.309017197427924,
+      "nontrivial": 0.6689630681818182,
+      "weak": 0.4388318863456985,
+      "active": 0.6856185380528952,
+      "sign_errors": 1048,
+      "negative": 284
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6830147975865439,
+      "base": 0.6829642363568948,
+      "repaired": 187,
+      "damaged": 184,
+      "damage_rate": 0.004540631246452632,
+      "p99": 18.308683111556743,
+      "nontrivial": 0.668643465909091,
+      "weak": 0.43830570902394106,
+      "active": 0.685313886403016,
+      "sign_errors": 1057,
+      "negative": 682
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7229255172413793,
+      "base": 0.7230131034482759,
+      "repaired": 9036,
+      "damaged": 9290,
+      "damage_rate": 0.0044306918651734264,
+      "p99": 11.986855954766115,
+      "nontrivial": 0.7153529399409545,
+      "weak": 0.5112293257301772,
+      "active": 0.7274189157701296,
+      "sign_errors": 41912,
+      "negative": 1159
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7234679310344828,
+      "base": 0.7230131034482759,
+      "repaired": 8617,
+      "damaged": 7298,
+      "damage_rate": 0.003480644696666918,
+      "p99": 11.977133296483446,
+      "nontrivial": 0.7159114979286363,
+      "weak": 0.5116694413083552,
+      "active": 0.7279844750215101,
+      "sign_errors": 42152,
+      "negative": 6132
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7227241379310345,
+      "base": 0.7227474137931035,
+      "repaired": 3699,
+      "damaged": 3726,
+      "damage_rate": 0.004444248300605806,
+      "p99": 11.889818382072894,
+      "nontrivial": 0.7151409688689112,
+      "weak": 0.5140822531605057,
+      "active": 0.7269829450934745,
+      "sign_errors": 16469,
+      "negative": 469
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7227362068965517,
+      "base": 0.7227474137931035,
+      "repaired": 3128,
+      "damaged": 3141,
+      "damage_rate": 0.003746479847612141,
+      "p99": 11.882040216811054,
+      "nontrivial": 0.7151489797280758,
+      "weak": 0.5140982557209154,
+      "active": 0.7269904852566247,
+      "sign_errors": 16552,
+      "negative": 2460
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6874473320524489,
+      "base": 0.688003505578589,
+      "repaired": 180,
+      "damaged": 213,
+      "damage_rate": 0.005217774729312626,
+      "p99": 17.281682999717013,
+      "nontrivial": 0.6733309659090909,
+      "weak": 0.43935806366745594,
+      "active": 0.6902644757135513,
+      "sign_errors": 1073,
+      "negative": 113
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6873125021067179,
+      "base": 0.688003505578589,
+      "repaired": 143,
+      "damaged": 184,
+      "damage_rate": 0.004507373475086963,
+      "p99": 17.285230344115014,
+      "nontrivial": 0.6732421875,
+      "weak": 0.4388318863456985,
+      "active": 0.6902073535291989,
+      "sign_errors": 1074,
+      "negative": 330
+    }
+  ],
+  "slices": [
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 614223,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 983306,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 348588,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 138568,
+          "damaged": 8382,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 531717,
+          "damaged": 2233,
+          "repaired": 2119
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 522315,
+          "damaged": 2088,
+          "repaired": 2096
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 522707,
+          "damaged": 2066,
+          "repaired": 2061
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 516198,
+          "damaged": 1995,
+          "repaired": 1976
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 614223,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 983306,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 348588,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 138596,
+          "damaged": 8354,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 532099,
+          "damaged": 2217,
+          "repaired": 2485
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 522774,
+          "damaged": 2062,
+          "repaired": 2529
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 523058,
+          "damaged": 2004,
+          "repaired": 2350
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 516498,
+          "damaged": 2071,
+          "repaired": 2352
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 245341,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 394336,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 139290,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 55558,
+          "damaged": 3467,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 211465,
+          "damaged": 929,
+          "repaired": 847
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 209453,
+          "damaged": 858,
+          "repaired": 828
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 208830,
+          "damaged": 861,
+          "repaired": 807
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 207980,
+          "damaged": 819,
+          "repaired": 721
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 245341,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 394336,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 139290,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 55400,
+          "damaged": 3625,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 211461,
+          "damaged": 986,
+          "repaired": 900
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 209442,
+          "damaged": 920,
+          "repaired": 879
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 208852,
+          "damaged": 882,
+          "repaired": 850
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 208078,
+          "damaged": 837,
+          "repaired": 837
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "smooth_l1",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 11036,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 19057,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 7312,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2951,
+          "damaged": 167,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20550,
+          "damaged": 84,
+          "repaired": 99
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19994,
+          "damaged": 83,
+          "repaired": 89
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "interval",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 11036,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 19057,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 7312,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2934,
+          "damaged": 184,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20541,
+          "damaged": 91,
+          "repaired": 97
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19985,
+          "damaged": 93,
+          "repaired": 90
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 616812,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 987564,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 346694,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 136378,
+          "damaged": 9290,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 530449,
+          "damaged": 2439,
+          "repaired": 2396
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 524141,
+          "damaged": 2332,
+          "repaired": 2297
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 523838,
+          "damaged": 2268,
+          "repaired": 2178
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 518056,
+          "damaged": 2251,
+          "repaired": 2165
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 616812,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 987564,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 346694,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 138370,
+          "damaged": 7298,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 530779,
+          "damaged": 1986,
+          "repaired": 2273
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 524455,
+          "damaged": 1866,
+          "repaired": 2145
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 524295,
+          "damaged": 1739,
+          "repaired": 2106
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 518528,
+          "damaged": 1707,
+          "repaired": 2093
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 246566,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 395094,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 138683,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 54318,
+          "damaged": 3726,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 211853,
+          "damaged": 966,
+          "repaired": 987
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 210014,
+          "damaged": 950,
+          "repaired": 922
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 209061,
+          "damaged": 886,
+          "repaired": 896
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 207432,
+          "damaged": 924,
+          "repaired": 894
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 246566,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 395094,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 138683,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 54903,
+          "damaged": 3141,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 211798,
+          "damaged": 817,
+          "repaired": 783
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 210040,
+          "damaged": 786,
+          "repaired": 784
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 209050,
+          "damaged": 763,
+          "repaired": 762
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 207486,
+          "damaged": 775,
+          "repaired": 799
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "smooth_l1",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11170,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 19203,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 7159,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 3077,
+          "damaged": 213,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20651,
+          "damaged": 105,
+          "repaired": 105
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 20138,
+          "damaged": 108,
+          "repaired": 75
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "interval",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11170,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 19203,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 7159,
+          "damaged": 0,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 3106,
+          "damaged": 184,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20645,
+          "damaged": 91,
+          "repaired": 85
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 20136,
+          "damaged": 93,
+          "repaired": 58
+        }
+      }
+    }
+  ],
+  "decisions": {
+    "smooth_l1": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    },
+    "interval": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "wrong_sign",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "wrong_sign",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "wrong_sign",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "wrong_sign",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "negative_endpoints"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    }
+  }
+}

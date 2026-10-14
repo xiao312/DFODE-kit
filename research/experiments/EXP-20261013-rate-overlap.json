@@ -1,0 +1,13 @@
+{
+ "experiment_id":"EXP-20261013-rate-overlap","status":"REGISTERED",
+ "question":"Do raw initial-rate estimates contain repairs of GBCT failures that the kinetic-feature learner fails to retain?",
+ "parent_run":"runs/offline-accuracy/kinetic-features-20261013",
+ "review_sha256":"34325bdcbe69d841f0107d6a959f011fb121f6222534184b10e17b6deed036d1",
+ "populations":["fitting20k","check20k"],"seeds":[20261011,20261012],
+ "groups":"Fixed floor/weak/active target regimes crossed with base-pass and either raw-rate-pass. These are outcome-based descriptive partitions, not causal strata or inference routing rules.",
+ "measurements":"Component and distinct-state counts, learned-arm pass/repair/damage within partitions, raw-rate oracle union coverage. Keep numerator and denominator. No query-reference rule is deployed.",
+ "decision":"Little extra raw-rate coverage weakens a rate-answer route; substantial coverage not recovered suggests learning/feature-use difficulty. This cannot prove absence of nonlinear feature information or causal mechanism.",
+ "resources":{"cpu_threads":1,"gpu_fits":0},
+ "output":"runs/offline-accuracy/kinetic-features-20261013/rate-overlap.json",
+ "confirmation_access":false
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "seed": 20261012,
+  "hidden_widths": [800, 800, 800, 800],
+  "activation": "gelu",
+  "loss": "l1",
+  "updates": 2000,
+  "batch_size": 256,
+  "learning_rate": 0.001,
+  "final_learning_rate": 0.00001,
+  "validation_every": 500,
+  "checkpoint_selection": "final",
+  "pressure_bounds_Pa": [96258.75, 106391.25],
+  "targets": ["state-boxcox", "signed-power", "budget-linear", "scaled-asinh"],
+  "precisions": ["float32"],
+  "training_sizes": [2000, 10000],
+  "wall_seconds": 3400,
+  "maximum_variant_seconds": 400,
+  "selection": "Fixed final update, no evaluation-based selection; retain both seeds"
+}

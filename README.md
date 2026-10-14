@@ -13,6 +13,34 @@ In practice, DFODE-kit sits between:
 - DeepFlame documentation: https://deepflame.deepmodeling.com/en/latest/
 - DeepFlame source: https://github.com/deepmodeling/deepflame-dev
 
+## Precision-conditioning research review
+
+Latest results: [local predictability diagnostic (2026-10-13)](research/RESULTS.md).
+Nearby states contain some correction signal, but transferring their corrections
+damages too many accurate predictions. This diagnostic and the earlier twelve
+GPU fits produced no promoted candidate. Continued GBCT bases remain incumbents.
+The [contract index](research/README.md) links the mission, evaluator, evidence
+ledger and restart state. The HTML below retains the earlier baseline campaign,
+not these newer correction results.
+
+1. [Earlier baseline results and visuals](https://xiao312.github.io/DFODE-kit/flame-conditioning/):
+   acceptance/tolerance/cost plots, method diagrams, and train/development scores.
+2. [Method catalogue and flowcharts](docs/research-method-catalogue.md):
+   canonical names, target formulas and complete recipe steps.
+3. [Accuracy definitions and next-run protocol](docs/agents/representation-accuracy-success-sources.md#required-dual-scaling-protocol-for-later-runs):
+   state-based versus increment-based scaling, and the required paired comparison.
+
+The research remains experimental. The paired GPU comparison and the first
+reduced-data Fuel source-recipe fits are complete. The larger Fuel recipe
+campaign has separate reference and data-identity gates. See the live review
+for measured results; existing reports retain their original scoring rules.
+
+Keep reproducible experiment evidence and active environments under `runs/`.
+Disposable transfer files and superseded exports can be moved to the ignored
+project-root `.trash/`, with original relative paths and checksum manifests.
+Do not trash reference data, model checkpoints, active report source or shared
+environments merely because a newer run exists. No automatic purge is configured.
+
 ## What DFODE-kit does
 
 DFODE-kit currently supports the core workflow below:

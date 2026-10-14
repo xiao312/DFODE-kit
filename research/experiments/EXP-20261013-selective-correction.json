@@ -1,0 +1,22 @@
+{
+ "experiment_id":"EXP-20261013-selective-correction","status":"REGISTERED",
+ "hypothesis":"Permitted state and frozen-prediction features can distinguish repair from damage better than species-only selection, without changing the correction itself.",
+ "evidence":["correction-transfer frozen SmoothL1 repairs and damage","EXP-20261013-conditional-calibration"],
+ "alternatives":"Useful and harmful changes are not separable by an affine gate; fitting/calibration selection does not transfer; empirical safety removes all useful selections.",
+ "parent_run":"runs/offline-accuracy/local-function-20261013","parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+ "seeds":[20261011,20261012],"arms":["intercept","affine"],
+ "selection":"correction_unseen_pool","selection_seed_offset":701,
+ "worker_module":"benchmarks.offline_accuracy.paper_baseline.selective_correction.worker",
+ "batches":2000,"batch_size":1000,"fit_rows":20000,"calibration_rows":10000,"check_rows":20000,
+ "selection_rule":"Seeded permutation of bound200k positions excluding first10k correction training and fixedU20k; first50k split20k/10k/20k. No development access. All species of each state stay in its role.",
+ "frozen_correction":"Bound historical coordinate-sl110k head, weights and preprocessing verified by bindings; original continued GBCT base",
+ "features":"Frozen119 prepared state/base features plus each output's correction coordinate and its absolute value. Correction coordinates divided by fitting-only RMS floored at1e-6. No reference features.",
+ "changed_factor":"Species intercept-only versus species affine gate with7076 coefficients; same zero initialization, batches, BCE discordant-component objective and optimizer",
+ "fit":"2000updates,batch1000,freshAdam foreach=false,cosine1e-3 to1e-4,FP32 gate/FP64 BCE,mean over discordant components; no class balancing or checkpoint selection. Same-status components still included in final scoring.",
+ "selection_policy":"Compare predicted probability of repair conditional on a pass-status change with one global threshold. Calibrate on fixed101 thresholds0..1 plus always-base1.01. Maximize calibration net passes subject to damage<=1%, nontrivial pass count and nontrivial sign errors no worse than base. Ties: fewer replacements then larger threshold. No statistical safety claim.",
+ "validity_guard":"Before either gate can select correction, require initialY+correctedDelta>=0 for that component. This label-free endpoint constraint is declared for both arms; retain raw correction results and blocked counts. No clipping or conservation projection.",
+ "evaluation":"Training-only check20k fixed before fitting; report full physical score, same-status tails, species/snapshot,repair/damage,signs,negative endpoints,mass/element residuals where matrix available. No full campaign qualification or latency claim.",
+ "advance_rule":"Affine exceeds base and intercept by0.005 on check in both seeds, no nontrivial decline, damage<=0.02, no increased sign/negative counts, global/weakp99<=1.05. Then register full-U/D candidate. Otherwise reject this gate recipe and inspect discrimination before any related trial.",
+ "resources":{"gpu_workers":1,"cpu_threads":1,"maximum_worker_seconds":600},
+ "run":"runs/offline-accuracy/selective-correction-20261013","confirmation_access":false
+}

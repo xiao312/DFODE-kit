@@ -1,0 +1,34 @@
+{
+  "archive_sha256": "1132e87d58ab5ad69561a4714300c72c83a9615088940cf70d17c57fac3f4f30",
+  "upstream_manifest": {
+    "prepared_date": "2026-10-13",
+    "status": "proposed_starter_kit_not_deployed",
+    "test_scope": "22 synthetic reference-scorer unit tests; no repository GPU experiments rerun",
+    "environment": {
+      "python": "3.13.5",
+      "numpy": "2.3.5"
+    },
+    "files": {
+      "AGENTS.research.md": "fc2c15307470d23b06c68845fc44bfebd2295e48d16cb7c35809bcf30a26cb57",
+      "CHARTER.md": "03b4f68201ccf998c5863baa84eb50dd0bb82bea94cc1b6520578661a34d6259",
+      "EVALUATION.md": "e3e381b02f917b8a4fc35fbf380434e3f57403491f95493529ecb77bf0f592cb",
+      "EXPERIMENT.template.json": "c51b840731ea7a293dcadf5409c8c87a74f89d7684a793011f3e2d30b1949202",
+      "OPERATING_PROTOCOL.md": "be24e3abc5f1dbbd9bd5f24b8e30528deccd772f1d44f00ef4a07efd8191b147",
+      "README.md": "4e1ea7abe286b83ec0fb764be7d62c23b3dd62fb1513ca5a7b51dd7b1a97bdc0",
+      "SOURCES.md": "a36c507201acdc88e051e47a4b0f8346bf8945b115725cfeac6ab8cfd609d08a",
+      "START_AGENT.md": "ceab75079fb10666bb9e2129a93774e30d8fee6da36f042875bf153a9151b159",
+      "campaign.proposed.json": "bbcdc65859c2e5b5d58b96fbd6bad0a8635e3dd2dad5b15eaf3360134a967372",
+      "evidence_seed.json": "50a0f29ec78a713483414949a8d8ec9aaa2b4f71fb47503d2d479e1dfbda9f9a",
+      "metrics_reference.py": "8b35c6ea298d9167355429245f6633ec557cf886682fbd6f8921cdea653643b3",
+      "test-results.txt": "7c5bb8c464884262ee4582dc523e07ed74ec9ce7fa18dcc597d8bc968e77740f",
+      "test_metrics_reference.py": "cd416c35e0b5af4fdbbdfd5806d14ed3b0c21b933142e1f2fcf20485548e1591"
+    }
+  },
+  "verified_file_hashes": 13,
+  "synthetic_tests_passed": 22,
+  "changes": [
+    "Paths and imports adapted",
+    "Per-fit task budget ambiguity made explicit; execution remains unapproved",
+    "Public source assertions in supplied SOURCES.md not independently reverified"
+  ]
+}

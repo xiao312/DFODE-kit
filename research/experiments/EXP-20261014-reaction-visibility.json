@@ -1,0 +1,23 @@
+{
+ "experiment_id":"EXP-20261014-reaction-visibility","status":"REGISTERED",
+ "hypothesis":"Hard reaction support excludes useful global state context from each species query. A fixed weak global prior improves transfer at matched parameter count and work.",
+ "evidence":["Raw per-query ranks46-56 of59 Y coordinates and45-55 of58 base coordinates; training variance outside spans is nonzero. This is not proof of physically relevant ambiguity.","Short attention beat pooling12/12 aggregate comparisons. Fourfold work gives only small acceptance gains and worse tails; no candidate qualifies."],
+ "parent_run":"runs/offline-accuracy/consensus-distill-20261013",
+ "parent_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "selection":"reaction_attention","selection_seed":20261013,"fit_rows":20000,
+ "seeds":[20261011,20261012],"arms":["attention-state","attention-global"],
+ "batches":3000,"batch_size":200,"diagnostics_every_updates":1000,
+ "learning_rate":0.001,"final_learning_rate":0.00001,"width":32,"heads":2,
+ "global_prior_mass":0.1,
+ "changed_factor":"Attention prior: local structural weights versus0.9*structural+0.1/number_of_reactions. The10% mass is one prospectively fixed choice, not optimized against development. No floor sweep.",
+ "fixed":"State-only inputs, train rows, frozen bases/scalers, every trainable parameter and initialization, architecture, objective, update count, batch stream, cosine schedule, fixed decoder and evaluator. Both heads22561 parameters. No affinity in inference. Local control repeats to verify unchanged semantics after extension.",
+ "objective":"Coordinate SmoothL1 beta=log(1.1), fixed-asinh correction s1e-14, frozen continuedGBCT. Final3000-update checkpoint only, no clipping, projection, conservation correction, early selection or routing.",
+ "exposure":"First20k of the immutable common50k. Broader base exposure recorded. Full required U20k and D1023 remain development, never independent confirmation.",
+ "prechecks":"Exact initial state_dict and trainable parameter count equality; local weights zero off-support; global prior positive and normalized; state-only/no-affinity invariance; replay, data axes and full protected scores. Compare repeated local control to original for exact predictions.",
+ "historical_control_run":"runs/offline-accuracy/reaction-attention-20261014-retry1",
+ "historical_control_review_sha256":"e8220d934a5a204840eb3a99e31de6580d21c8850939867e0bbc9f35f9797292",
+ "evaluation":"Matched physical acceptance, repair/damage, sign/tails/negativity and end-to-end latency on full populations and both seeds. Baseline and gates unchanged. A global-arm win below GBCT or over cost limit is diagnostic evidence, not promotion.",
+ "outcomes":{"global_win":"Support global context under this prior, not universal advantage or verified latent information recovery.","same_or_worse":"Do not attribute residual failures to hard visibility from rank alone; close this one-choice visibility test instead of tuning the mass.","training_only":"Record transfer failure; no automatic capacity increase."},
+ "resources":{"maximum_fit_seconds":1800,"gpu_workers":1,"cpu_threads":1},
+ "run":"runs/offline-accuracy/reaction-visibility-20261014","confirmation_access":false
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "EXP-20261013-diversity",
+  "status": "APPROVED_PENDING_PRECHECKS",
+  "hypothesis_id": "H-correction-diversity",
+  "question": "Can broader existing training support reduce correction overfitting without exposing fixed evaluation states?",
+  "evidence": [
+    "EXP-20261013-hidden-features: larger heads improve T but harm U/D",
+    "EXP-20261013-preservation: restraint alone does not transfer enough",
+    "EXP-20261013-linear: less complexity reduces transfer gap but fails to repair enough"
+  ],
+  "changed_factor": "Distinct candidate-training states: 10k to 50k, explicitly excluding fixed U",
+  "arms": [
+    {
+      "id": "S",
+      "input_features": 119,
+      "widths": [
+        256,
+        256,
+        256
+      ],
+      "head_parameters": 177210
+    }
+  ],
+  "fixed": [
+    "continued_base_checkpoint_per_seed",
+    "prepared_reference_version",
+    "decoder",
+    "coordinate_smooth_l1_beta_log1p_0.1",
+    "acceptance_rule",
+    "optimizer_schedule",
+    "final_checkpoint_policy",
+    "original_10000_prefix_preserved",
+    "all_U_and_D_rows_unchanged_and_excluded"
+  ],
+  "paired_seeds": [
+    20261011,
+    20261012
+  ],
+  "budget": {
+    "updates": 6000,
+    "batch_size": 10000,
+    "row_presentations": 60000000,
+    "match_type": "updates_and_presentations_not_equal_compute",
+    "fit_wall_limit_s": null
+  },
+  "controls_note": "Reuse verified A at10k. Match6000 updates x10000 rows, not epochs or wall time. No new reference labels.",
+  "outcome_predictions": {
+    "unseen_gain_with_preservation": "Support correction diversity under matched work; all fixed gates still required.",
+    "fitting_and_transfer_poor": "More diversity at this work did not repair the method; no automatic size progression.",
+    "training_still_improving": "Consider a separately declared matched optimization-budget diagnostic, not a capacity sweep."
+  },
+  "promotion_policy": "../campaign.json",
+  "protected_binding_hashes": "../evaluator-lock.json",
+  "execution_authorization_id": "owner-20261013-resource-caps-removed",
+  "outputs": {
+    "manifest": "immutable JSON",
+    "predictions": "aligned arrays, no references supplied to inference",
+    "metrics": "trusted evaluator JSON",
+    "review": "evidence-qualified narrative and deterministic decision"
+  },
+  "decision": null,
+  "selection": {
+    "pool": "existing pinned200k prepared training",
+    "rows": 50000,
+    "rule": "Original ordered prefix after removing all fixed20k U indices; includes original10k",
+    "uses_candidate_errors": false,
+    "uses_development_labels": false,
+    "calibration": "unchanged original50k"
+  }
+}

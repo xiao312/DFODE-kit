@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "target": "budget-linear",
+  "precision": "float64",
+  "parent_temperature_K": 1400,
+  "interval_s": 0.000001,
+  "narrow_rows": 8,
+  "hidden_widths": [64, 64],
+  "seed": 20261008,
+  "learning_rate": 0.001,
+  "updates": 5000,
+  "snapshots": [200, 5000],
+  "losses": ["coordinate", "physical-budget"],
+  "wall_time_seconds": 3600
+}

@@ -1,0 +1,15 @@
+{
+  "experiment_id": "EXP-20261014-reaction-attention",
+  "retry_number": 1,
+  "reason": "Preflight failed before any fit because a host CUDA index was invalid behind the single-device mount.",
+  "owner_authorization": "2026-10-14: owner approved narrow protected GPU-binding repair and integrity-lock update, then execution.",
+  "scientific_plan_canonical_sha256": "bc063f238e8376336474b8dcc3e2b983765f1cae9c5dafa0ab4c0a1c494bbc55",
+  "previous_output": "runs/offline-accuracy/reaction-attention-20261014",
+  "output": "runs/offline-accuracy/reaction-attention-20261014-retry1",
+  "previous_sandbox_sha256": "4dfc6385763b68d0eb86ad4264697db20e9348fbfb9dfbbf53a7e50d7a88eef5",
+  "repaired_sandbox_sha256": "5c26067643819db7e63f124a5c20932cda13d2dc258c7bcfc5d9c6b5cc2a0da4",
+  "scientific_change": false,
+  "preserved": ["metric", "gates", "data", "seeds", "arms", "updates", "checkpoint policy", "read-only mounts", "label isolation", "network isolation"],
+  "new_lease": "EXP-20261014-reaction-attention-retry1.lease.json",
+  "previous_fits_completed": 0
+}

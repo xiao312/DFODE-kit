@@ -1,0 +1,1347 @@
+{
+  "experiment": "EXP-20261013-local-optimum",
+  "source": "97482e12",
+  "review_sha256": "54d9090e28f63fa0eb3d2687fc823abf861149f2e8167134bcd84f6af156aae5",
+  "status": "VALID_NEGATIVE",
+  "incumbent_changed": false,
+  "rule": "abs(prediction-reference) <= 1e-15 + 0.1*abs(reference)",
+  "population_note": "T=50000 candidate-training states; U=20000 candidate-unseen/base-seen same-source states; D=1023 repeatedly inspected development states; nominal references, no independent confirmation",
+  "table": [
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7176113793103448,
+      "base": 0.7217472413793103,
+      "repaired": 40644,
+      "damaged": 52638,
+      "damage_rate": 0.025148741057978555,
+      "p99": 12.24287423303443,
+      "nontrivial": 0.7099118498082229,
+      "weak": 0.5159726111082829,
+      "active": 0.7214054989751413,
+      "sign_errors": 41613,
+      "negative": 29344
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7116503448275862,
+      "base": 0.7217472413793103,
+      "repaired": 59747,
+      "damaged": 89028,
+      "damage_rate": 0.04253471102453959,
+      "p99": 12.458603929393675,
+      "nontrivial": 0.7038422005113345,
+      "weak": 0.513535356106501,
+      "active": 0.7151205788236092,
+      "sign_errors": 41545,
+      "negative": 34505
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7172448275862069,
+      "base": 0.7224068965517242,
+      "repaired": 15622,
+      "damaged": 21610,
+      "damage_rate": 0.025787835683395547,
+      "p99": 12.257538896479735,
+      "nontrivial": 0.7095544894739279,
+      "weak": 0.5168419205054969,
+      "active": 0.7209435661444017,
+      "sign_errors": 16332,
+      "negative": 11817
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7111232758620689,
+      "base": 0.7224068965517242,
+      "repaired": 23298,
+      "damaged": 36387,
+      "damage_rate": 0.04342165557666422,
+      "p99": 12.485044684540297,
+      "nontrivial": 0.7033440891234743,
+      "weak": 0.5141772111502928,
+      "active": 0.7145236198011212,
+      "sign_errors": 16323,
+      "negative": 13721
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.678986752957832,
+      "base": 0.6829642363568948,
+      "repaired": 851,
+      "damaged": 1087,
+      "damage_rate": 0.026824272635293536,
+      "p99": 18.91442818154952,
+      "nontrivial": 0.6645063920454546,
+      "weak": 0.43962115232833465,
+      "active": 0.6807821931110646,
+      "sign_errors": 1033,
+      "negative": 908
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6744193885461961,
+      "base": 0.6829642363568948,
+      "repaired": 1299,
+      "damaged": 1806,
+      "damage_rate": 0.04456728277768181,
+      "p99": 19.741068448012665,
+      "nontrivial": 0.659765625,
+      "weak": 0.43672717705866876,
+      "active": 0.6759077667129991,
+      "sign_errors": 1029,
+      "negative": 1029
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7187868965517241,
+      "base": 0.7230131034482759,
+      "repaired": 41155,
+      "damaged": 53411,
+      "damage_rate": 0.02547337817123551,
+      "p99": 12.180998297847108,
+      "nontrivial": 0.7112009566329028,
+      "weak": 0.5114717082225071,
+      "active": 0.7230071765698605,
+      "sign_errors": 41396,
+      "negative": 30640
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7141068965517241,
+      "base": 0.7230131034482759,
+      "repaired": 59192,
+      "damaged": 85020,
+      "damage_rate": 0.04054869993294346,
+      "p99": 12.39359682069674,
+      "nontrivial": 0.7064163681342134,
+      "weak": 0.5098451941292409,
+      "active": 0.7180359107502257,
+      "sign_errors": 41344,
+      "negative": 34899
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7180353448275862,
+      "base": 0.7227474137931035,
+      "repaired": 16174,
+      "damaged": 21640,
+      "damage_rate": 0.025811468927834043,
+      "p99": 12.092365470520681,
+      "nontrivial": 0.7104377044438016,
+      "weak": 0.5143702992478797,
+      "active": 0.7219857019656263,
+      "sign_errors": 16292,
+      "negative": 12189
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7130844827586207,
+      "base": 0.7227474137931035,
+      "repaired": 23390,
+      "damaged": 34599,
+      "damage_rate": 0.04126853111987662,
+      "p99": 12.306626242749806,
+      "nontrivial": 0.7053695008789693,
+      "weak": 0.5124019843174908,
+      "active": 0.71673492085185,
+      "sign_errors": 16264,
+      "negative": 13783
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6816664981292345,
+      "base": 0.688003505578589,
+      "repaired": 825,
+      "damaged": 1201,
+      "damage_rate": 0.02942041056293175,
+      "p99": 17.60940362279975,
+      "nontrivial": 0.6674183238636363,
+      "weak": 0.43620099973691134,
+      "active": 0.684152401987852,
+      "sign_errors": 1059,
+      "negative": 944
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6775373310412243,
+      "base": 0.688003505578589,
+      "repaired": 1161,
+      "damaged": 1782,
+      "damage_rate": 0.043652932242418306,
+      "p99": 18.28432903460223,
+      "nontrivial": 0.6630859375,
+      "weak": 0.44067350697184954,
+      "active": 0.6791827719491993,
+      "sign_errors": 1067,
+      "negative": 956
+    }
+  ],
+  "latency_ratios": {
+    "global": [
+      2.4917707928987385,
+      2.4386414409033006,
+      2.4892598342353707,
+      2.470814017187489
+    ],
+    "species": [
+      2.4938614353753428,
+      2.4563525994286883,
+      2.4924667243168526,
+      2.436049319385304
+    ]
+  },
+  "decisions": {
+    "global": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:H2",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:C3H7",
+          "species_gain:HONO",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "species_gain:H2",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:C3H7",
+          "species_gain:HONO",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:C2H2",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:C2H2",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:CH2O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:C3H8",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:CH2O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:C3H8",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "inference": [
+          "Inference budget exceeded"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    },
+    "species": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:H",
+          "species_gain:HO2",
+          "species_gain:CH2O",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:H2NO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:H",
+          "species_gain:HO2",
+          "species_gain:CH2O",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:H2NO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "negative_endpoints"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:H",
+          "species_gain:H2O2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:N",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:NCO",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "all_p99",
+          "negative_endpoints"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:H",
+          "species_gain:H2O2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:C2H5",
+          "species_gain:N",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:NCO",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "all_p99",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:HO2",
+          "species_gain:H2O2",
+          "species_gain:CH2O",
+          "species_gain:CH3OH",
+          "species_gain:C2H",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H6",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NH",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:HO2",
+          "species_gain:H2O2",
+          "species_gain:CH2O",
+          "species_gain:CH3OH",
+          "species_gain:C2H",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H6",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NH",
+          "species_gain:NH2",
+          "species_gain:NH3",
+          "species_gain:NO2",
+          "species_gain:HNO",
+          "species_gain:HCN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:C3H8",
+          "species_gain:CH3CHO",
+          "species_gain:N2H2",
+          "species_gain:HONO",
+          "damage",
+          "event:(1e-09, 1e-08)",
+          "negative_endpoints"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:OH",
+          "species_gain:HO2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:CH2OH",
+          "species_gain:CH3O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NH2",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:H2NO",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "all_p99",
+          "negative_endpoints"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain",
+          "nontrivial_gain",
+          "active_increment_gain",
+          "species_gain:H2",
+          "species_gain:OH",
+          "species_gain:HO2",
+          "species_gain:CH3",
+          "species_gain:CH2O",
+          "species_gain:CH2OH",
+          "species_gain:CH3O",
+          "species_gain:CH3OH",
+          "species_gain:C2H2",
+          "species_gain:C2H4",
+          "species_gain:C2H5",
+          "species_gain:CH2CO",
+          "species_gain:N",
+          "species_gain:NH2",
+          "species_gain:NO",
+          "species_gain:NO2",
+          "species_gain:HCN",
+          "species_gain:H2CN",
+          "species_gain:HCNO",
+          "species_gain:NCO",
+          "species_gain:C3H7",
+          "species_gain:CH2CHO",
+          "species_gain:CH3CHO",
+          "species_gain:H2NO",
+          "species_gain:HONO",
+          "species_gain:N2H3",
+          "damage",
+          "all_p99",
+          "negative_endpoints"
+        ],
+        "inference": [
+          "Inference budget exceeded"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    }
+  },
+  "slices": [
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 613607,
+          "damaged": 616,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 980137,
+          "damaged": 3169,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 336459,
+          "damaged": 12129,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 110226,
+          "damaged": 36724,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 529080,
+          "damaged": 13487,
+          "repaired": 10736
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 519105,
+          "damaged": 13229,
+          "repaired": 10027
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 519743,
+          "damaged": 13024,
+          "repaired": 10055
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 513145,
+          "damaged": 12898,
+          "repaired": 9826
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 614223,
+          "base_passes": 614223,
+          "passes": 609688,
+          "damaged": 4535,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 983306,
+          "base_passes": 983306,
+          "passes": 967353,
+          "damaged": 15953,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 348588,
+          "base_passes": 348588,
+          "passes": 323149,
+          "damaged": 25439,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 146950,
+          "base_passes": 146950,
+          "passes": 103849,
+          "damaged": 43101,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 729640,
+          "base_passes": 531831,
+          "passes": 525147,
+          "damaged": 22135,
+          "repaired": 15451
+        },
+        "0.0005": {
+          "components": 724014,
+          "base_passes": 522307,
+          "passes": 514760,
+          "damaged": 22394,
+          "repaired": 14847
+        },
+        "0.001": {
+          "components": 727958,
+          "base_passes": 522712,
+          "passes": 515290,
+          "damaged": 22299,
+          "repaired": 14877
+        },
+        "0.0015": {
+          "components": 718388,
+          "base_passes": 516217,
+          "passes": 508589,
+          "damaged": 22200,
+          "repaired": 14572
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 245056,
+          "damaged": 285,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 393074,
+          "damaged": 1262,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 134404,
+          "damaged": 4886,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 43848,
+          "damaged": 15177,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 210063,
+          "damaged": 5562,
+          "repaired": 4078
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 208045,
+          "damaged": 5303,
+          "repaired": 3865
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 207275,
+          "damaged": 5414,
+          "repaired": 3805
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 206621,
+          "damaged": 5331,
+          "repaired": 3874
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 245341,
+          "base_passes": 245341,
+          "passes": 243417,
+          "damaged": 1924,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 394336,
+          "base_passes": 394336,
+          "passes": 387777,
+          "damaged": 6559,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 139290,
+          "base_passes": 139290,
+          "passes": 128889,
+          "damaged": 10401,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 59025,
+          "base_passes": 59025,
+          "passes": 41522,
+          "damaged": 17503,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211547,
+          "passes": 208505,
+          "damaged": 9075,
+          "repaired": 6033
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 209483,
+          "passes": 206072,
+          "damaged": 9101,
+          "repaired": 5690
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 208884,
+          "passes": 205523,
+          "damaged": 9104,
+          "repaired": 5743
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 208078,
+          "passes": 204803,
+          "damaged": 9107,
+          "repaired": 5832
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "global",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 11029,
+          "damaged": 7,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 19005,
+          "damaged": 52,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 7063,
+          "damaged": 249,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2339,
+          "damaged": 779,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20430,
+          "damaged": 549,
+          "repaired": 444
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19857,
+          "damaged": 538,
+          "repaired": 407
+        }
+      }
+    },
+    {
+      "seed": 20261011,
+      "arm": "species",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11036,
+          "base_passes": 11036,
+          "passes": 10977,
+          "damaged": 59,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19057,
+          "base_passes": 19057,
+          "passes": 18763,
+          "damaged": 294,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7312,
+          "base_passes": 7312,
+          "passes": 6755,
+          "damaged": 557,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3118,
+          "base_passes": 3118,
+          "passes": 2222,
+          "damaged": 896,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20535,
+          "passes": 20297,
+          "damaged": 917,
+          "repaired": 679
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 19988,
+          "passes": 19719,
+          "damaged": 889,
+          "repaired": 620
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 616283,
+          "damaged": 529,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 984495,
+          "damaged": 3069,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 334219,
+          "damaged": 12475,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 108330,
+          "damaged": 37338,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 527589,
+          "damaged": 13704,
+          "repaired": 10801
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 520856,
+          "damaged": 13506,
+          "repaired": 10186
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 520762,
+          "damaged": 13323,
+          "repaired": 10157
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 515275,
+          "damaged": 12878,
+          "repaired": 10011
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "training",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 616812,
+          "base_passes": 616812,
+          "passes": 612963,
+          "damaged": 3849,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 987564,
+          "base_passes": 987564,
+          "passes": 973824,
+          "damaged": 13740,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 346694,
+          "base_passes": 346694,
+          "passes": 322064,
+          "damaged": 24630,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 145668,
+          "base_passes": 145668,
+          "passes": 102867,
+          "damaged": 42801,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 726334,
+          "base_passes": 530492,
+          "passes": 524292,
+          "damaged": 21566,
+          "repaired": 15366
+        },
+        "0.0005": {
+          "components": 725116,
+          "base_passes": 524176,
+          "passes": 517152,
+          "damaged": 21723,
+          "repaired": 14699
+        },
+        "0.001": {
+          "components": 728828,
+          "base_passes": 523928,
+          "passes": 517538,
+          "damaged": 21124,
+          "repaired": 14734
+        },
+        "0.0015": {
+          "components": 719722,
+          "base_passes": 518142,
+          "passes": 511928,
+          "damaged": 20607,
+          "repaired": 14393
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 246340,
+          "damaged": 226,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 393811,
+          "damaged": 1283,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 133628,
+          "damaged": 5055,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 42968,
+          "damaged": 15076,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 210337,
+          "damaged": 5639,
+          "repaired": 4144
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 208635,
+          "damaged": 5435,
+          "repaired": 4028
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 207773,
+          "damaged": 5240,
+          "repaired": 3962
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 206176,
+          "damaged": 5326,
+          "repaired": 4040
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "same_source_unseen",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 246566,
+          "base_passes": 246566,
+          "passes": 245026,
+          "damaged": 1540,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 395094,
+          "base_passes": 395094,
+          "passes": 389258,
+          "damaged": 5836,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 138683,
+          "base_passes": 138683,
+          "passes": 128697,
+          "damaged": 9986,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 58044,
+          "base_passes": 58044,
+          "passes": 40807,
+          "damaged": 17237,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.0001": {
+          "components": 290000,
+          "base_passes": 211832,
+          "passes": 208975,
+          "damaged": 8808,
+          "repaired": 5951
+        },
+        "0.0005": {
+          "components": 290000,
+          "base_passes": 210042,
+          "passes": 207114,
+          "damaged": 8755,
+          "repaired": 5827
+        },
+        "0.001": {
+          "components": 290000,
+          "base_passes": 209051,
+          "passes": 206296,
+          "damaged": 8497,
+          "repaired": 5742
+        },
+        "0.0015": {
+          "components": 290000,
+          "base_passes": 207462,
+          "passes": 204793,
+          "damaged": 8539,
+          "repaired": 5870
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "global",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11156,
+          "damaged": 14,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 19138,
+          "damaged": 65,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 6901,
+          "damaged": 258,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 2426,
+          "damaged": 864,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20491,
+          "damaged": 589,
+          "repaired": 429
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 19955,
+          "damaged": 612,
+          "repaired": 396
+        }
+      }
+    },
+    {
+      "seed": 20261012,
+      "arm": "species",
+      "population": "development",
+      "base_margin": {
+        "(-1.0,0.1]": {
+          "components": 11170,
+          "base_passes": 11170,
+          "passes": 11121,
+          "damaged": 49,
+          "repaired": 0
+        },
+        "(0.1,0.5]": {
+          "components": 19203,
+          "base_passes": 19203,
+          "passes": 18952,
+          "damaged": 251,
+          "repaired": 0
+        },
+        "(0.5,0.8]": {
+          "components": 7159,
+          "base_passes": 7159,
+          "passes": 6665,
+          "damaged": 494,
+          "repaired": 0
+        },
+        "(0.8,1.0]": {
+          "components": 3290,
+          "base_passes": 3290,
+          "passes": 2302,
+          "damaged": 988,
+          "repaired": 0
+        }
+      },
+      "snapshot": {
+        "0.002": {
+          "components": 29928,
+          "base_passes": 20651,
+          "passes": 20376,
+          "damaged": 887,
+          "repaired": 612
+        },
+        "0.0025": {
+          "components": 29406,
+          "base_passes": 20171,
+          "passes": 19825,
+          "damaged": 895,
+          "repaired": 549
+        }
+      }
+    }
+  ]
+}

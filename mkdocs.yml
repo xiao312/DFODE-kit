@@ -34,6 +34,7 @@ nav:
   - Data Augmentation: augment.md
   - Data Preparation and Training Workflow: data-workflow.md
   - Architecture: architecture.md
+  - Research Method Catalogue: research-method-catalogue.md
   - Tutorials and Workflow: tutorials.md
   - Shared Operational Docs:
       - Overview: agents/README.md

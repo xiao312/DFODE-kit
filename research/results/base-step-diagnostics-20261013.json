@@ -1,0 +1,196 @@
+{
+  "scope": "Independent single-step models, eight fixed training batches per seed, next cyclic batch excluded from each step. Do not pool predictions as one deployed candidate. No held-out qualification.",
+  "rule": "abs(prediction-reference)<=1e-15+0.1*abs(reference)",
+  "reviews": {
+    "gradient_probe": "78943664d3531c48c4cc99eb7cdf3888a0cfc6537a74bb1e08c3d81b6a8cfeff",
+    "step_scale": "852c1fa79e109e0ad025734374158d90a39bb7f7d5519aac9aa8827ccf4be0c7"
+  },
+  "table": [
+    {
+      "experiment": "gradient-probe",
+      "seed": 20261011,
+      "learning_rate": 0.000001,
+      "probes": 8,
+      "positive_step_acceptance": 6,
+      "positive_check_acceptance": 0,
+      "negative_check_acceptance": 8,
+      "improved_step_loss": 4,
+      "improved_check_loss": 0,
+      "check_net_pass_counts": [
+        -33,
+        -3,
+        -38,
+        -29,
+        -88,
+        -44,
+        -48,
+        -59
+      ],
+      "check_loss_changes": [
+        0.0015469539593964132,
+        0.0011680917312910655,
+        0.0012729040266489244,
+        0.002170352366109296,
+        0.0018616892765995763,
+        0.0017734157836505338,
+        0.0011745973058640002,
+        0.0011234973476624832
+      ]
+    },
+    {
+      "experiment": "gradient-probe",
+      "seed": 20261012,
+      "learning_rate": 0.000001,
+      "probes": 8,
+      "positive_step_acceptance": 2,
+      "positive_check_acceptance": 0,
+      "negative_check_acceptance": 8,
+      "improved_step_loss": 1,
+      "improved_check_loss": 0,
+      "check_net_pass_counts": [
+        -87,
+        -23,
+        -27,
+        -67,
+        -59,
+        -60,
+        -86,
+        -29
+      ],
+      "check_loss_changes": [
+        0.002717760784371581,
+        0.001564850680541019,
+        0.001799607755194721,
+        0.002001590994712754,
+        0.001624877069505093,
+        0.002329776520616167,
+        0.0018900017247291956,
+        0.002013211098062073
+      ]
+    },
+    {
+      "experiment": "step-scale",
+      "seed": 20261011,
+      "learning_rate": 1e-7,
+      "probes": 8,
+      "positive_step_acceptance": 8,
+      "positive_check_acceptance": 6,
+      "negative_check_acceptance": 1,
+      "improved_step_loss": 8,
+      "improved_check_loss": 7,
+      "check_net_pass_counts": [
+        9,
+        5,
+        0,
+        1,
+        -7,
+        2,
+        6,
+        6
+      ],
+      "check_loss_changes": [
+        -0.00009707872366637726,
+        -0.0000821304960467728,
+        -0.00011244673998422883,
+        -0.00004741812784203603,
+        0.000014941773510357415,
+        -0.00005622158023554924,
+        -0.00010164140503088337,
+        -0.00007793336171346699
+      ]
+    },
+    {
+      "experiment": "step-scale",
+      "seed": 20261011,
+      "learning_rate": 1e-8,
+      "probes": 8,
+      "positive_step_acceptance": 8,
+      "positive_check_acceptance": 5,
+      "negative_check_acceptance": 2,
+      "improved_step_loss": 8,
+      "improved_check_loss": 8,
+      "check_net_pass_counts": [
+        3,
+        3,
+        2,
+        -2,
+        0,
+        -1,
+        3,
+        4
+      ],
+      "check_loss_changes": [
+        -0.000012674167132353809,
+        -0.00001260227635713207,
+        -0.000011676373874225376,
+        -4.7672005198950984e-7,
+        -0.0000037007672474276276,
+        -0.00000743864533692129,
+        -0.000013670537923338166,
+        -0.000010632489686801527
+      ]
+    },
+    {
+      "experiment": "step-scale",
+      "seed": 20261012,
+      "learning_rate": 1e-7,
+      "probes": 8,
+      "positive_step_acceptance": 8,
+      "positive_check_acceptance": 5,
+      "negative_check_acceptance": 3,
+      "improved_step_loss": 8,
+      "improved_check_loss": 3,
+      "check_net_pass_counts": [
+        1,
+        1,
+        -8,
+        -18,
+        -5,
+        5,
+        1,
+        3
+      ],
+      "check_loss_changes": [
+        0.000010259179568872234,
+        0.00001599905560933923,
+        -0.00003285580346057415,
+        0.000023482385849593612,
+        -0.000046116508252591615,
+        -0.0000462242390140144,
+        0.00006793609150035351,
+        0.000023261913253302957
+      ]
+    },
+    {
+      "experiment": "step-scale",
+      "seed": 20261012,
+      "learning_rate": 1e-8,
+      "probes": 8,
+      "positive_step_acceptance": 2,
+      "positive_check_acceptance": 3,
+      "negative_check_acceptance": 5,
+      "improved_step_loss": 8,
+      "improved_check_loss": 5,
+      "check_net_pass_counts": [
+        5,
+        -2,
+        2,
+        -3,
+        -1,
+        -2,
+        2,
+        -1
+      ],
+      "check_loss_changes": [
+        0.000003061546232641099,
+        -0.000005009005319966953,
+        -0.000002477474006612468,
+        4.104231595691843e-7,
+        -0.000004900369437899066,
+        -0.000004729036145234566,
+        0.0000075577486287059514,
+        -0.000006860805214836674
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "temperatures_K": [900, 1000, 1100, 1150, 1250, 1300, 1400, 1500],
+  "split_by_temperature": {"900": "train", "1000": "train", "1100": "train", "1150": "validation", "1250": "train", "1300": "test", "1400": "train", "1500": "train"},
+  "seed": 20261008,
+  "epochs": 200,
+  "batch_size": 256,
+  "hidden_widths": [64, 64],
+  "learning_rate": 0.001,
+  "targets": ["budget-linear", "signed-power", "scaled-asinh"],
+  "precisions": ["float32", "float64"],
+  "minimum_accepted": {"train": 32, "validation": 8, "test": 8},
+  "wall_time_seconds": 3600
+}

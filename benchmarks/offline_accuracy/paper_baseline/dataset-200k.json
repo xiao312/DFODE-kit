@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "seed": 20261011,
+  "train_snapshots": ["0.0001", "0.0005", "0.001", "0.0015"],
+  "validation_snapshots": ["0.002", "0.0025"],
+  "train_count": 200500,
+  "validation_count": 1024,
+  "interval_s": 1e-6,
+  "temperature_perturbation_K": 100.0,
+  "species_exponent_perturbation": 0.15,
+  "nitrogen_range_padding": 0.05,
+  "minimum_temperature_K": 290.0,
+  "pressure_bounds_Pa": [96258.75, 106391.25],
+  "cvode_rtol": 1e-12,
+  "cvode_atol": 1e-21,
+  "wall_seconds": 3600
+}

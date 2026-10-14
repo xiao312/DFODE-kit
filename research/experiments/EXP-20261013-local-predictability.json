@@ -1,0 +1,28 @@
+{
+  "experiment_id": "EXP-20261013-local-predictability",
+  "kind": "read_only_scientific_diagnostic",
+  "status": "REGISTERED",
+  "hypothesis": "Local state neighborhoods retain predictable correction structure that the tested global heads do not capture; alternatively the residual may vary more than the full target.",
+  "evidence": ["EXP-20261013-hidden-features", "EXP-20261013-preservation", "EXP-20261013-linear", "EXP-20261013-diversity"],
+  "seeds": [20261011, 20261012],
+  "libraries": [10000, 50000],
+  "library_selection": "Original 10k and S's verified 50k excluding every fixed U index",
+  "query_selection": "Per snapshot uniform 256 T and 512 U rows from source-ID-sorted rows, RNG 20261013; all D rows",
+  "expected_query_counts": {"training_loo": 1024, "same_source_unseen": 2048, "development": 1023},
+  "spaces": {"state": 61, "correction": 119},
+  "neighbors": [1, 8],
+  "distance": "Euclidean in frozen FP32 features, direct FP64 differences; stable library-order tie break",
+  "self_exclusion": "Dataset namespace plus source-ID equality; T/U use training IDs, D uses separate development namespace. Never compare unqualified IDs across datasets.",
+  "controls": ["zero correction equals base", "same graph for full target and residual", "fixed permutation of library target rows for k=1"],
+  "crossover": 1e-14,
+  "physical_rule": "abs(error) <= 1e-15 + 0.1*abs(reference)",
+  "resource": {"gpu_workers": 1, "cpu_threads": 1, "neural_fits": 0, "new_references": 0},
+  "outcomes": {
+    "residual_transfer_stronger": "Local approximation is a justified next candidate, but diagnostic transfers cannot be promoted.",
+    "full_target_transfer_stronger": "Test whether learning the full map avoids irregular residual structure; do not claim a universal smoothness ordering.",
+    "neither_stronger_than_shuffled": "The chosen metric/support does not reveal useful locality; examine representation or support before fitting.",
+    "mixed": "Retain slice findings and uncertainty; do not select a temperature switch."
+  },
+  "confirmation_access": false,
+  "promotion_allowed": false
+}

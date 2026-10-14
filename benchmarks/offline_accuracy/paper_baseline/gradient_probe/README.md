@@ -1,0 +1,82 @@
+# Continued-base gradient diagnostic
+
+## Responsibility
+
+Measure whether repair and preservation losses conflict in the existing base's
+parameter space, before another optimizer or architecture experiment. This is
+not a fitted candidate, a promotion, or evidence of held-out generalization.
+
+Use eight fixed disjoint 1,024-state batches from the authorized 50k training
+population, per seed. The next batch in cyclic order is a separate training-pool
+check for each one-step probe. No U/D or confirmation labels enter this worker.
+The original weights are restored between probes and at completion.
+
+## Measurements
+
+Use the existing differentiable GBCT reconstruction and physical log objective.
+Fix groups from the incumbent's saved prediction: all, base-pass, base-fail,
+floor, weak nontrivial and active increments. Compute group parameter gradients,
+norms and pairwise cosines for all parameters, trunk and final affine layer.
+Compare the direct all-group gradient with the count-weighted pass/fail sum.
+Output gradients for disjoint component masks are not an interference test.
+
+Then take one actual fresh-Adam step at learning rate 1e-6 on the all-component
+loss. Record group loss changes and physical pass/repair/damage counts on the
+same batch and the next fixed batch. Reset all model weights before each probe.
+This does not approximate the original optimizer's momentum state. Compare the
+differentiable reconstruction with the saved deployment predictions and report
+any discrepancy in physical tolerance units before interpreting gradients.
+
+The separately registered `EXP-20261013-step-scale` repeats the same diagnostic
+at 1e-7 and 1e-8 learning rates, with original weights restored before each
+step. The existing 1e-6 result remains the control; it is not rerun. Use
+`--experiment EXP-20261013-step-scale` and a new output directory. This tests
+finite-step amplitude, not another objective or a promoted predictor.
+
+`EXP-20261013-gradient-average` holds the 1e-7 step fixed and uses all seven
+non-check batches for each gradient. Forward passes retain 1024-row shapes.
+The existing one-batch result is the control. Fitting and check row identities
+are saved; the recount checks that they do not overlap. This is a gradient
+sample-size diagnostic, not equal-FLOP training or independent confirmation.
+
+## Interface, dependencies and boundary
+
+The same controller also admits `EXP-20261013-conditional-calibration`, a
+separate full-parent, training-only scalar diagnostic. Its manifest selects
+`conditional_calibration.worker`; it does not execute gradient probes. Read
+that module's README for its different finite work and fold boundaries.
+
+`EXP-20261013-selective-correction` uses an explicit separate staging branch
+to exclude the old head's10k and U20k rows, then runs `selective_correction.worker`.
+It reuses admission/isolation, not the gradient experiment's data selection.
+
+`python -m benchmarks.offline_accuracy.paper_baseline.gradient_probe.run
+--project <root> --output <new-dir>` performs discovery; `--execute` admits the
+registered diagnostic. Outputs are selected training IDs, group statistics,
+finite-step effects, runtime/source identities and hash-bound artifacts.
+`run -> research_contract admission/sandbox + hidden_features.run_worker`;
+`worker -> existing base loader, input features and differentiable decoder`.
+No production dependent exists. Training labels are permitted; evaluation data,
+secrets, network and host home are not mounted. Use one idle GPU and one CPU thread.
+
+## Verification
+
+`EXP-20261013-kinetic-features` uses its own staging/execution adapter to reuse
+the admission guard. It fits only20k labels and runs a separate state-only worker.
+See `kinetic_features/README.md`; historical diagnostic selection is unchanged.
+`EXP-20261013-species-heads` reuses those same roles but changes only parameter
+sharing. Read its README; no kinetic features enter either arm.
+`EXP-20261013-element-projection` is a no-fit algebraic constraint diagnostic.
+Its worker receives states and model-only assets; no training labels are mounted.
+`EXP-20261013-bounded-base-screen` uses the same guard for the full U/D
+inference test. Its two-model mount has no labels; see `paired_base/README.md`.
+`EXP-20261013-consensus-distill` stages common50k teacher fractions and calls
+the existing trainer with its explicit bounded decoder. Inference mounts one
+base and the compressed head only; see `consensus_distill/README.md`.
+
+Run `python -m pytest tests/test_gradient_probe.py -q`. Expect known conflicting,
+orthogonal and zero-gradient cases and a correctly normalized group sum. Check
+restored weights byte-for-byte in memory. Candidate selection and any future
+training require a new manifest; negative cosine alone does not authorize PCGrad.
+See `research/experiments/gradient-interference-source-note.md` for the narrow
+primary-source basis and limits of this adaptation.

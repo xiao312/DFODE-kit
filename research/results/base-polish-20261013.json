@@ -1,0 +1,310 @@
+{
+  "experiment": "EXP-20261013-base-polish",
+  "source": "6f02ca3",
+  "review_sha256": "354fb4ccb3aee66f61f959dd84c22ece0993bab8a2ec0b73ce2af89bce54317f",
+  "status": "VALID_NEGATIVE",
+  "incumbent_changed": false,
+  "population_note": "T50k candidate fit, U20k candidate-unseen/base-seen, D1023 repeated development. No independent confirmation.",
+  "table": [
+    {
+      "seed": 20261011,
+      "arm": "small",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.722408275862069,
+      "base": 0.7217472413793103,
+      "repaired": 9534,
+      "damaged": 7617,
+      "damage_rate": 0.003639157274946287,
+      "p99": 12.013060865300556,
+      "nontrivial": 0.7147482010546408,
+      "weak": 0.5196762205365779,
+      "active": 0.7263089812319801,
+      "sign_errors": 42251,
+      "negative": 0
+    },
+    {
+      "seed": 20261011,
+      "arm": "averaged",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7227575862068966,
+      "base": 0.7217472413793103,
+      "repaired": 12352,
+      "damaged": 9422,
+      "damage_rate": 0.00450152814028409,
+      "p99": 12.015257599300517,
+      "nontrivial": 0.7151028098474435,
+      "weak": 0.521337117548236,
+      "active": 0.7265861739299325,
+      "sign_errors": 42267,
+      "negative": 0
+    },
+    {
+      "seed": 20261011,
+      "arm": "small",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7221681034482759,
+      "base": 0.7224068965517242,
+      "repaired": 3218,
+      "damaged": 3495,
+      "damage_rate": 0.004170684207009136,
+      "p99": 12.019441416307494,
+      "nontrivial": 0.7145388365939048,
+      "weak": 0.5166664007276093,
+      "active": 0.7262328550749921,
+      "sign_errors": 16531,
+      "negative": 0
+    },
+    {
+      "seed": 20261011,
+      "arm": "averaged",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7218810344827586,
+      "base": 0.7224068965517242,
+      "repaired": 3934,
+      "damaged": 4544,
+      "damage_rate": 0.005422486133519175,
+      "p99": 12.033306555190574,
+      "nontrivial": 0.7142441208210015,
+      "weak": 0.5156451947471717,
+      "active": 0.725981073983092,
+      "sign_errors": 16524,
+      "negative": 0
+    },
+    {
+      "seed": 20261011,
+      "arm": "small",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6830147975865439,
+      "base": 0.6829642363568948,
+      "repaired": 183,
+      "damaged": 180,
+      "damage_rate": 0.004441921871529748,
+      "p99": 18.35374280817429,
+      "nontrivial": 0.6686612215909091,
+      "weak": 0.43962115232833465,
+      "active": 0.6852377234905462,
+      "sign_errors": 1054,
+      "negative": 0
+    },
+    {
+      "seed": 20261011,
+      "arm": "averaged",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6829810901001112,
+      "base": 0.6829642363568948,
+      "repaired": 238,
+      "damaged": 237,
+      "damage_rate": 0.0058485304641808355,
+      "p99": 18.148330262632633,
+      "nontrivial": 0.6686612215909091,
+      "weak": 0.43830570902394106,
+      "active": 0.6853329271311335,
+      "sign_errors": 1051,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "small",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7236,
+      "base": 0.7230131034482759,
+      "repaired": 8963,
+      "damaged": 7261,
+      "damage_rate": 0.003462998238215743,
+      "p99": 11.965100423475816,
+      "nontrivial": 0.7160336046142799,
+      "weak": 0.5153625850730655,
+      "active": 0.7278954936992929,
+      "sign_errors": 42007,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "averaged",
+      "population": "training",
+      "states": 50000,
+      "acceptance": 0.7239603448275862,
+      "base": 0.7230131034482759,
+      "repaired": 11953,
+      "damaged": 9206,
+      "damage_rate": 0.004390629635176164,
+      "p99": 11.955831239140357,
+      "nontrivial": 0.7164006366635469,
+      "weak": 0.5171995892254604,
+      "active": 0.7281756340484767,
+      "sign_errors": 42012,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "small",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7225715517241379,
+      "base": 0.7227474137931035,
+      "repaired": 3110,
+      "damaged": 3314,
+      "damage_rate": 0.0039528284670444554,
+      "p99": 11.887535277470073,
+      "nontrivial": 0.7149834219720065,
+      "weak": 0.5133621379420708,
+      "active": 0.7268585324014948,
+      "sign_errors": 16543,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "averaged",
+      "population": "same_source_unseen",
+      "states": 20000,
+      "acceptance": 0.7223112068965517,
+      "base": 0.7227474137931035,
+      "repaired": 3927,
+      "damaged": 4433,
+      "damage_rate": 0.005287534277129774,
+      "p99": 11.90366263131102,
+      "nontrivial": 0.7147181735241105,
+      "weak": 0.5121939510321651,
+      "active": 0.7266464653128932,
+      "sign_errors": 16527,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "small",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6882731654700509,
+      "base": 0.688003505578589,
+      "repaired": 180,
+      "damaged": 164,
+      "damage_rate": 0.0040174415756209884,
+      "p99": 17.201937532183766,
+      "nontrivial": 0.6742009943181818,
+      "weak": 0.4388318863456985,
+      "active": 0.6912355528475409,
+      "sign_errors": 1066,
+      "negative": 0
+    },
+    {
+      "seed": 20261012,
+      "arm": "averaged",
+      "population": "development",
+      "states": 1023,
+      "acceptance": 0.6882563117268345,
+      "base": 0.688003505578589,
+      "repaired": 234,
+      "damaged": 219,
+      "damage_rate": 0.0053647542991524175,
+      "p99": 17.297050856821585,
+      "nontrivial": 0.6741832386363636,
+      "weak": 0.43777953170218364,
+      "active": 0.6912926750318932,
+      "sign_errors": 1070,
+      "negative": 0
+    }
+  ],
+  "latency_ratios": {
+    "small": [
+      0.9885847628404598,
+      0.9995046354398931,
+      0.9986844063421739,
+      0.997499105895373
+    ],
+    "averaged": [
+      0.9946169463630066,
+      0.9967778594879104,
+      0.9960406055496943,
+      1.0173078148610026
+    ]
+  },
+  "decisions": {
+    "small": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "weak_nontrivial_p99",
+          "wrong_sign"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "weak_nontrivial_p99",
+          "wrong_sign"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    },
+    "averaged": {
+      "candidate_status": "REJECTED",
+      "failures": {
+        "20261011:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261011:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261011:development:anchor": [
+          "overall_gain",
+          "weak_nontrivial_p99",
+          "wrong_sign"
+        ],
+        "20261011:development:incumbent": [
+          "overall_gain",
+          "weak_nontrivial_p99",
+          "wrong_sign"
+        ],
+        "20261012:same_source_unseen:anchor": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261012:same_source_unseen:incumbent": [
+          "overall_gain",
+          "nontrivial_gain"
+        ],
+        "20261012:development:anchor": [
+          "overall_gain"
+        ],
+        "20261012:development:incumbent": [
+          "overall_gain"
+        ]
+      },
+      "missing": {},
+      "production_promotion": false,
+      "independently_confirmed": false
+    }
+  }
+}

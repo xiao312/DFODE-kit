@@ -1,0 +1,27 @@
+{
+  "experiment_id":"EXP-20261013-base-support","status":"REGISTERED",
+  "hypothesis":"Restricting updates of a 200k-trained base to 50k states contributes to the observed same-source regression; restoring broader fitting support may improve transfer at unchanged update work.",
+  "evidence":["EXP-20261013-base-polish"],
+  "control_run":"runs/offline-accuracy/base-polish-20261013",
+  "control_review_sha256":"354fb4ccb3aee66f61f959dd84c22ece0993bab8a2ec0b73ce2af89bce54317f",
+  "parent_run":"runs/offline-accuracy/local-function-20261013",
+  "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "model_kind":"base_polish","arms":["averaged"],"seeds":[20261011,20261012],
+  "training_count":180000,"parameter_count":2018458,"updates":3000,"batch_size":10000,
+  "batch_sizes":{"averaged":10000},"microbatch_size":1000,
+  "changed_factor":"Candidate-update fitting support only, 50k to180k. Reuse completed 50k averaged controls, do not rerun.",
+  "selection":"Old verified 50k positions first, then remaining positions in original200k order excluding the fixed U20k. Assert exact prefix states/labels/base, unique positions and no U IDs. Dataset namespaces retained.",
+  "fixed":"Original continued bases, all preprocessing, 4x800 GELU, FP32 weights/FP64 decoding and loss, physical log1p, fresh Adam foreach=false, cosine1e-7 to1e-8,3000updates,10000batch,1000microbatch, final checkpoint and every evaluator gate",
+  "work_policy":"30M row presentations and3000optimizer updates per fit, matching50k averaged controls. More diversity and fewer presentations per unique row; not equal epochs or wall time.",
+  "exposure":"Existing permitted training labels only; no reference generation. U20k remains excluded from candidate updates although the base/preprocessing saw it historically. D1023 remains repeated development; confirmation closed.",
+  "prechecks":["source pool and prefix hashes","unique training positions","U20k exclusion","unchanged preprocessing","microbatch gradients","exact saved replay","domain-correction mask counts"],
+  "evaluation":"T180k labelled separately from old T50k; identical full U20k/D1023 across arms and controls; protected gates against fixed anchor/incumbent, independent recount and fresh base replay",
+  "resources":{"gpu_workers":1,"cpu_threads":1,"fits":2,"wall_seconds_per_fit":1800,"new_references":0},
+  "outcomes":{
+    "transfer_restored_and_gates_pass":"Record development-qualified status under authorized process; continue robustness without opening confirmation",
+    "transfer_better_but_no_qualification":"Retain tradeoff status, quantify remaining guards; no automatic size ladder",
+    "no_useful_gain":"Close low-step base-continuation family provisionally after this support control; do not sweep batch or learning rate"
+  },
+  "run":"runs/offline-accuracy/base-support-20261013","module":"benchmarks.offline_accuracy.paper_baseline.base_polish",
+  "confirmation_access":false,"production_promotion":false
+}

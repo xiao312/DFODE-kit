@@ -1,0 +1,14 @@
+{
+ "experiment_id":"EXP-20261013-consensus-shrink","status":"REGISTERED",
+ "hypothesis":"The bounded consensus repair signal remains useful when updates cannot increase the anchor magnitude or reverse its sign.",
+ "evidence":"Full bounded-screen improvesU/D by about1pp and damage<0.8%, but one U severeevent increases54to55; totalcost2.15x. The restriction addresses overprediction structurally at all magnitudes, not by using a queried epsilon/eta threshold.",
+ "parent_run":"runs/offline-accuracy/bounded-base-screen-20261013","review_sha256":"373b230b45bb097f8ad38e8157434d4fa78127c7c94302470634e0e57d3fb0db",
+ "seeds":[20261011,20261012],"populations":["same_source_unseen","development"],
+ "rule":"Start with the unchanged k0.1 bounded midpoint; constrain returned prediction to the componentwise closed interval between zero and anchor b. No reference, physicalstate, temperature or event thresholds enter this extra operation. |returned|<=|b| guarantees no additional magnitude-threshold events, but does not establish acceptance.",
+ "changed":"Only this declared magnitude/sign restriction. Frozen bases, rawbounded outputs, cap, rowIDs, scorer and fullpopulations unchanged. No fitted threshold, hyperparameter scan or new reference.",
+ "measurements":"Protected scores and independent full recount against eachanchor. Count discarded magnitude-growing changes, lost repairs and prevented damage versus boundedcontrol. Check allmagnitude events, signs, negativeendpoints and preservation. Candidate cannot repair basesign errors or severe errors beyond existingcap reach.",
+ "verification":"Pinned immutable parentpredictions, exact formula replay, segment/magnitude assertions, independent interval formula and categorical repair/damage comparison.",
+ "work":"OneCPUthread and two cachedphysical transformations perpopulation; noGPUtraining. Cached arithmetic is not fresh isolated replay or measuredlatency.",
+ "decision":"If allfull physicalguards pass, register freshprediction and cost comparison. If gains fall belowcontract, do not tune cap on D; use signed repair decomposition to decide next justified method. No promotion from cached arrays.",
+ "output":"runs/offline-accuracy/consensus-shrink-20261013","confirmation_access":false,"promotion_allowed":false
+}

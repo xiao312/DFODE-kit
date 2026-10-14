@@ -4,12 +4,17 @@ on:
   push:
     branches:
       - main
-      - agent-harness-refactor
-      - agent-cli-contract
-      - agent-train-config
-      - agent-data-io
-      - agent-ci-tests
   pull_request:
+    # Research pushes are checked locally, not once per experiment on Actions.
+    types: [opened, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:

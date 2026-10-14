@@ -1,0 +1,28 @@
+{
+  "experiment_id":"EXP-20261013-gradient-probe",
+  "status":"REGISTERED",
+  "hypothesis":"Updates to the shared continued base can trade preservation against repair even within the same training-source domain; measure actual parameter-step effects before an optimizer change.",
+  "evidence":["EXP-20261013-local-function","EXP-20261013-local-optimum","EXP-20261013-interval-calibration"],
+  "parent_run":"runs/offline-accuracy/local-function-20261013",
+  "parent_review_sha256":"83cb4747eb41e17ef32237f2f957c7f4e66a1f3acb0fb91b72bfa721ee34b0bb",
+  "seeds":[20261011,20261012],
+  "batches":8,"batch_size":1024,"learning_rate":1e-6,
+  "selection":"First 8192 rows of NumPy default_rng(seed+137) permutation of the existing 50k library; consecutive disjoint batches. Next batch cyclically is the separate training check.",
+  "exposure":"Training only. Frozen base/preprocessing historical exposure retained. No U/D, metric fitting, centres, new labels or confirmation.",
+  "objective":"Original increment-normalized mean log1p physical error with differentiable GBCT decoder; no regularization or clipping.",
+  "groups":["all","base_pass","base_fail","floor","weak_nontrivial","active_increment"],
+  "intervention":"One fresh Adam step, lr 1e-6, default betas/epsilon, foreach=false; restore original weights before each probe and at completion. Historical optimizer moments unavailable and not claimed.",
+  "measurements":["whole/trunk/final-layer parameter cosines and norms","count-weighted gradient identity","actual Adam displacement and first-order group effect","same/check training physical repairs and damage"],
+  "prechecks":"Exact deployed-base replay; differentiable/deployed prediction discrepancy <=1e-5 allowance and zero pass disagreements; gradient identity relative error <=1e-5; exact weight restoration; independent physical recount.",
+  "work":"8 independent single-step probes per seed, six group backpropagations each; one GPU worker, one CPU thread, two seeds. No training continuation or candidate exported.",
+  "checkpoint":"Original weights restored; no selected checkpoint",
+  "outcomes":{
+    "harmful_shared_step":"Register a controlled parameter-sharing or direction diagnostic; cosine alone cannot justify PCGrad.",
+    "consistent_repairs_without_damage":"Register bounded base continuation with matched control; still require full protected candidate gates.",
+    "decoder_mismatch":"Suspend gradient interpretation and diagnose the numerical path before changing optimization.",
+    "inconclusive":"Inspect fixed training residual structure rather than a blind loss sweep."
+  },
+  "run":"runs/offline-accuracy/gradient-probe-20261013",
+  "module":"benchmarks.offline_accuracy/paper_baseline/gradient_probe",
+  "promotion":false,"confirmation_access":false
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "EXP-20261013-linear",
+  "status": "APPROVED_PENDING_PRECHECKS",
+  "hypothesis_id": "H-low-capacity",
+  "question": "Does reducing correction capacity improve unseen repair/preservation when larger heads overfit?",
+  "evidence": [
+    "EXP-20261013-hidden-features: C fits better and transfers worse than A in both seeds",
+    "EXP-20261013-preservation: restraint improves relative to A but remains worse than the base"
+  ],
+  "changed_factor": "Reduce A correction head to one affine layer; no other recipe change",
+  "arms": [
+    {
+      "id": "L",
+      "input_features": 119,
+      "widths": [],
+      "head_parameters": 6960
+    }
+  ],
+  "fixed": [
+    "continued_base_checkpoint_per_seed",
+    "training_10000_row_ids",
+    "prepared_reference_version",
+    "decoder",
+    "coordinate_smooth_l1_beta_log1p_0.1",
+    "acceptance_rule",
+    "optimizer_schedule",
+    "final_checkpoint_policy"
+  ],
+  "paired_seeds": [
+    20261011,
+    20261012
+  ],
+  "budget": {
+    "updates": 6000,
+    "batch_size": 10000,
+    "row_presentations": 60000000,
+    "match_type": "updates_and_presentations_not_equal_compute",
+    "fit_wall_limit_s": null
+  },
+  "controls_note": "Compare to freshly rerun A and C; same 119 features and Smooth L1 objective, no P penalty.",
+  "outcome_predictions": {
+    "transfer_improves": "Capacity restriction supports transfer; require all unchanged gates.",
+    "training_and_transfer_poor": "Simple global correction insufficient; stop this capacity-only family, inspect residual structure.",
+    "near_base_no_repairs": "Preservation alone is insufficient; no promotion."
+  },
+  "promotion_policy": "../campaign.json",
+  "protected_binding_hashes": "../evaluator-lock.json",
+  "execution_authorization_id": "owner-20261013-resource-caps-removed",
+  "outputs": {
+    "manifest": "immutable JSON",
+    "predictions": "aligned arrays, no references supplied to inference",
+    "metrics": "trusted evaluator JSON",
+    "review": "evidence-qualified narrative and deterministic decision"
+  },
+  "decision": null
+}

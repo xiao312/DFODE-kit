@@ -1,0 +1,89 @@
+{
+  "schema_version": "1",
+  "execution_authorized": true,
+  "scope": {
+    "question": "Preserve the magnitude and sign of learned chemical increments",
+    "reactor": "fixed-temperature, fixed-volume",
+    "interval_s": 0.000001,
+    "species_order": "bind_from_verified_mechanism",
+    "exclude_from_historical_score": [
+      "AR"
+    ],
+    "cfd_allowed": false
+  },
+  "authority": {
+    "owner_controls": [
+      "tolerances",
+      "reference_version",
+      "evaluation_manifests",
+      "confirmation_access",
+      "resource_caps",
+      "production_promotion"
+    ],
+    "worker_may_choose_next_hypothesis": true,
+    "worker_may_change_protected_grader": false,
+    "owner_authorization": "2026-10-13: owner removed proposed aggregate/time limitations; do not disrupt others; wait or report resource unavailability",
+    "confirmation_authorized": false,
+    "production_authorized": false
+  },
+  "metric": {
+    "id": "increment-reference-v1",
+    "atol": 1e-15,
+    "rtol": 0.1,
+    "numerator": "abs(predicted_increment-reference_increment)",
+    "denominator": "atol+rtol*abs(reference_increment)",
+    "pass_operator": "<=",
+    "nontrivial_threshold": "atol/(1-rtol)"
+  },
+  "bindings": "bindings.json",
+  "screening": {
+    "seeds": [
+      20261011,
+      20261012
+    ],
+    "required_populations": [
+      "correction_unseen_same_source",
+      "development"
+    ],
+    "minimum_gain_fraction": 0.005,
+    "nontrivial_minimum_gain_fraction": 0,
+    "primary_group_max_drop_fraction": 0.005,
+    "supported_species_max_drop_fraction": 0.01,
+    "minimum_group_components_for_pilot_gate": 128,
+    "maximum_damage_rate": 0.02,
+    "maximum_p99_ratio": 1.05,
+    "sign_error_count_must_not_increase": true,
+    "severe_event_count_must_not_increase": true,
+    "negative_endpoint_count_must_not_increase": true,
+    "maximum_inference_latency_ratio": 1.5,
+    "compare_to_both_anchor_and_incumbent": true
+  },
+  "milestones": {
+    "substantial_gain_fraction": 0.05,
+    "worst_primary_group_relative_failure_reduction": 0.2,
+    "aspirational_all_and_primary_group_acceptance": 0.95,
+    "aspirational_resolved_sign_accuracy": 0.999,
+    "independent_confirmation_required_for_generalization_claim": true
+  },
+  "resources": {
+    "maximum_candidate_configurations": null,
+    "maximum_primary_fits": null,
+    "maximum_concurrent_gpu_fits": 1,
+    "fit_wall_seconds_limit": null,
+    "per_fit_task_seconds_limit": null,
+    "allocated_gpu_seconds_limit": null,
+    "agent_api_usd_limit": 0,
+    "reference_audit_cpu_workers_max": 4,
+    "transient_infrastructure_retries_per_trial": 1,
+    "resource_policy": "Use one idle GPU; stop only our own work if contention appears; wait or report. Finite optimizer work declared per experiment."
+  },
+  "research_policy": {
+    "maximum_negative_trials_in_family_without_new_evidence": 2,
+    "confirmation_finalists_per_epoch": 1,
+    "stop_on_valid_negative_result": false,
+    "stop_on_contract_or_authorization_violation": true,
+    "preserve_all_failed_trials": true
+  },
+  "status": "EXECUTION_AUTHORIZED_SUBJECT_TO_M0_IDENTITY_ISOLATION_AND_RESOURCE_GATES",
+  "campaign_id": "increment-epoch-20261013"
+}

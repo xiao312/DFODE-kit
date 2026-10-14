@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "source_snapshot": "fd118a885da5a931ab3cb92a8b415bb616dddc04",
+  "prepared_root": "runs/offline-accuracy/correction-scaling-20261012/prepared",
+  "transfer_root": "runs/offline-accuracy/correction-transfer-20261013",
+  "transfer_plan_sha256": "a6a12c2f04423c06977b9659525292db999947001ec7e299d8c1318a80aac739",
+  "dataset_manifest_sha256": "ded06e81cd1e26a3c736bb1ac8e279d0c2441bbbcf6f260f570c20d0f774dc29",
+  "mechanism_sha256": "26a27fb3c19c6000ed46d70947faeaf4813b6161ca7186fb6cc9ad55ede294f0",
+  "species": [
+    "H2",
+    "H",
+    "O",
+    "O2",
+    "OH",
+    "H2O",
+    "HO2",
+    "H2O2",
+    "C",
+    "CH",
+    "CH2",
+    "CH2(S)",
+    "CH3",
+    "CH4",
+    "CO",
+    "CO2",
+    "HCO",
+    "CH2O",
+    "CH2OH",
+    "CH3O",
+    "CH3OH",
+    "C2H",
+    "C2H2",
+    "C2H3",
+    "C2H4",
+    "C2H5",
+    "C2H6",
+    "HCCO",
+    "CH2CO",
+    "HCCOH",
+    "N",
+    "NH",
+    "NH2",
+    "NH3",
+    "NNH",
+    "NO",
+    "NO2",
+    "N2O",
+    "HNO",
+    "CN",
+    "HCN",
+    "H2CN",
+    "HCNN",
+    "HCNO",
+    "HOCN",
+    "HNCO",
+    "NCO",
+    "C3H7",
+    "C3H8",
+    "CH2CHO",
+    "CH3CHO",
+    "H2NO",
+    "N2H2",
+    "HONO",
+    "N2H3",
+    "N2H4",
+    "NH2OH",
+    "N2",
+    "AR"
+  ],
+  "interval_s": 0.000001,
+  "reactor": "fixed-temperature, fixed-volume",
+  "seeds": {
+    "20261011": {
+      "prepared_manifest_sha256": "d3ba285e74bbf32963ad754234d25ff30cf68ffda0833864031b460fd5f4aee2",
+      "anchor_weights_sha256": "c4e200a75f31e93ba4f3ffd2d30d73405abcc871a0555570cef53bc70f86f893",
+      "incumbent_weights_sha256": "c4e200a75f31e93ba4f3ffd2d30d73405abcc871a0555570cef53bc70f86f893",
+      "continued_result_sha256": "ee6058566cb7fa8f3cef92e5e8a3dd71da2e80fb88af3e6ff8813aee7aa83ab7",
+      "historical": {
+        "direct": {
+          "directory": "runs/offline-accuracy/correction-scaling-20261012/10000/20261011-direct",
+          "result_sha256": "633e7f2158e47d6d2bb0076b726b3f398b7703671922bc903351f0e71fc303f1"
+        },
+        "physical": {
+          "directory": "runs/offline-accuracy/correction-scaling-20261012/10000/20261011-physical",
+          "result_sha256": "6db7480481ebd5b7950d06164479e83513a2f70bb54e90bed52f1a9dc6c55c89"
+        },
+        "coordinate-sl1": {
+          "directory": "runs/offline-accuracy/correction-sl1-20261013/10000/20261011-coordinate-sl1",
+          "result_sha256": "d8bb3b52e68ccc9d6e73e6521d7814ea8b90642fe757e829ef30228160bca5e9"
+        }
+      }
+    },
+    "20261012": {
+      "prepared_manifest_sha256": "68d8a9519df923feceed25e8c675e63d288579c0dd6d95be1229e13c77d9848d",
+      "anchor_weights_sha256": "3d76f25356efbc9672390527b4cfdec899167126560e543ef4932025e2233092",
+      "incumbent_weights_sha256": "3d76f25356efbc9672390527b4cfdec899167126560e543ef4932025e2233092",
+      "continued_result_sha256": "7984be372d4b092226ddd4bf9582904230d5082b44ad66c95e716e7eb7a62220",
+      "historical": {
+        "direct": {
+          "directory": "runs/offline-accuracy/correction-scaling-20261012/10000/20261012-direct",
+          "result_sha256": "8f2b4512584826bfac3df68c3cf69ff953bc966628435211fe8ebf41ac64785f"
+        },
+        "physical": {
+          "directory": "runs/offline-accuracy/correction-scaling-20261012/10000/20261012-physical",
+          "result_sha256": "6201992d4e9d794c368d6a472aaea87191b89bf6cc451ab8963a5154106ce7a2"
+        },
+        "coordinate-sl1": {
+          "directory": "runs/offline-accuracy/correction-sl1-20261013/10000/20261012-coordinate-sl1",
+          "result_sha256": "5f2bdec7fb505e73b0520023ef95f0df5297e17cbbfc1ecbdd63d6b0f1ed1c62"
+        }
+      }
+    }
+  },
+  "evaluator_source_sha256": "8b35c6ea298d9167355429245f6633ec557cf886682fbd6f8921cdea653643b3",
+  "environment_relative": "runs/envs/paired-gpu-20261009/bin/python"
+}

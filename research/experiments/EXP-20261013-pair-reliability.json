@@ -1,0 +1,15 @@
+{
+ "experiment_id":"EXP-20261013-pair-reliability","status":"REGISTERED",
+ "hypothesis":"Input-only disagreement between the two bases can identify groups where selecting the smaller same-sign prediction repairs more failures than it damages, including failures beyond the strict cap's range.",
+ "evidence":["EXP-20261013-paired-base-errors","EXP-20261013-strict-consensus-screen","EXP-20261013-consensus-distill"],
+ "source_run":"runs/offline-accuracy/consensus-distill-20261013","source_review_sha256":"9668c6d8c88e9c6811d2a39ac92b83b876a1109ac8b94a59e17d30721324000c",
+ "seeds":[20261011,20261012],"split_seed":20261013,"training_rows":50000,"folds":2,
+ "bins":"Same-sign nonzero q with abs(q)<abs(b) only. log(abs(b))-log(abs(q)) bins with upper boundaries log(1.1),log(2),log(10),infinity. Boundaries included in upper bin via searchsorted side=right. Species-specific table,4binary entries each; no tuning.",
+ "fit":"For each species/bin with at least128 training components, select q iff repairs>damage, damage/basepasses<=0.02 (empty basepass denominator is ineligible), and nontrivial pass count does not fall. Else retain b. Both bases/labels from same verified common50k, no U/D. No objective/threshold sweep.",
+ "inference":"Choose q only when same-sign, strictly smaller nonzero magnitude and frozen table permits. Otherwise b. No references, temperature conditions, normalization, interpolation or endpoint clipping. Can repair larger errors but makes no sign-repair claim.",
+ "controls":"Unchanged b and unconditionally selecting the eligible smaller q. Learn on25k and evaluate other25k; swap folds, both seeds. Report individual folds and pooled out-of-fold scores; pooled predictions are NOT one frozen deployable model.",
+ "decision":"Proceed to a separately registered full50k table and isolated U/D only if every checkfold has positive net gain and damage<=0.02, and both pooled out-of-fold gains>=0.005 with all physical comparison gates passed. Otherwise close this coarse reliability-table recipe; no bin/cap sweep.",
+ "verification":"Source report and every artifact hash; row identities/exposure inherited from reviewed common50k. Separate repair identity, masks/counts, protected scores. No reference generation. Subsets retain snapshots and species order.",
+ "resources":{"cpu_threads":1,"gpu_workers":0,"fits":"Four finite count-table fits, no optimizer or GPU training","maximum_seconds":300},
+ "run":"runs/offline-accuracy/pair-reliability-20261013","confirmation_access":false
+}

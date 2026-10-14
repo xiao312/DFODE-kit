@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "cantera_version": "3.2.0",
+  "mechanisms": [
+    {"id": "h2", "file": "h2o2.yaml", "phase": "ohmech", "fuel": "H2:1", "duration_s": 0.02},
+    {"id": "ch4", "file": "gri30.yaml", "phase": "gri30", "fuel": "CH4:1", "duration_s": 0.1}
+  ],
+  "temperatures_K": [900.0, 1500.0],
+  "pressure_Pa": 101325.0,
+  "equivalence_ratio": 1.0,
+  "oxidizer": "O2:1,N2:3.76",
+  "anchors_per_trajectory": 8,
+  "intervals_s": [1e-8, 1e-6, 1e-4],
+  "tolerances": [
+    {"id": "default", "rtol": 1e-9, "atol": 1e-15},
+    {"id": "relative10", "rtol": 1e-10, "atol": 1e-15},
+    {"id": "relative12", "rtol": 1e-12, "atol": 1e-15},
+    {"id": "absolute18", "rtol": 1e-12, "atol": 1e-18},
+    {"id": "absolute21", "rtol": 1e-12, "atol": 1e-21}
+  ],
+  "radau_tolerances": [
+    {"id": "radau_check", "rtol": 1e-9, "atol": 1e-5},
+    {"id": "radau_reference", "rtol": 1e-11, "atol": 1e-7}
+  ],
+  "species_budget": {"atol": 1e-12, "rtol": 1e-6},
+  "temperature_budget": {"atol": 1e-6, "rtol": 1e-8},
+  "wall_time_seconds": 3600,
+  "seed": 20261008
+}

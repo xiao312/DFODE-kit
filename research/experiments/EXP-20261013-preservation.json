@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1",
+  "experiment_id": "EXP-20261013-preservation",
+  "status": "APPROVED_PENDING_PRECHECKS",
+  "hypothesis_id": "H-interval-preservation",
+  "question": "Can a training-only acceptance-interval constraint reduce destructive transfer while retaining genuine repairs?",
+  "evidence": [
+    "EXP-20261013-hidden-features: higher training acceptance but worse U/D in both seeds",
+    "issue:6137254405: damage is not only overshoot"
+  ],
+  "changed_factor": "Add one interval-preservation training constraint to control A",
+  "arms": [
+    {
+      "id": "P",
+      "input_features": 119,
+      "widths": [
+        256,
+        256,
+        256
+      ],
+      "head_parameters": 177210
+    }
+  ],
+  "fixed": [
+    "continued_base_checkpoint_per_seed",
+    "training_10000_row_ids",
+    "prepared_reference_version",
+    "decoder",
+    "coordinate_smooth_l1_beta_log1p_0.1",
+    "acceptance_rule",
+    "optimizer_schedule",
+    "final_checkpoint_policy"
+  ],
+  "paired_seeds": [
+    20261011,
+    20261012
+  ],
+  "budget": {
+    "updates": 6000,
+    "batch_size": 10000,
+    "row_presentations": 60000000,
+    "match_type": "updates_and_presentations_not_equal_compute",
+    "fit_wall_limit_s": null
+  },
+  "controls_note": "Reuse freshly rerun A from hidden-features-20261013 after exact historical replay; no other optimizer/data/decoder changes.",
+  "outcome_predictions": {
+    "train_damage_falls_but_unseen_not": "Training preservation does not transfer; do not sweep coefficients.",
+    "repairs_and_preservation_transfer": "Require all fixed gates before development qualification.",
+    "no_train_preservation": "Constraint/optimization insufficient in this fixed recipe; report rather than claim restraint solved."
+  },
+  "promotion_policy": "../campaign.json",
+  "protected_binding_hashes": "../evaluator-lock.json",
+  "execution_authorization_id": "owner-20261013-resource-caps-removed",
+  "outputs": {
+    "manifest": "immutable JSON",
+    "predictions": "aligned arrays, no references supplied to inference",
+    "metrics": "trusted evaluator JSON",
+    "review": "evidence-qualified narrative and deterministic decision"
+  },
+  "decision": null,
+  "constraint": {
+    "coefficient": 1,
+    "beta": "log1p(0.1)",
+    "population": "fixed base-passing training components",
+    "form": "mean((distance(c,[asinh((d-tau)/s)-asinh(b/s),asinh((d+tau)/s)-asinh(b/s)])/beta)^2)",
+    "inference_changes": false
+  }
+}

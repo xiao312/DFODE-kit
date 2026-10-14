@@ -1,0 +1,82 @@
+"""Independent formula recount of training-only finite-step effects."""
+import argparse
+from pathlib import Path
+import numpy as np
+from benchmarks.research_contract.adapter import arrays,read_json,digest,checked_file
+from ..hidden_features.prepare import save
+
+
+def recount(truth,old,new):
+    allowed=1e-15+np.abs(truth)/10
+    before=np.less_equal(np.abs(old-truth),allowed);after=np.less_equal(np.abs(new-truth),allowed)
+    nontrivial=np.abs(truth)>1e-15/.9
+    masks=dict(all=np.ones_like(before),base_pass=before,base_fail=~before,floor=~nontrivial,
+               weak_nontrivial=nontrivial&(np.abs(truth)<=1e-12),active_increment=np.abs(truth)>1e-12)
+    result={}
+    for name,mask in masks.items():
+        n=int(mask.sum());oldcount=int(before[mask].sum());count=int(after[mask].sum())
+        repair=int((after&~before&mask).sum());damage=int((before&~after&mask).sum())
+        if count!=oldcount+repair-damage:raise ValueError("Repair identity failed")
+        result[name]=dict(components=n,passes=count,repaired=repair,damaged=damage,
+                         loss=float(np.log1p(np.abs(new-truth)/allowed)[mask].mean()) if n else None)
+    return result
+
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument("run",type=Path)
+    args=p.parse_args();root=args.run
+    report=read_json(checked_file(root/"report.json",read_json(root/"verification.json")["report_sha256"]))
+    plan=read_json(root/"frozen-experiment.json")
+    controls={}
+    if plan.get("control_run"):
+        control=root.parent/Path(plan["control_run"]).name
+        control_review=read_json(checked_file(control/"review.json",plan["control_review_sha256"]))
+        control_report=read_json(checked_file(control/"report.json",control_review["report_sha256"]))
+        controls={r["seed"]:r for r in control_report["records"]}
+    exceptions=[]
+    for name,expected in report["artifacts"].items():
+        actual=digest(root/name)
+        if actual==expected:continue
+        if name=="active-job.json" and read_json(root/name)==dict(status="COMPLETE_AWAITING_RECOUNT"):
+            exceptions.append(dict(file=name,expected=expected,actual=actual,reason="a366ab6 updated mutable controller status after sealing; no scientific array changed"))
+        else:raise ValueError("Artifact hash mismatch: "+name)
+    summaries=[]
+    for record in report["records"]:
+        if record["status"]!="complete":
+            summaries.append(dict(seed=record.get("seed"),status=record["status"],interpretation="No gradient conclusion permitted"));continue
+        data=arrays(root/str(record["seed"])/"predictions.npz");batches=np.arange(len(data["truth"])).reshape(8,1024)
+        rows=[]
+        for item in record["records"]:
+            index=item["batch"];effects={}
+            if controls and plan.get("gradient_batches")!="leave_one_out":
+                old=controls[record["seed"]]["records"][index]
+                if item["geometry"]!=old["geometry"] or item["before_loss"]!=old["before_loss"]:
+                    raise ValueError("Gradient or initial objective changed from control")
+            fit=np.array(item.get("fit_indices",batches[index]));check=np.array(item.get("check_indices",batches[(index+1)%8]))
+            if np.intersect1d(fit,check).size:raise ValueError("Check batch entered gradient fit")
+            if plan.get("gradient_batches")=="leave_one_out":
+                np.testing.assert_array_equal(np.sort(np.r_[fit,check]),np.arange(len(data["truth"])))
+                if len(fit)!=7168 or len(check)!=1024:raise ValueError("Unexpected leave-one-out support")
+            for label,selection in [("step",fit),("check",check)]:
+                before=recount(data["truth"][selection],data["baseline"][selection],data["baseline"][selection])
+                after=recount(data["truth"][selection],data["baseline"][selection],data[f"prediction_{item.get('record_id',str(index))}_{label}"])
+                for phase,counts in [("before",before),("after",after)]:
+                    for group,values in counts.items():
+                        for key,value in values.items():
+                            stored=item["populations"][label][phase][group][key]
+                            if key=="loss" and value is not None:np.testing.assert_allclose(stored,value,rtol=1e-12,atol=1e-14)
+                            elif stored!=value:raise ValueError("Count mismatch")
+                effects[label]={group:dict(net_passes=after[group]["passes"]-before[group]["passes"],
+                    repaired=after[group]["repaired"],damaged=after[group]["damaged"],
+                    loss_change=None if before[group]["loss"] is None else after[group]["loss"]-before[group]["loss"]) for group in before}
+            rows.append(dict(batch=index,fit_states=len(fit),check_states=len(check),learning_rate=item.get("learning_rate",1e-6),cosine_pass_fail={key:value["cosines"][1][2] for key,value in item["geometry"].items()},
+                             step_norm=item["step_norm"],first_order=item["first_order"],effects=effects))
+        summaries.append(dict(seed=record["seed"],status="VERIFIED_TRAINING_DIAGNOSTIC",rows=rows,
+            decoder_max=max(r["discrepancy"]["maximum"] for r in record["records"]),seconds=record["seconds"]))
+    save(root/"review.json",dict(status="verified",report_sha256=digest(root/"report.json"),metadata_exceptions=exceptions,
+         summaries=summaries,candidate_promoted=False,confirmation_opened=False,
+         scope="Independent fresh-Adam single-step probes; 8192 training rows; not held-out model performance or a PCGrad benefit"))
+    print(root/"review.json")
+
+
+if __name__=="__main__":main()
