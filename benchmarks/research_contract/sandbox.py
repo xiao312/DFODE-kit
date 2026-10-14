@@ -1,5 +1,6 @@
 """Allowlisted Linux candidate mounts; controller/reference files are not mounted."""
 from pathlib import Path
+import re
 import subprocess
 
 
@@ -7,6 +8,17 @@ def command(project, input_dir, output_dir, arguments, *, model_dir=None, gpu=0)
     project, input_dir, output_dir = map(lambda p: Path(p).resolve(), (project, input_dir, output_dir))
     if not input_dir.is_dir() or not output_dir.is_dir() or input_dir == output_dir:
         raise ValueError("Require distinct existing input/output directories")
+    if isinstance(gpu, bool) or not isinstance(gpu, int) or gpu < 0:
+        raise ValueError("Require a nonnegative physical GPU index")
+    # Device enumeration changes when only one /dev/nvidiaN node is mounted.
+    # Resolve on the host, then select the same physical device by stable UUID.
+    gpu_uuid = subprocess.check_output(
+        ["nvidia-smi", "-i", str(gpu), "--query-gpu=uuid", "--format=csv,noheader"],
+        text=True, timeout=15).strip()
+    if not re.fullmatch(r"GPU-[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}", gpu_uuid):
+        raise ValueError("Expected exactly one physical GPU UUID; refusing ambiguous binding")
+    if not Path(f"/dev/nvidia{gpu}").exists():
+        raise ValueError("Selected physical GPU device node is missing")
     environment = project / "runs/envs/paired-gpu-20261009"
     cmd = ["bwrap", "--unshare-all", "--die-with-parent", "--new-session",
            "--ro-bind", "/usr", "/usr", "--ro-bind", "/lib", "/lib", "--ro-bind", "/lib64", "/lib64",
@@ -22,7 +34,7 @@ def command(project, input_dir, output_dir, arguments, *, model_dir=None, gpu=0)
         if Path(device).exists():
             cmd += ["--dev-bind", device, device]
     env = dict(PATH="/env/bin:/usr/bin:/bin", HOME="/tmp", PYTHONPATH="/code", PYTHONDONTWRITEBYTECODE="1",
-               CUDA_VISIBLE_DEVICES=str(gpu), CUBLAS_WORKSPACE_CONFIG=":4096:8", OPENBLAS_NUM_THREADS="1",
+               CUDA_VISIBLE_DEVICES=gpu_uuid, CUBLAS_WORKSPACE_CONFIG=":4096:8", OPENBLAS_NUM_THREADS="1",
                OMP_NUM_THREADS="1", MKL_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1")
     for name, value in env.items():
         cmd += ["--setenv", name, value]
@@ -47,9 +59,10 @@ try:
 except OSError:
     pass
 assert torch.cuda.is_available()
+assert torch.cuda.device_count() == 1
 assert (torch.ones(4,device='cuda').sum().item()) == 4
 assert socket.if_nameindex() == [(1,'lo')]
-print(json.dumps({'label_paths_absent':True,'readonly_mounts':True,'network_isolated':True,'gpu':torch.cuda.get_device_name(0)}))
+print(json.dumps({'label_paths_absent':True,'readonly_mounts':True,'network_isolated':True,'gpu':torch.cuda.get_device_name(0),'gpu_uuid':os.environ['CUDA_VISIBLE_DEVICES'],'visible_gpu_count':torch.cuda.device_count()}))
 """
     result = subprocess.run(command(project, input_dir, output_dir, ["-c", code], gpu=gpu),
                             env={"PATH":"/usr/bin:/bin"}, capture_output=True, text=True, timeout=60)

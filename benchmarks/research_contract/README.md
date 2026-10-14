@@ -27,6 +27,13 @@ reference directories and network interfaces are absent. `sandbox.probe` tests
 these boundaries and a GPU kernel before execution. The controller remains trusted;
 this is candidate-process isolation, not separate-custodian confirmation security.
 
+Owner-authorized repair (2026-10-14): select the mounted physical GPU by its
+host-resolved UUID, not by its host ordinal after isolated enumeration. The device
+mount allowlist and every read-only/network/label boundary are unchanged. Invalid
+or ambiguous UUIDs fail closed; the probe now also requires exactly one visible
+CUDA device. The old lock remains in Git and failed-run artifacts. Only the sandbox
+entry in the current evaluator lock changes; scoring and admission rules do not.
+
 ## Dependencies and security
 
 The standalone scorer depends on NumPy. The replay adapter uses the historical

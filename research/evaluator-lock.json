@@ -7,7 +7,7 @@
     "benchmarks/research_contract/reference.py": "8b35c6ea298d9167355429245f6633ec557cf886682fbd6f8921cdea653643b3",
     "benchmarks/research_contract/adapter.py": "38b98c87439a18da17b3b9fedf2b20bc2cc3bfb8c60eccb07141b190a40e694a",
     "research/EVALUATION.md": "e3e381b02f917b8a4fc35fbf380434e3f57403491f95493529ecb77bf0f592cb",
-    "benchmarks/research_contract/sandbox.py": "4dfc6385763b68d0eb86ad4264697db20e9348fbfb9dfbbf53a7e50d7a88eef5",
+    "benchmarks/research_contract/sandbox.py": "5c26067643819db7e63f124a5c20932cda13d2dc258c7bcfc5d9c6b5cc2a0da4",
     "benchmarks/research_contract/gates.py": "93e7460ea001c09ed6a1a1f7127359c3a47eb6a99175ce03582a21b9d5edb301",
     "research/bindings.json": "cd9483b4a1bb0a553cf8f908840f07ef5abc48d34b977a29e5c5601561b59fee"
   }

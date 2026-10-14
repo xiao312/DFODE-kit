@@ -18,6 +18,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--project",type=Path,required=True);p.add_argument("--output",type=Path,required=True)
     p.add_argument("--gpu",type=int,default=0);p.add_argument("--execute",action="store_true")
+    p.add_argument("--infrastructure-retry",action="store_true",help="Only the registered preflight-only reaction-attention retry")
     p.add_argument("--experiment",default="EXP-20261013-gradient-probe",choices=["EXP-20261013-gradient-probe","EXP-20261013-step-scale","EXP-20261013-gradient-average","EXP-20261013-conditional-calibration","EXP-20261013-selective-correction","EXP-20261013-selective-nonlinear","EXP-20261013-kinetic-features","EXP-20261013-species-heads","EXP-20261013-element-projection","EXP-20261013-bounded-base-screen","EXP-20261013-strict-consensus-screen","EXP-20261013-consensus-distill","EXP-20261013-consensus-gpu","EXP-20261013-consensus-gpu-checked","EXP-20261013-interval-readout","EXP-20261014-reaction-attention"])
     args=p.parse_args();project=args.project.resolve();output=args.output.resolve()
     plan=read_json(project/"research/experiments"/(args.experiment+".json"))
@@ -25,6 +26,10 @@ def main():
     inputs(project,read_json(project/"research/bindings.json"))
     if output.exists():raise ValueError("Existing output: reconcile; do not duplicate")
     if source_revision()["dirty"]:raise ValueError("Commit before execution")
+    retry=None
+    if args.infrastructure_retry:
+        from ..reaction_attention.retry import validate_retry
+        retry=validate_retry(project,output,args.experiment)
     if processes_on_gpu(args.gpu):print("WAITING_RESOURCE");return
     if not campaign["execution_authorized"]:raise ValueError("Missing authorization")
     parent=project/plan["parent_run"]
@@ -37,7 +42,9 @@ def main():
     print(json.dumps(dict(status="PRECHECKED",execute=args.execute)),flush=True)
     if not args.execute:return
     output.mkdir(parents=True)
-    acquire_lease(project/"runs/research-control"/(plan["experiment_id"]+".lease.json"),dict(output=str(output),start_ticks=process_identity(os.getpid())))
+    lease_id=plan["experiment_id"]+("-retry1" if retry else "")
+    acquire_lease(project/"runs/research-control"/(lease_id+".lease.json"),dict(output=str(output),start_ticks=process_identity(os.getpid())))
+    if retry:save(output/"infrastructure-retry.json",retry)
     save(output/"source.json",source_revision());save(output/"frozen-experiment.json",plan);save(output/"evaluator-lock.json",lock)
     for name in ("probe-input","probe-output"):(output/name).mkdir()
     save(output/"isolation.json",json.loads(probe(project,output/"probe-input",output/"probe-output",args.gpu)))
