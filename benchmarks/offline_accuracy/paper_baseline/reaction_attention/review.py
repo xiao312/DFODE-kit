@@ -111,7 +111,8 @@ def main():
             interrupted.append(dict(kind=kind,record_sha256=digest(path),
                 worker_wall_seconds=failed['previous_state']['elapsed_seconds'],
                 optimizer_steps=failed['optimizer_steps_before_failure'],
-                row_presentations=failed['row_presentations_before_failure']))
+                row_presentations=(0 if failed['optimizer_steps_before_failure']==0
+                                   else failed['row_presentations_before_failure'])))
     resources=dict(successful_worker_wall_seconds=report['worker_wall_seconds'],
         interrupted_attempts=interrupted,
         total_observed_worker_wall_seconds=report['worker_wall_seconds']+sum(r['worker_wall_seconds'] for r in interrupted),
