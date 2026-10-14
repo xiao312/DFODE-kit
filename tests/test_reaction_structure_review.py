@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from benchmarks.offline_accuracy.paper_baseline.reaction_attention.structure_review import spectrum, structural_maps
 
@@ -7,6 +8,7 @@ def test_rank_detects_missing_and_repeated_channels():
     assert spectrum(np.eye(3))['rank_fp32_threshold'] == 3
     measured = spectrum(np.array([[1.], [0.]]), np.diag([2., 3.]))
     assert measured['training_null_variance_fraction'] == .6
+    json.dumps(measured, allow_nan=False)
 
 
 def test_joint_channels_can_recover_information_lost_in_one_average():

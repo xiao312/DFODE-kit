@@ -10,7 +10,7 @@ def spectrum(matrix, covariance=None):
     singular = np.linalg.svd(matrix, compute_uv=False)
     largest = float(singular[0]) if len(singular) else 0.
     strict = largest * 1e-12
-    coarse = largest * max(matrix.shape) * np.finfo(np.float32).eps
+    coarse = float(largest * max(matrix.shape) * np.finfo(np.float32).eps)
     result = dict(input_dimensions=matrix.shape[0], channels=matrix.shape[1],
                 rank_fp64_threshold=int((singular > strict).sum()),
                 rank_fp32_threshold=int((singular > coarse).sum()),
